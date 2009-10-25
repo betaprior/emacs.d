@@ -1,15 +1,4 @@
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
-
-;; Customize according to the machine
-(defvar hostname (downcase (getenv "HOSTNAME")))
-(defvar emacs-profile 
-  (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
-	((string= hostname "matroskin") 'linux-1)
-	((string= hostname "leo-fujitsu-xp") 'linux-gateway)
-	(t 'linux-default))
-)
-
-
 ;; Increase the memory reserved
 (setq gc-cons-threshold 80000000)
 (setq garbage-collection-messages t) 
@@ -17,33 +6,19 @@
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp"))
 			load-path))
 
-;;{{{ `-- Interface / appearance settings
-(set-frame-height (selected-frame) 37)
-;; Set the buffer size for Windows 
-;; good defaults for 1280x768 desktop and double-level horizontal 
-;; taskbar: L 200, T 0, H 41, W 90
-;; (add-to-list 'default-frame-alist '(left . 0))
-;; (add-to-list 'default-frame-alist '(top . 0))
-;; (add-to-list 'default-frame-alist '(height . 47))
-;; (add-to-list 'default-frame-alist '(width . 90))
 
 ;(set-default-font "Bitstream Vera Sans Mono-10")
 ;(set-default-font "Consolas-11")
-(if (eq emacs-profile 'linux-1)
-    (set-default-font "DejaVu Sans Mono-11")
-  (set-default-font "DejaVu Sans Mono-10")
-)
+(set-default-font "DejaVu Sans Mono-11")
 (setq inhibit-startup-message t)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
-;;}}}
+
 
 ; fix copy/paste in Linux?..
-(when (eq emacs-profile 'linux-1)
-  (setq x-select-enable-clipboard t)
-  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-)
+(setq x-select-enable-clipboard t)
+(setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
 
 ; Switch between windows using shift-arrows
 (windmove-default-keybindings)
@@ -55,9 +30,6 @@
 (setq comment-style 'indent)
 (global-set-key (kbd "M-;") 'comment-dwim-line)
 (global-set-key (kbd "C-;") 'comment-dwim-line)
-
-;; Override set-fill-column (recentf steals default binding)
-(global-set-key [(control x)(meta f)] 'set-fill-column)
 
 
 (defun comment-dwim-line (&optional arg)
@@ -79,18 +51,8 @@
 ;; Autosave tweaks
 (setq auto-save-interval 120)
 (setq auto-save-timeout 30) 
-
-;; Put autosave files (ie #foo#) in one place
-(defvar autosave-dir (concat "~/.emacs.d/autosave.1"))
-(make-directory autosave-dir t)
-(defun auto-save-file-name-p (filename) (string-match "^#.*#$" (file-name-nondirectory filename)))
-(defun make-auto-save-file-name () (concat autosave-dir (if buffer-file-name (concat "#" (file-name-nondirectory buffer-file-name) "#") (expand-file-name (concat "#%" (buffer-name) "#")))))
-
-;; Put backup files (ie foo~) in one place too. (The backup-directory-alist 
-;; list contains regexp=>directory mappings; filenames matching a regexp are 
-;; backed up in the corresponding directory. Emacs will mkdir it if necessary.) 
-(setq backup-directory-alist '(("." . "~/.emacs.d/autosave")))
 (setq version-control t)
+(setq backup-directory-alist '(("." . "~/.emacs.d/autosave")))
 (setq delete-old-versions t)
 
 
@@ -110,19 +72,19 @@
 
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
-; alternative bindings for M-x as per Steve Yegge's suggestion
+
 (defalias 'evabuf 'eval-buffer)
 (defalias 'eregion 'eval-region)
 
 
-;  -- faster point movement:
+;  -- faster point movement: -- bad idea w/ these bindings; clobbers sexp nav
 ;; (global-set-key "\M-\C-p" 
 ;;   '(lambda () (interactive) (previous-line 5)))
 ;; (global-set-key "\M-\C-n" 
 ;;   '(lambda () (interactive) (next-line 5)))
 
 
-(desktop-save-mode 1)
+(desktop-save-mode nil)
 
 
 ;; ========== Line by line scrolling ==========
@@ -138,10 +100,10 @@
 ;; to change where the scrolling starts, customize-variable smooth-scroll-margin
 
 ;; Color-theme:
-(setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
-(require 'color-theme)
-(color-theme-initialize)
-(color-theme-midnight)
+;; (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
+;; (require 'color-theme)
+;; (color-theme-initialize)
+;; (color-theme-midnight)
 
 ;; thing at point mark:
 (require 'thing-cmds)
@@ -191,23 +153,19 @@
 ;; (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
 ;; Org-mode:
-(setq load-path (cons "~/.emacs.d/elisp/org-6.31a/lisp" load-path))
+(setq load-path (cons "~/.emacs.d/elisp/org-6.26d/lisp" load-path))
 ;; The following lines are always needed.  Choose your own keys.
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cq" 'org-iswitchb)
-(setq org-todo-keywords
-       '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
-
-
 
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 
 ;; Autohotkey (Windows-specific)
 ;; choose ahk-mode rather than ahk-org mode:
-(when (eq emacs-profile 'windows-1)
+(when (eq system-type 'windows-nt)
   (setq ahk-syntax-directory "C:/Program Files/AutoHotkey/Extras/Editors/Syntax/")
   (add-to-list 'auto-mode-alist '("\\.ahk$" . ahk-mode))
   (autoload 'ahk-mode "ahk-mode"))
@@ -228,10 +186,7 @@
  ;(require 'setup-cygwin)
   )
 
-(when (or (eq emacs-profile 'windows-1)
-	  (eq emacs-profile 'linux-1))
-  (server-start)
-)
+
 
 ;;{{{ `-- Explorer here / terminal here functions
 ; Windows explorer to go to the file in the current buffer
@@ -495,12 +450,10 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.mma\\'" . mathematica-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
-
-(if (eq emacs-profile 'windows-1)
+(if (eq system-type 'windows-nt)
   (setq mathematica-command-line "C:/Program Files/Wolfram Research/Mathematica/7.0/math")
   (setq mathematica-command-line "/usr/local/bin/math")
 )
-
 
 (setq load-path (cons "~/.emacs.d/elisp/matlab-emacs/" load-path))
 
@@ -556,12 +509,13 @@ in dired mode without it."
                          nil t))))
 
 (global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
+(global-set-key (kbd "C-x M-f") 'set-fill-column)
 ;;~ end set ido to do recent files
 
-;;{{{ LaTex/AucTeX settings
+;;{{{  LaTex/AucTeX settings
 (require 'tex-site)
 (when (eq system-type 'windows-nt)
-     (require 'tex-mik))
+  (require 'tex-mik))
 
 ;;Anrei says forcing latex mode for tex files explicitly is better in some way
 (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
@@ -572,11 +526,6 @@ in dired mode without it."
 
 (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
-
-(require 'abbrev)
-(setq save-abbrevs t) 
-(add-hook 'TeX-mode-hook (lambda ()
-     (setq abbrev-mode t)))
 
 ;; (add-hook 'outline-mode-hook
 ;; 	  '(lambda ()
@@ -668,15 +617,6 @@ in dired mode without it."
 (setq ido-create-new-buffer 'no-prompt)
 (ido-everywhere t)
 (setq ido-max-prospects 15)
-
-(add-hook 'ido-setup-hook 'ido-my-keys)
-
-(defun ido-my-keys ()
- "Add my keybindings for ido."
-    (define-key ido-completion-map "\t" 'ido-next-match)
-    (define-key ido-completion-map [(shift tab)] 'ido-prev-match)
- )
-
 ;; (defvar ido-execute-command-cache nil)
 
 ;; (defun ido-execute ()
@@ -728,11 +668,13 @@ in dired mode without it."
 ;; (global-set-key "\M-x" 'ido-execute)
 ;; (global-set-key "\C-x\C-m" 'ido-execute)
 ;; (global-set-key "\C-c\C-m" 'ido-execute)
-
-	  
-;;~ end ido-related stuff
-
 ;;}}}
+
+;; further ido key refinements -- no easy customization; modify ido.el
+;; ;    (define-key map "\t" 'ido-complete)
+;;     (define-key map "\t" 'ido-next-match)
+;;     (define-key map [(shift tab)] 'ido-prev-match)
+
 
 ;;this functionality is superceded by smex:
 (require 'smex)
@@ -742,6 +684,7 @@ in dired mode without it."
 (global-set-key (kbd "C-c M-x") 'smex-update-and-run)
 ;; This is your old M-x.
 (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+	  
 
 
 
@@ -861,7 +804,7 @@ in dired mode without it."
 ;(setq pop-up-windows t)
 
 
-;;{{{ -- enable killing/copying lines w/o having them marked --------------------
+;;{{{ -- enable killing/copying lines w/o having them marked; duplicate lines ---
 ;; cf http://www.emacswiki.org/emacs/SlickCopy
 (defadvice kill-ring-save (before slick-copy activate compile)
   "When called interactively with no active region, copy a single line instead."
@@ -992,7 +935,9 @@ With argument, do this that many times."
 )
 
 ;;{{{ ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
+(unless (eq system-type 'windows-nt) ;in win. ess-site is in emacs dir
+  (setq load-path (cons "~/.emacs.d/elisp/ess-5.3.8/lisp/" load-path))
+)
 (require 'ess-site)
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
@@ -1071,12 +1016,6 @@ With argument, do this that many times."
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
 (global-set-key "\C-cpe" 'paste-EOL)
 
-(defvar pdf-viewer "")
-(if (eq system-type 'windows-nt)
-    (setq pdf-viewer "C:/Program Files/Ghostgum/gsview/gsview32.exe")
-  (setq pdf-viwer "evince")
-)
-
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
@@ -1084,12 +1023,11 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-output-view-style (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("^html?$" "." "start \"\" %o"))))
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
- '(desktop-save-mode t)
+ '(desktop-path (quote ("~/.emacs.d/" "~" ".")))
+ '(desktop-save-mode nil)
  '(help-window-select t)
- '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe")))
- '(org-cycle-include-plain-lists nil)
- '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
- '(org-hide-leading-stars t)
+ '(matlab-shell-command "matlab-terminal")
+ '(mlint-programs (quote ("mlint" "win32/mlint" "/opt/matlab/R2008a/bin/glnxa64/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe")))
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)
  '(scroll-preserve-screen-position 1)
