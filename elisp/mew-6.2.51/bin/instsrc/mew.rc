@@ -1,0 +1,171 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// ニュートラル resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(932)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SETUP DIALOG  0, 0, 212, 154
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_POPUP | 
+    WS_CAPTION
+CAPTION "Mew Easy Setup"
+FONT 14, "FixedSys"
+BEGIN
+    LTEXT           "User Name",IDC_STATIC,7,37,73,8
+    EDITTEXT        IDC_USERNAME,86,35,118,12,ES_AUTOHSCROLL
+    LTEXT           "Mail Address",IDC_STATIC,7,53,75,8
+    EDITTEXT        IDC_MAILADDRESS,86,51,118,12,ES_AUTOHSCROLL
+    LTEXT           "SMTP Server Name",IDC_STATIC,7,69,69,8
+    EDITTEXT        IDC_SMTPSERVER,86,67,118,12,ES_AUTOHSCROLL
+    LTEXT           "POP3 Server Name",IDC_STATIC,7,85,69,8
+    EDITTEXT        IDC_POPSERVER,86,83,118,12,ES_AUTOHSCROLL
+    LTEXT           "POP3 Account Name",IDC_STATIC,7,101,75,8
+    EDITTEXT        IDC_POPUSER,86,99,53,12,ES_AUTOHSCROLL
+    LTEXT           "POP3 Auth Method",IDC_STATIC,7,119,74,8
+    CONTROL         "APOP",IDC_POP_APOP,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,86,117,31,13
+    CONTROL         "POP",IDC_POP_POP,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,124,117,27,13
+    DEFPUSHBUTTON   "OK",IDOK,39,133,50,14
+    PUSHBUTTON      "CANCEL",IDCANCEL,123,133,50,14
+    EDITTEXT        IDC_CONFIGFILE,29,14,118,12,ES_AUTOHSCROLL
+    GROUPBOX        "Configuration File",IDC_STATIC,7,5,197,26
+    PUSHBUTTON      "Browse...",IDC_FILESELECT,155,14,39,12
+END
+
+IDD_SEDIALOG DIALOGEX 0, 0, 140, 93
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_POPUP | 
+    WS_CAPTION
+CAPTION "Emacs type"
+FONT 14, "System", 0, 0, 0x0
+BEGIN
+    CTEXT           "Select your Emacs.",IDC_SESTATIC,7,6,126,8
+    LISTBOX         IDC_SELIST,7,21,126,42,NOT LBS_NOTIFY | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,24,72,34,14
+    PUSHBUTTON      "Cancel",IDCANCEL,80,72,34,14
+END
+
+IDD_TITLE DIALOG  0, 0, 165, 57
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_POPUP | 
+    WS_CAPTION
+CAPTION "Mew Installer for Win32"
+FONT 14, "System"
+BEGIN
+    DEFPUSHBUTTON   "Install",IDOK,29,36,45,14
+    PUSHBUTTON      "Cancel",IDCANCEL,91,36,45,14
+    LTEXT           "Mew - Messaging in the Emacs World -",IDC_STATIC,7,7,
+                    151,12
+    CTEXT           "Installer for Win32",IDC_STATIC,7,20,151,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SETUP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 204
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 147
+    END
+
+    IDD_SEDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 133
+        VERTGUIDE, 20
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 86
+    END
+
+    IDD_TITLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 158
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 50
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // ニュートラル resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 日本語 resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+#ifdef _WIN32
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // 日本語 resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

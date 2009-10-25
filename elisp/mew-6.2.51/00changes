@@ -1,0 +1,24 @@
+Mew 6.2.51 (2009/02/16)
+
+* Supporting NTEmacs.
+	Hayashi Masahiro <mhayashi1120@gmail.com>
+* A patch for mew-fill-match-adaptive-prefix.
+	Takashi Masuda <masutaka@nifty.com>
+* Rescuing non-balanced parenthesis of addresses.
+* A patch for mew-input-folder-search-setup2
+	KOIE Hidetaka <hide@koie.org>
+* A patch for Makefile.
+	Kazuyoshi Furutaka <furutaka@jb3.so-net.ne.jp>
+* Refile uses mew-case instead of mew-case-default.
+	Hideyuki SHIRAI <shirai@meadowy.org>
+
+Mew 6.2.50 (2009/01/21)
+
+* Set IMAP's \Seen flag onto refiled messages.
+* Changing the timing of longlines-mode off.
+* A bug fix for mew-cite-prefix-username.
+* A patch for join.
+	Hideyuki SHIRAI <shirai@meadowy.org>
+* chapter -> section in info.
+* Defining mew-fill-match-adaptive-prefix to save Emacs 21.4.
+

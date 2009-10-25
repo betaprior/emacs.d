@@ -1,0 +1,139 @@
+AC_INIT(mew.el)
+AC_CONFIG_SUBDIRS(bin)
+AC_ARG_WITH(emacs,
+    [  --with-emacs=EMACS      use EMACS],
+    emacsbin="${withval}")
+AC_SUBST(emacsbin)
+AC_ARG_WITH(elispdir,
+    [  --with-elispdir=DIR     where elisp files should go],
+    elispdir="${withval}")
+AC_SUBST(elispdir)
+AC_ARG_WITH(etcdir,
+    [  --with-etcdir=DIR       where etc files should go],
+    etcdir="${withval}")
+AC_SUBST(etcdir)
+
+if test -z "${emacsbin}"; then
+    AC_PATH_PROGS(emacsbin, emacs xemacs mule, emacs)
+fi
+chk_prefix=
+case "${emacsbin}" in
+*xemacs*)
+    if test "${libdir}" = "\${exec_prefix}/lib" && \
+       test -z "${elispdir}" -o -z "${etcdir}"; then
+	chk_prefix=yes
+    fi
+    ;;
+*)
+    if test "${datadir}" = "\${prefix}/share" && \
+       test -z "${elispdir}" -o -z "${etcdir}"; then
+	chk_prefix=yes
+    fi
+    ;;
+esac
+if test ! -x "${emacsbin}"; then
+    chk_prefix=
+fi
+if test "${chk_prefix}"; then
+    AC_MSG_CHECKING(for prefix of ${emacsbin})
+    AC_CACHE_VAL(emacsbin_cv_emacs_prefix,[
+	OUTPUT=./conftest-$$
+	echo ${emacsbin}' -q -no-site-file -batch -eval '\''(write-region (princ (expand-file-name ".." invocation-directory)) nil "'${OUTPUT}'" nil 5)'\' >& AC_FD_CC 2>&1
+	eval ${emacsbin}' -q -no-site-file -batch -eval '\''(write-region (princ (expand-file-name ".." invocation-directory)) nil "'${OUTPUT}'" nil 5)'\' >& AC_FD_CC 2>&1
+	retval="`cat ${OUTPUT}`"
+	rm -f ${OUTPUT}
+	emacsbin_cv_emacs_prefix="${retval}"])
+    emacs_prefix=${emacsbin_cv_emacs_prefix}
+    AC_MSG_RESULT(${emacs_prefix})
+fi
+
+if test "${chk_prefix}" -a -z "${elispdir}"; then
+    AC_MSG_CHECKING([where lisp files should go])
+    case "${emacsbin}" in
+    *xemacs*)
+	if test -d "${emacs_prefix}/lib/xemacs/site-lisp"; then
+	    elispdir="${emacs_prefix}/lib/xemacs/site-lisp/mew"
+	fi
+	;;
+    *)
+	if test -d "${emacs_prefix}/share/emacs/site-lisp"; then
+	    elispdir="${emacs_prefix}/share/emacs/site-lisp/mew"
+	fi
+	;;
+    esac
+    if test "${elispdir}"; then
+	AC_MSG_RESULT(${elispdir})
+    else
+	AC_MSG_RESULT([none (fall back to the default value)])
+    fi
+fi
+if test -z "${elispdir}"; then
+    case "${emacsbin}" in
+    *xemacs*)
+	elispdir="\${libdir}/xemacs/site-lisp/mew"
+	;;
+    *)
+	elispdir="\${datadir}/emacs/site-lisp/mew"
+	;;
+    esac
+fi
+
+if test "${chk_prefix}" -a -z "${etcdir}"; then
+    AC_MSG_CHECKING([where etc files should go])
+    case "${emacsbin}" in
+    *xemacs*)
+	if test -d "${emacs_prefix}/lib/xemacs/etc"; then
+	    etcdir="${emacs_prefix}/lib/xemacs/etc/Mew"
+	fi
+	;;
+    *)
+	if test -d "${emacs_prefix}/share/emacs/site-lisp"; then
+	    etcdir="${emacs_prefix}/share/emacs/site-lisp/mew/etc"
+	fi
+	;;
+    esac
+    if test "${etcdir}"; then
+	AC_MSG_RESULT(${etcdir})
+    else
+	AC_MSG_RESULT([none (fall back to the default value)])
+    fi
+fi
+if test -z "${etcdir}"; then
+    case ${emacsbin} in
+    *xemacs*)
+	etcdir="\${libdir}/xemacs/etc/Mew"
+	;;
+    *)
+	etcdir="\${datadir}/emacs/site-lisp/mew/etc"
+	;;
+    esac
+fi
+
+AC_OUTPUT(Makefile)
+
+echo_value () {
+    case "$1" in
+    *\$*)
+	eval "echo_value \"$1\""
+	;;
+    *)
+	echo "$1"
+	;;
+    esac
+}
+
+echo
+echo "***************************"
+echo " Mew configuration results"
+echo "***************************"
+echo
+echo -n "use emacs             : "; echo_value "${emacsbin}"
+echo -n "elisp files should go : "; echo_value "${elispdir}"
+echo -n "etc files should go   : "; echo_value "${etcdir}"
+echo -n "exec files should go  : "; echo_value "${bindir}"
+echo -n "info files should go  : "; echo_value "${infodir}"
+echo -n "man files should go   : "; echo_value "${mandir}/man1"
+echo
+echo "Then type 'make', 'make info' and 'make install'."
+echo "For Japanese environment, also 'make jinfo' and 'make install-jinfo'."
+echo

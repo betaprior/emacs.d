@@ -1,0 +1,182 @@
+Mew installer for Win32  Version 1.3.0
+          Copyright (C) 1997-2006  Shuichi Kitaguchi
+
+Operating System = [Windows NT Version 5.1 ( Build 2600 / Service Pack 3 )]
+
+HomeDir=[c:\home\Leo]
+ConfDir=[c:\home\Leo\.im]
+ConfFile=[c:\home\Leo\.im\Config]
+
+>>Read INI File...
+INI file = [C:\home\Leo\.emacs.d\elisp\mew-6.2.51\mew.ini]
+Emacs is [Emacs]
+Emacs=[C:\Emacs\emacs-23.0.95\bin\emacs.exe]
+EmacsPath=[C:\Emacs\emacs-23.0.95\bin]
+EmacsLoadPath=[C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew]
+InfoPath=[C:\Emacs\emacs-23.0.95\bin\..\info]
+
+BINDIR=[C:\Emacs\emacs-23.0.95\bin]
+ELISPDIR=[C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew]
+INFOPATH=[C:\Emacs\emacs-23.0.95\bin\..\info]
+Objs=[mew-addrbook.elc	mew-attach.elc		mew-auth.elc		mew-blvs.elc		mew-bq.elc		mew-cache.elc		mew-complete.elc	mew-config.elc		mew-const.elc		mew-decode.elc		mew-demo.elc		mew-draft.elc		mew-edit.elc		mew-encode.elc		mew-env.elc		mew-ext.elc		mew-fib.elc		mew-func.elc		mew-gemacs.elc		mew-header.elc		mew-highlight.elc 	mew-imap.elc		mew-imap2.elc		mew-key.elc		mew-lang-jp.elc		mew-lang-kr.elc		mew-lang-latin.elc 	mew-local.elc		mew-mark.elc			mew-message.elc		mew-mime.elc		mew-minibuf.elc		mew-mule.elc		mew-mule3.elc		mew-net.elc		mew-nntp.elc		mew-nntp2.elc		mew-pgp.elc		mew-pick.elc		mew-pop.elc		mew-refile.elc		mew-scan.elc		mew-smime.elc		mew-search.elc		mew-smtp.elc		mew-sort.elc		mew-ssh.elc		mew-ssl.elc		mew-passwd.elc		mew-summary.elc		mew-summary2.elc	mew-summary3.elc 	mew-summary4.elc	mew-syntax.elc			mew-thread.elc		mew-unix.elc			mew-vars.elc		mew-vars2.elc		mew-vars3.elc		mew-varsx.elc		mew-virtual.elc			mew-win32.elc		mew-exec.elc		mew-darwin.elc		mew.elc]
+Srcs=[mew-addrbook.el	mew-attach.el	mew-auth.el		mew-blvs.el	mew-bq.el	mew-cache.el		mew-complete.el	mew-config.el	mew-const.el		mew-decode.el	mew-demo.el	mew-draft.el		mew-edit.el	mew-encode.el	mew-env.el		mew-ext.el	mew-fib.el	mew-func.el		mew-gemacs.el	mew-header.el	mew-highlight.el 	mew-imap.el	mew-imap2.el	mew-key.el		mew-lang-jp.el	mew-lang-kr.el	mew-lang-latin.el 	mew-local.el	mew-mark.el		mew-message.el	mew-mime.el	mew-minibuf.el		mew-mule.el	mew-mule3.el		mew-net.el	mew-nntp.el	mew-nntp2.el		mew-pgp.el	mew-pick.el	mew-pop.el		mew-refile.el	mew-scan.el	mew-smime.el		mew-search.el	mew-smtp.el	mew-sort.el		mew-ssh.el	mew-ssl.el	mew-passwd.el		mew-summary.el	mew-summary2.el	mew-summary3.el		mew-summary4.el	mew-syntax.el		mew-thread.el	mew-unix.el		mew-vars.el	mew-vars2.el	mew-vars3.el		mew-varsx.el	mew-virtual.el		mew-win32.el	mew-exec.el		mew-darwin.el	mew.el]
+Bins=[mewencode.exe mewl.exe mewest cmew smew]
+TempFile=[temp.el]
+Infos=[mew.info mew.info-1 mew.info-2 mew.info-3 mew.info-4 mew.jis.info mew.jis.info-1 mew.jis.info-2 mew.jis.info-3]
+Contribs=[mew-browse.el]
+>>>Emacs is [Emacs]
+>>Compiling sources...
+Compiling sources...
+C:\Emacs\emacs-23.0.95\bin\emacs.exe -batch -q -no-site-file -l ./temp.el -f mew-compile
+>>Making Executables...
+>>Installing el/elc/executable Files...
+Copying [mew-addrbook.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-addrbook.el] ...ok.
+Copying [mew-attach.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-attach.el] ...ok.
+Copying [mew-auth.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-auth.el] ...ok.
+Copying [mew-blvs.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-blvs.el] ...ok.
+Copying [mew-bq.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-bq.el] ...ok.
+Copying [mew-cache.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-cache.el] ...ok.
+Copying [mew-complete.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-complete.el] ...ok.
+Copying [mew-config.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-config.el] ...ok.
+Copying [mew-const.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-const.el] ...ok.
+Copying [mew-decode.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-decode.el] ...ok.
+Copying [mew-demo.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-demo.el] ...ok.
+Copying [mew-draft.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-draft.el] ...ok.
+Copying [mew-edit.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-edit.el] ...ok.
+Copying [mew-encode.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-encode.el] ...ok.
+Copying [mew-env.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-env.el] ...ok.
+Copying [mew-ext.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-ext.el] ...ok.
+Copying [mew-fib.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-fib.el] ...ok.
+Copying [mew-func.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-func.el] ...ok.
+Copying [mew-gemacs.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-gemacs.el] ...ok.
+Copying [mew-header.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-header.el] ...ok.
+Copying [mew-highlight.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-highlight.el] ...ok.
+Copying [mew-imap.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-imap.el] ...ok.
+Copying [mew-imap2.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-imap2.el] ...ok.
+Copying [mew-key.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-key.el] ...ok.
+Copying [mew-lang-jp.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-lang-jp.el] ...ok.
+Copying [mew-lang-kr.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-lang-kr.el] ...ok.
+Copying [mew-lang-latin.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-lang-latin.el] ...ok.
+Copying [mew-local.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-local.el] ...ok.
+Copying [mew-mark.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mark.el] ...ok.
+Copying [mew-message.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-message.el] ...ok.
+Copying [mew-mime.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mime.el] ...ok.
+Copying [mew-minibuf.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-minibuf.el] ...ok.
+Copying [mew-mule.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mule.el] ...ok.
+Copying [mew-mule3.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mule3.el] ...ok.
+Copying [mew-net.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-net.el] ...ok.
+Copying [mew-nntp.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-nntp.el] ...ok.
+Copying [mew-nntp2.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-nntp2.el] ...ok.
+Copying [mew-pgp.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-pgp.el] ...ok.
+Copying [mew-pick.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-pick.el] ...ok.
+Copying [mew-pop.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-pop.el] ...ok.
+Copying [mew-refile.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-refile.el] ...ok.
+Copying [mew-scan.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-scan.el] ...ok.
+Copying [mew-smime.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-smime.el] ...ok.
+Copying [mew-search.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-search.el] ...ok.
+Copying [mew-smtp.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-smtp.el] ...ok.
+Copying [mew-sort.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-sort.el] ...ok.
+Copying [mew-ssh.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-ssh.el] ...ok.
+Copying [mew-ssl.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-ssl.el] ...ok.
+Copying [mew-passwd.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-passwd.el] ...ok.
+Copying [mew-summary.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary.el] ...ok.
+Copying [mew-summary2.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary2.el] ...ok.
+Copying [mew-summary3.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary3.el] ...ok.
+Copying [mew-summary4.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary4.el] ...ok.
+Copying [mew-syntax.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-syntax.el] ...ok.
+Copying [mew-thread.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-thread.el] ...ok.
+Copying [mew-unix.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-unix.el] ...ok.
+Copying [mew-vars.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-vars.el] ...ok.
+Copying [mew-vars2.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-vars2.el] ...ok.
+Copying [mew-vars3.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-vars3.el] ...ok.
+Copying [mew-varsx.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-varsx.el] ...ok.
+Copying [mew-virtual.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-virtual.el] ...ok.
+Copying [mew-win32.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-win32.el] ...ok.
+Copying [mew-exec.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-exec.el] ...ok.
+Copying [mew-darwin.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-darwin.el] ...ok.
+Copying [mew.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew.el] ...ok.
+Copying [mew-addrbook.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-addrbook.elc] ...ok.
+Copying [mew-attach.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-attach.elc] ...ok.
+Copying [mew-auth.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-auth.elc] ...ok.
+Copying [mew-blvs.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-blvs.elc] ...ok.
+Copying [mew-bq.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-bq.elc] ...ok.
+Copying [mew-cache.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-cache.elc] ...ok.
+Copying [mew-complete.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-complete.elc] ...ok.
+Copying [mew-config.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-config.elc] ...ok.
+Copying [mew-const.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-const.elc] ...ok.
+Copying [mew-decode.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-decode.elc] ...ok.
+Copying [mew-demo.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-demo.elc] ...ok.
+Copying [mew-draft.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-draft.elc] ...ok.
+Copying [mew-edit.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-edit.elc] ...ok.
+Copying [mew-encode.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-encode.elc] ...ok.
+Copying [mew-env.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-env.elc] ...ok.
+Copying [mew-ext.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-ext.elc] ...ok.
+Copying [mew-fib.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-fib.elc] ...ok.
+Copying [mew-func.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-func.elc] ...ok.
+Copying [mew-gemacs.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-gemacs.elc] ...ok.
+Copying [mew-header.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-header.elc] ...ok.
+Copying [mew-highlight.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-highlight.elc] ...ok.
+Copying [mew-imap.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-imap.elc] ...ok.
+Copying [mew-imap2.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-imap2.elc] ...ok.
+Copying [mew-key.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-key.elc] ...ok.
+Copying [mew-lang-jp.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-lang-jp.elc] ...ok.
+Copying [mew-lang-kr.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-lang-kr.elc] ...ok.
+Copying [mew-lang-latin.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-lang-latin.elc] ...ok.
+Copying [mew-local.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-local.elc] ...ok.
+Copying [mew-mark.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mark.elc] ...ok.
+Copying [mew-message.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-message.elc] ...ok.
+Copying [mew-mime.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mime.elc] ...ok.
+Copying [mew-minibuf.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-minibuf.elc] ...ok.
+Copying [mew-mule.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mule.elc] ...ok.
+Copying [mew-mule3.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-mule3.elc] ...ok.
+Copying [mew-net.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-net.elc] ...ok.
+Copying [mew-nntp.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-nntp.elc] ...ok.
+Copying [mew-nntp2.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-nntp2.elc] ...ok.
+Copying [mew-pgp.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-pgp.elc] ...ok.
+Copying [mew-pick.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-pick.elc] ...ok.
+Copying [mew-pop.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-pop.elc] ...ok.
+Copying [mew-refile.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-refile.elc] ...ok.
+Copying [mew-scan.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-scan.elc] ...ok.
+Copying [mew-smime.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-smime.elc] ...ok.
+Copying [mew-search.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-search.elc] ...ok.
+Copying [mew-smtp.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-smtp.elc] ...ok.
+Copying [mew-sort.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-sort.elc] ...ok.
+Copying [mew-ssh.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-ssh.elc] ...ok.
+Copying [mew-ssl.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-ssl.elc] ...ok.
+Copying [mew-passwd.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-passwd.elc] ...ok.
+Copying [mew-summary.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary.elc] ...ok.
+Copying [mew-summary2.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary2.elc] ...ok.
+Copying [mew-summary3.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary3.elc] ...ok.
+Copying [mew-summary4.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-summary4.elc] ...ok.
+Copying [mew-syntax.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-syntax.elc] ...ok.
+Copying [mew-thread.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-thread.elc] ...ok.
+Copying [mew-unix.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-unix.elc] ...ok.
+Copying [mew-vars.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-vars.elc] ...ok.
+Copying [mew-vars2.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-vars2.elc] ...ok.
+Copying [mew-vars3.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-vars3.elc] ...ok.
+Copying [mew-varsx.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-varsx.elc] ...ok.
+Copying [mew-virtual.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-virtual.elc] ...ok.
+Copying [mew-win32.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-win32.elc] ...ok.
+Copying [mew-exec.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-exec.elc] ...ok.
+Copying [mew-darwin.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-darwin.elc] ...ok.
+Copying [mew.elc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew.elc] ...ok.
+Copying [contrib\mew-browse.el] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew\mew-browse.el] ...ok.
+>>UNOFFICIAL package [contrib\mew-browse.el] is installed.
+Copying [bin\mewencode.exe] to [C:\Emacs\emacs-23.0.95\bin\mewencode.exe] ...ok.
+Copying [bin\mewl.exe] to [C:\Emacs\emacs-23.0.95\bin\mewl.exe] ...ok.
+Copying [bin\mewest] to [C:\Emacs\emacs-23.0.95\bin\mewest] ...ok.
+Copying [bin\cmew] to [C:\Emacs\emacs-23.0.95\bin\cmew] ...ok.
+Copying [bin\smew] to [C:\Emacs\emacs-23.0.95\bin\smew] ...ok.
+>>Installing Image files...
+copying [etc] to [C:\Emacs\emacs-23.0.95\bin\..\site-lisp\mew]...
+>>Installing Info files...
+Copying [info\mew.info] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.info] ...ok.
+Copying [info\mew.info-1] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.info-1] ...ok.
+Copying [info\mew.info-2] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.info-2] ...ok.
+Copying [info\mew.info-3] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.info-3] ...ok.
+Copying [info\mew.info-4] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.info-4] ...ok.
+Copying [info\mew.jis.info] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.jis.info] ...ok.
+Copying [info\mew.jis.info-1] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.jis.info-1] ...ok.
+Copying [info\mew.jis.info-2] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.jis.info-2] ...ok.
+Copying [info\mew.jis.info-3] to [C:\Emacs\emacs-23.0.95\bin\..\info\mew.jis.info-3] ...ok.
+>>Mew installation complete.

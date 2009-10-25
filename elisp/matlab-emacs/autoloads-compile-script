@@ -1,0 +1,6 @@
+(add-to-list 'load-path nil)
+(add-to-list 'load-path ".")
+(add-to-list 'load-path "../cedet-1.0pre4/common/")
+(add-to-list 'load-path "../cedet-1.0pre4/eieio/")
+(add-to-list 'load-path "../cedet-1.0pre4/semantic/")
+(require 'cedet-autogen)

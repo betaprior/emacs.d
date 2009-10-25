@@ -1,0 +1,71 @@
+
+                Additional Information about "Mew on Win32"
+                ===========================================
+
+          First,  read documents (00readme, ...)
+          Second, install Mew.
+          Third,  read info (M-x info)
+
+
+INPORTANT!
+----------
+
+  o Mew 2.x and later does not use IM.
+    You MUST modify your ~/.mew or ~/.emacs
+    (add smtp/pop server name, and so on)
+
+  o Mew 5.2.53 and later supports Emacs 21 or later (Meadow 2.10 or later).
+
+REQUIRED SOFTWARE
+-----------------
+
+  One of the Emacsens.
+
+  o Meadow 2.10 or later
+    (Multilingual enhancement to gnu Emacs with ADvantages Over Windows)
+
+    http://www.meadowy.org/meadow/dists/
+
+  o GNU Emacs for Windows NT and Windows 95/98  (NTEmacs)
+
+    http://www.gnu.org/software/emacs/windows/ntemacs.html
+    http://ntemacsjp.sourceforge.jp/
+
+    Before using Mew installer(mew.exe), you must set environment variable
+    "emacs_dir" like this:
+
+      [My Computer] -> [System Properties] -> [Advanced] ->
+        [Environment Variables] -> [New] ->
+
+        Variable name:  => emacs_dir
+        Variable value: => c:\emacs-21.4   (your NTEmacs path)
+
+
+HOW TO INSTALL
+--------------
+
+o Make HOME directory and set environment variable.
+
+    HOME  ... x:\homedir\someone
+    TZ    ... JST-9                (Japan)
+
+  and reboot your machine.
+
+o Type "mew"
+
+    > mew
+
+
+FAQ AND OTHER INFORMATION
+-------------------------
+
+  Mew Official Homepage :
+        http://www.Mew.org/
+  Mew on Win32 Project :
+        http://www.Mew.org/Win32/
+
+
+CONTACTING WIN32 MAINTAINER
+---------------------------
+
+  E-Mail: Shuichi KITAGUCHI <kit@ysnb.net>
