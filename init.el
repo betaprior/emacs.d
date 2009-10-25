@@ -675,6 +675,7 @@ in dired mode without it."
  "Add my keybindings for ido."
     (define-key ido-completion-map "\t" 'ido-next-match)
     (define-key ido-completion-map [(shift tab)] 'ido-prev-match)
+    (define-key ido-completion-map [backtab] 'ido-prev-match)
  )
 
 ;; (defvar ido-execute-command-cache nil)
@@ -1071,10 +1072,15 @@ With argument, do this that many times."
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
 (global-set-key "\C-cpe" 'paste-EOL)
 
-(defvar pdf-viewer "")
+;; TODO: figure out how to write this w/o all the copypasting
+(defvar TeX-output-view-style-commands)
 (if (eq system-type 'windows-nt)
-    (setq pdf-viewer "C:/Program Files/Ghostgum/gsview/gsview32.exe")
-  (setq pdf-viwer "evince")
+    (setq TeX-output-view-style-commands 
+	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("^html?$" "." "start \"\" %o")))
+	  )
+    (setq TeX-output-view-style-commands 
+	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'evince' %o") ("^html?$" "." "start \"\" %o")))
+	  )
 )
 
 (custom-set-variables
@@ -1082,7 +1088,7 @@ With argument, do this that many times."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(TeX-output-view-style (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("^html?$" "." "start \"\" %o"))))
+ '(TeX-output-view-style  TeX-output-view-style-commands)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(desktop-save-mode t)
  '(help-window-select t)
