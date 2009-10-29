@@ -149,6 +149,78 @@
 (global-set-key [(meta ?@)] 'mark-thing)
 
 
+;;{{{ select quotes/extend selection (M-S-8,M-8)
+(defun select-text-in-quote-balanced ()
+"Select text between the nearest left and right delimiters.
+Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
+ (interactive)
+ (let (b1 b2 ldelim rdelim delim-pairs rdpos)
+   (setq delim-pairs "<>()“”{}[]「」«»\"\"''‘’`\"")
+   (skip-chars-backward "^<(“{[「«\"'‘`")
+   (setq b1 (point))
+   (setq ldelim (char-before))
+   (setq rdpos (1+ (string-match (make-string 1 ldelim) delim-pairs)))
+   (setq rdelim (substring delim-pairs rdpos (1+ rdpos)))
+;;   (message "rdelim is %s." rdelim)
+   (skip-chars-forward (concat "^" rdelim))
+   (setq b2 (point))
+   (set-mark b1)
+   )
+ )
+
+(global-set-key (kbd "M-*") 'select-text-in-quote-balanced)
+
+(defun select-text-in-quote ()
+"Select text between the nearest left and right delimiters.
+Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
+ (interactive)
+ (let (b1 b2)
+   (skip-chars-backward "^<>(“{[「«\"'‘")
+   (setq b1 (point))
+   (skip-chars-forward "^<>)”}]」»\"'’")
+   (setq b2 (point))
+   (set-mark b1)
+   )
+ )
+
+;; by Nikolaj Schumacher, 2008-10-20. Released under GPL.
+(defun semnav-up (arg)
+  (interactive "p")
+  (when (nth 3 (syntax-ppss))
+    (if (> arg 0)
+        (progn
+          (skip-syntax-forward "^\"")
+          (goto-char (1+ (point)))
+          (decf arg))
+      (skip-syntax-backward "^\"")
+      (goto-char (1- (point)))
+      (incf arg)))
+  (up-list arg))
+
+;; by Nikolaj Schumacher, 2008-10-20. Released under GPL.
+(defun extend-selection (arg &optional incremental)
+  "Select the current word.
+Subsequent calls expands the selection to larger semantic unit."
+  (interactive (list (prefix-numeric-value current-prefix-arg)
+                     (or (and transient-mark-mode mark-active)
+                         (eq last-command this-command))))
+  (if incremental
+      (progn
+        (semnav-up (- arg))
+        (forward-sexp)
+        (mark-sexp -1))
+    (if (> arg 1)
+        (extend-selection (1- arg) t)
+      (if (looking-at "\\=\\(\\s_\\|\\sw\\)*\\_>")
+          (goto-char (match-end 0))
+        (unless (memq (char-before) '(?\) ?\"))
+          (forward-sexp)))
+      (mark-sexp -1))))
+
+(global-set-key (kbd "M-8") 'extend-selection)
+
+;;}}}
+
 ;; highlight symbol
 (add-to-list 'load-path "~/.emacs.d/elisp/highlight-symbol")
 (require 'highlight-symbol)
@@ -993,6 +1065,7 @@ With argument, do this that many times."
 )
 
 ;;{{{ ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
 (require 'ess-site)
 (setq ess-ask-for-ess-directory nil)
