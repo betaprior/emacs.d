@@ -1,3 +1,4 @@
+
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
 
 ;; Customize according to the machine
@@ -100,6 +101,8 @@
 (setq-default buffer-file-coding-system 'undecided-unix)
 ;; make woman not pop up a new frame
 (setq woman-use-own-frame nil)
+(setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
+
 
 ;; Misc. keybindings
 (global-set-key "\C-ci" 'indent-region)
