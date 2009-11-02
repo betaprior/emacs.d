@@ -1,4 +1,3 @@
-
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
 
 ;; Customize according to the machine
@@ -18,7 +17,15 @@
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp"))
 			load-path))
 
+;; start server
+(when (or (eq emacs-profile 'windows-1)
+	  (eq emacs-profile 'linux-1))
+  (server-start)
+)
+
+
 ;;{{{ `-- Interface / appearance settings
+
 (set-frame-height (selected-frame) 37)
 ;; Set the buffer size for Windows 
 ;; good defaults for 1280x768 desktop and double-level horizontal 
@@ -38,6 +45,13 @@
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
+
+
+(setq transient-mark-mode t)
+(column-number-mode 1)
+(require 'paren)
+(show-paren-mode 1)
+
 ;;}}}
 
 ; fix copy/paste in Linux?..
@@ -53,6 +67,7 @@
 (global-set-key (kbd "C-<tab>") 'other-window)
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
+
 (setq comment-style 'indent)
 (global-set-key (kbd "M-;") 'comment-dwim-line)
 (global-set-key (kbd "C-;") 'comment-dwim-line)
@@ -71,6 +86,7 @@
   (if (and (not (region-active-p)) (not (looking-at "[ \t]*$")))
       (comment-or-uncomment-region (line-beginning-position) (line-end-position))
     (comment-dwim arg)))
+
 ;;}}}
 
 
@@ -153,6 +169,7 @@
 
 
 ;;{{{ select quotes/extend selection (M-S-8,M-8)
+
 (defun select-text-in-quote-balanced ()
 "Select text between the nearest left and right delimiters.
 Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
@@ -237,6 +254,7 @@ Subsequent calls expands the selection to larger semantic unit."
 
 ;; folding mode
 (require 'folding)
+(folding-mode-add-find-file-hook)
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
@@ -249,6 +267,22 @@ Subsequent calls expands the selection to larger semantic unit."
 (global-set-key (kbd "<f7>")      'fold-dwim-toggle)
 (global-set-key (kbd "<M-f7>")    'fold-dwim-hide-all)
 (global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
+
+
+(defun indent-or-toggle-fold () ; doesn't work well w/ python?
+  (interactive)
+  (if (minibufferp)
+      (ido-next-match)
+    (let ((start-point (point)))
+      (indent-according-to-mode)
+      (if (eq start-point (point))
+	  (fold-dwim-toggle)))))
+
+(add-hook 'folding-mode-hook
+	  '(lambda ()
+	     (define-key folding-mode-map [(tab)]
+                              'indent-or-toggle-fold)))
+
 
 
 ;; speedbar
@@ -282,12 +316,15 @@ Subsequent calls expands the selection to larger semantic unit."
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 
-;; Autohotkey (Windows-specific)
-;; choose ahk-mode rather than ahk-org mode:
-(when (eq emacs-profile 'windows-1)
-  (setq ahk-syntax-directory "C:/Program Files/AutoHotkey/Extras/Editors/Syntax/")
-  (add-to-list 'auto-mode-alist '("\\.ahk$" . ahk-mode))
-  (autoload 'ahk-mode "ahk-mode"))
+
+(when (eq system-type 'windows-nt)
+  (require 'cygwin-mount)
+  (cygwin-mount-activate)
+  (require 'w32-symlinks)
+ ;(require 'setup-cygwin)
+  )
+
+
 
 ;; Make dired sort case-insensitive on Windows
 (when (eq system-type 'windows-nt)
@@ -298,19 +335,9 @@ Subsequent calls expands the selection to larger semantic unit."
 					'(links)) '(uid)))
 )
 
-(when (eq system-type 'windows-nt)
-  (require 'cygwin-mount)
-  (cygwin-mount-activate)
-  (require 'w32-symlinks)
- ;(require 'setup-cygwin)
-  )
-
-(when (or (eq emacs-profile 'windows-1)
-	  (eq emacs-profile 'linux-1))
-  (server-start)
-)
 
 ;;{{{ `-- Explorer here / terminal here functions
+
 ; Windows explorer to go to the file in the current buffer
 ;; (defun explorer-here ()  
 ;;   "Call when editing a file in a buffer. Open windows explorer in the current directory and select the current file"  
@@ -468,6 +495,7 @@ in dired mode without it."
   (fill-paragraph nil)))
 ;;}}}
 
+;;{{{ search enhancements:
 ;; Use isearch+ (cf http://www.emacswiki.org/emacs/IsearchPlus)
 (eval-after-load "isearch" '(require 'isearch+))
    ; avoid automatic mark that persists when terminating search w/ arrow keys:
@@ -506,7 +534,7 @@ in dired mode without it."
    (substitute-key-definition 'isearch-yank-word-or-char 
 			      'my-isearch-yank-word-or-char-from-beginning
 			      isearch-mode-map)))
-
+;;}}}
 
 ;; turn on view mode for read-only files
 (setq view-read-only t)
@@ -555,17 +583,32 @@ in dired mode without it."
 ; (setq load-path (append load-path '("/usr/share/emacs/22.1/lisp/calendar")))
 ; (require 'tramp)
 
-;; old matlab mode stuff:
-; (autoload 'matlab-mode "~/emacs.d/matlab.el" "Enter Matlab mode." t)
-; (setq auto-mode-alist (cons '("\\.m\\'" . matlab-mode) auto-mode-alist))
-; (autoload 'matlab-shell "~/emacs.d/matlab.el" "Interactive Matlab mode." t)
-; (setq load-path (append load-path '("~/.emacs.d"))) 
 
-;; Matlab mode stuff as per Matlab (windows) instructions:
-;(add-to-list 'load-path "~/.emacs.d/elisp/matlab-emacs/") 
 
+;;{{{ Language modes: scheme/ahk/mathematica/matlab
+
+;; needed just for Matlab(?)  Part of ECB:
 (load-file (expand-file-name 
 	    "~/.emacs.d/elisp/cedet-1.0pre4/common/cedet.el"))
+
+;; Scheme:
+(when (eq emacs-profile 'windows-1)
+  (setq scheme-program-name "C:/Program-Files/MzScheme/mzscheme")
+) ; had to create junction via junction c:\Program-Files "c:\Program Files"
+(require 'quack)
+
+(setq auto-mode-alist
+        (cons '("\\.sc$" . scheme-mode)
+                auto-mode-alist))
+
+
+;; Autohotkey (Windows-specific)
+;; choose ahk-mode rather than ahk-org mode:
+(when (eq emacs-profile 'windows-1)
+  (setq ahk-syntax-directory "C:/Program Files/AutoHotkey/Extras/Editors/Syntax/")
+  (add-to-list 'auto-mode-alist '("\\.ahk$" . ahk-mode))
+  (autoload 'ahk-mode "ahk-mode"))
+
 
 ;; mathematica mode
 (load-file "~/.emacs.d/elisp/mathematica.el")
@@ -578,6 +621,17 @@ in dired mode without it."
   (setq mathematica-command-line "/usr/local/bin/math")
 )
 
+
+
+;; Matlab mode:
+;; old matlab mode stuff:
+; (autoload 'matlab-mode "~/emacs.d/matlab.el" "Enter Matlab mode." t)
+; (setq auto-mode-alist (cons '("\\.m\\'" . matlab-mode) auto-mode-alist))
+; (autoload 'matlab-shell "~/emacs.d/matlab.el" "Interactive Matlab mode." t)
+; (setq load-path (append load-path '("~/.emacs.d"))) 
+
+;; Matlab mode stuff as per Matlab (windows) instructions:
+;(add-to-list 'load-path "~/.emacs.d/elisp/matlab-emacs/") 
 
 (setq load-path (cons "~/.emacs.d/elisp/matlab-emacs/" load-path))
 
@@ -602,38 +656,7 @@ in dired mode without it."
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
 ; ~matlab-mode-stuff
 
-(setq transient-mark-mode t)
-(column-number-mode 1)
-(require 'paren)
-(show-paren-mode 1)
-
-;;dark room:
-;; (require 'martin-darkroom)
-
-;;word counting:
-(defun wc ()
-  (interactive)
-  (message "Word count: %s" (how-many "\\w+" (point-min) (point-max))))
-
-;;  Allow ido to open recent files
-(require 'recentf)
-(recentf-mode 1)
-(setq recentf-max-saved-items 500)
-(setq recentf-max-menu-items 60)
-
-(defun ido-choose-from-recentf ()
- "Use ido to select a recently opened file from the `recentf-list'"
- (interactive)
- (let ((home (expand-file-name (getenv "HOME"))))
-   (find-file
-    (ido-completing-read "Recentf open: "
-                         (mapcar (lambda (path)
-                                   (replace-regexp-in-string home "~" path))
-                                 recentf-list)
-                         nil t))))
-
-(global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
-;;~ end set ido to do recent files
+;;}}}
 
 ;;{{{ LaTex/AucTeX settings
 (require 'tex-site)
@@ -700,6 +723,109 @@ in dired mode without it."
 		      )))
 
 ;;}}}~ end LaTeX/AucTeX customizations
+
+;;{{{ ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
+(require 'ess-site)
+(setq ess-ask-for-ess-directory nil)
+(setq ess-local-process-name "R")
+(setq ansi-color-for-comint-mode 'filter)
+(setq comint-prompt-read-only t)
+(setq comint-scroll-to-bottom-on-input t)
+(setq comint-scroll-to-bottom-on-output t)
+(setq comint-move-point-for-output t)
+;; Do not echo the evaluated commands into the transcript (R process window)
+;; (the output is going to be displayed, however)
+(setq  ess-eval-visibly-p nil)
+
+;; This stuff (stolen from emacs wiki?) evaluates things via shift-return
+(defun my-ess-start-R ()
+  (interactive)
+  (if (not (member "*R*" (mapcar (function buffer-name) (buffer-list))))
+      (progn
+	(delete-other-windows)
+	(setq w1 (selected-window))
+	(setq w1name (buffer-name))
+	(setq w2 (split-window w1))
+	(R)
+	(set-window-buffer w2 "*R*")
+	(set-window-buffer w1 w1name))))
+
+(defun my-ess-eval ()
+  (interactive)
+  (my-ess-start-R)
+  (if (and transient-mark-mode mark-active)
+      (call-interactively 'ess-eval-region-and-go)
+    (call-interactively 'ess-eval-line-and-go)))
+
+(add-hook 'ess-mode-hook
+	  '(lambda()
+	     (local-set-key [(shift return)] 'my-ess-eval)))
+
+(add-hook 'ess-mode-hook
+	  '(lambda()
+	     (setq fill-column 78)))
+
+(add-hook 'inferior-ess-mode-hook
+	  '(lambda()
+	     (local-set-key [C-up] 'comint-previous-input)
+	     (local-set-key [C-down] 'comint-next-input)))
+
+;; Linking ESS with AucTex
+
+(add-to-list 'auto-mode-alist '("\\.Rnw\\'" . Rnw-mode))
+(add-to-list 'auto-mode-alist '("\\.Snw\\'" . Snw-mode))
+(setq TeX-file-extensions
+     '("Snw" "Rnw" "nw" "tex" "sty" "cls" "ltx" "texi" "texinfo"))
+(add-hook 'Rnw-mode-hook
+	  (lambda ()
+	    (add-to-list 'TeX-command-list
+			 '("Sweave" "R CMD Sweave %s"
+			   TeX-run-command nil (latex-mode) :help "Run Sweave") t)
+;			 '("LatexSweave" "%l %(mode) \\input{%s}"
+
+	    (add-to-list 'TeX-command-list
+			 '("LatexSweave" "%l %(mode) %s"
+			   TeX-run-TeX nil (latex-mode) :help "Run Latex after Sweave") t)
+	    (setq TeX-command-default "Sweave")))
+
+(add-hook 'Rnw-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
+(add-hook 'Rnw-mode-hook '(lambda () (setq fill-column 77)))
+(setq-default fill-column 77)
+
+;;}}} END ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;dark room:
+;; (require 'martin-darkroom)
+
+;;word counting:
+(defun wc ()
+  (interactive)
+  (message "Word count: %s" (how-many "\\w+" (point-min) (point-max))))
+
+;;  Allow ido to open recent files
+(require 'recentf)
+(recentf-mode 1)
+(setq recentf-max-saved-items 500)
+(setq recentf-max-menu-items 60)
+
+(defun ido-choose-from-recentf ()
+ "Use ido to select a recently opened file from the `recentf-list'"
+ (interactive)
+ (let ((home (expand-file-name (getenv "HOME"))))
+   (find-file
+    (ido-completing-read "Recentf open: "
+                         (mapcar (lambda (path)
+                                   (replace-regexp-in-string home "~" path))
+                                 recentf-list)
+                         nil t))))
+
+(global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
+;;~ end set ido to do recent files
+
+
 
 ;; uniquify settings
 (require 'uniquify)
@@ -1069,77 +1195,7 @@ With argument, do this that many times."
   (setq shell-file-name explicit-shell-file-name)
 )
 
-;;{{{ ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
-(require 'ess-site)
-(setq ess-ask-for-ess-directory nil)
-(setq ess-local-process-name "R")
-(setq ansi-color-for-comint-mode 'filter)
-(setq comint-prompt-read-only t)
-(setq comint-scroll-to-bottom-on-input t)
-(setq comint-scroll-to-bottom-on-output t)
-(setq comint-move-point-for-output t)
-;; Do not echo the evaluated commands into the transcript (R process window)
-;; (the output is going to be displayed, however)
-(setq  ess-eval-visibly-p nil)
-
-;; This stuff (stolen from emacs wiki?) evaluates things via shift-return
-(defun my-ess-start-R ()
-  (interactive)
-  (if (not (member "*R*" (mapcar (function buffer-name) (buffer-list))))
-      (progn
-	(delete-other-windows)
-	(setq w1 (selected-window))
-	(setq w1name (buffer-name))
-	(setq w2 (split-window w1))
-	(R)
-	(set-window-buffer w2 "*R*")
-	(set-window-buffer w1 w1name))))
-
-(defun my-ess-eval ()
-  (interactive)
-  (my-ess-start-R)
-  (if (and transient-mark-mode mark-active)
-      (call-interactively 'ess-eval-region-and-go)
-    (call-interactively 'ess-eval-line-and-go)))
-
-(add-hook 'ess-mode-hook
-	  '(lambda()
-	     (local-set-key [(shift return)] 'my-ess-eval)))
-
-(add-hook 'ess-mode-hook
-	  '(lambda()
-	     (setq fill-column 78)))
-
-(add-hook 'inferior-ess-mode-hook
-	  '(lambda()
-	     (local-set-key [C-up] 'comint-previous-input)
-	     (local-set-key [C-down] 'comint-next-input)))
-
-;; Linking ESS with AucTex
-
-(add-to-list 'auto-mode-alist '("\\.Rnw\\'" . Rnw-mode))
-(add-to-list 'auto-mode-alist '("\\.Snw\\'" . Snw-mode))
-(setq TeX-file-extensions
-     '("Snw" "Rnw" "nw" "tex" "sty" "cls" "ltx" "texi" "texinfo"))
-(add-hook 'Rnw-mode-hook
-	  (lambda ()
-	    (add-to-list 'TeX-command-list
-			 '("Sweave" "R CMD Sweave %s"
-			   TeX-run-command nil (latex-mode) :help "Run Sweave") t)
-;			 '("LatexSweave" "%l %(mode) \\input{%s}"
-
-	    (add-to-list 'TeX-command-list
-			 '("LatexSweave" "%l %(mode) %s"
-			   TeX-run-TeX nil (latex-mode) :help "Run Latex after Sweave") t)
-	    (setq TeX-command-default "Sweave")))
-
-(add-hook 'Rnw-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
-(add-hook 'Rnw-mode-hook '(lambda () (setq fill-column 77)))
-(setq-default fill-column 77)
-
-;;}}} END ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Macros:
 (fset 'paste-BOL
@@ -1166,16 +1222,18 @@ With argument, do this that many times."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(TeX-output-view-style TeX-output-view-style-commands)
+ '(TeX-output-view-style TeX-output-view-style-commands t)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(desktop-save-mode t)
  '(help-window-select t)
- '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2008a/bin/glnxa64/mlint")))
+ '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
  '(org-hide-leading-stars t)
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)
+ '(quack-programs (quote ("C:/Program Files/MzScheme/mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
+ '(safe-local-variable-values (quote ((folded-file . t))))
  '(scroll-preserve-screen-position 1)
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
@@ -1198,3 +1256,8 @@ With argument, do this that many times."
 ; -------------------------
 
 ; (require 'frame-restore) ; don't work for me
+
+
+;; Local variables:
+;; folded-file: t
+;; end:
