@@ -1229,7 +1229,7 @@ With argument, do this that many times."
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(desktop-save-mode t)
  '(help-window-select t)
- '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe")))
+ '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
  '(org-hide-leading-stars t)
