@@ -23,6 +23,8 @@
   (server-start)
 )
 
+;; auto-fill defaults:
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
 
 ;;{{{ `-- Interface / appearance settings
 
@@ -310,6 +312,7 @@ Subsequent calls expands the selection to larger semantic unit."
 (global-set-key "\C-cq" 'org-iswitchb)
 (setq org-todo-keywords
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
+(add-hook 'org-mode-hook 'turn-on-auto-fill)
 
 
 
