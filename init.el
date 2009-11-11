@@ -1225,7 +1225,7 @@ With argument, do this that many times."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(TeX-output-view-style TeX-output-view-style-commands t)
+ '(TeX-output-view-style TeX-output-view-style-commands) ; ..commands t)?
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(desktop-save-mode t)
  '(help-window-select t)
