@@ -394,7 +394,7 @@ in dired mode without it."
 
 ;;}}}
 
-;; swap windows (steve yegge)
+;; swap / transpose windows (steve yegge)
 (defun swap-windows ()
  "If you have 2 windows, it swaps them." (interactive) (cond ((not (= (count-windows) 2)) (message "You need exactly 2 windows to do this."))
  (t
@@ -1014,6 +1014,7 @@ in dired mode without it."
 
 
 ;;{{{ -- Andrei's magic line-dragging code --------------------------------------
+
 (defun move-line (&optional n)
  "Move current line N (1) lines up/down leaving point in place."
  (interactive "p")
@@ -1039,7 +1040,7 @@ in dired mode without it."
 
 (global-set-key (kbd "S-M-<down>") 'move-line-down) 
 (global-set-key (kbd "S-M-<up>") 'move-line-up)
- 
+
 ;;}}}~end Andrei's magic line-dragging code -------------------------------------
 
 ;; -- Jump by n lines up/down:
@@ -1225,7 +1226,8 @@ With argument, do this that many times."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(TeX-output-view-style TeX-output-view-style-commands) ; ..commands t)?
+ '(TeX-electric-escape t)
+ '(TeX-output-view-style TeX-output-view-style-commands)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(desktop-save-mode t)
  '(help-window-select t)
