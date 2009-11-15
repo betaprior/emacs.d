@@ -128,6 +128,8 @@
 (global-set-key [(control super f3)] 'explorer-here)
 (global-set-key [(control f4)] 'terminal-here)
 (global-set-key [(control super f4)] 'terminal-here)
+; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
+(global-set-key [(control c) (control \\)] 'toggle-input-method)
 
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
@@ -170,15 +172,15 @@
 (global-set-key [(meta ?@)] 'mark-thing)
 
 
-;;{{{ select quotes/extend selection (M-S-8,M-8)
+;;{{{ select quotes/extend selection/do stuff with region (M-S-8,M-8,M-S-7)
 
-(defun select-text-in-quote-balanced ()
+(defun select-text-in-quote-balanced-base ()
 "Select text between the nearest left and right delimiters.
-Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
+Delimiters are paired characters: ()[]$$<>«»“”‘’「」, including \"\"."
  (interactive)
  (let (b1 b2 ldelim rdelim delim-pairs rdpos ldstring)
-   (setq delim-pairs "<>()“”{}[]「」«»\"\"''‘’`\"")
-   (skip-chars-backward "^<(“{[「«\"'‘`")
+   (setq delim-pairs "<>()“”{}[]$$「」«»\"\"''‘’`\"")
+   (skip-chars-backward "^<(“{[$「«\"'‘`")
    (setq b1 (point))
    (setq ldelim (char-before))
    (setq ldstring (make-string 1 ldelim))
@@ -192,7 +194,28 @@ Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
    )
  )
 
+(defun adjacent-to-matched-delims-p (start end)
+  "if start and end are near matched delims, mark region including delims"
+  (let (ch1 ch2)
+    (when (and (char-after end) (char-before start))
+      (setq ch2 (char-to-string (char-after end)))
+      (setq ch1 (char-to-string (char-before start)))
+      (matched-delims-p ch1 ch2))))
+
+(defun select-text-in-quote-balanced ()
+  "Select text between the nearest left and right delimiters.
+   Delimiters are paired characters: ()[]$$<>«»“”‘’「」, including \"\"."
+  (interactive)
+   (if (and transient-mark-mode mark-active 
+	    (adjacent-to-matched-delims-p (region-beginning) (region-end)))
+       (progn
+	 (goto-char (1+ (region-end)))
+	 (set-mark (- (region-beginning) 1)))
+     (select-text-in-quote-balanced-base)
+     ))
+
 (global-set-key (kbd "M-*") 'select-text-in-quote-balanced)
+
 
 (defun select-text-in-quote ()
 "Select text between the nearest left and right delimiters.
@@ -243,6 +266,45 @@ Subsequent calls expands the selection to larger semantic unit."
 
 (global-set-key (kbd "M-8") 'extend-selection)
 
+(defun matched-delims-p (chstr1 chstr2)
+  "Returns t if the two arguments are 1-char strings corr to ordered matched delimiters."
+;  (interactive)
+  (let (delim-pairs ldelim)
+    (setq delim-pairs "<>()“”{}[]$$「」«»\"\"''‘’`\"")
+    (setq ldelim (string-match chstr1 delim-pairs))
+    (if ldelim
+	(string= chstr2 (substring delim-pairs (1+ ldelim) (+ 2 ldelim)))
+      nil)))
+
+
+(defun add-before-after-region (start end)
+  "Surrounds region with things. If {}, \"\", etc is given as
+'before' string, it will surround the region with delims w/o prompting for 'after' string.  The special (**) 'before' string will surround the regin with (* and *) -- comments in OCaml and Mathematica." 
+  (interactive "r")
+  (let (before after pos2) 
+    (setq before (read-from-minibuffer "'Before' string:"))
+    (unless (or (and (eq (length before) 2)
+	     (let ((ch1 (substring before 0 1)) (ch2 (substring before 1 2)))
+	       (if (matched-delims-p ch1 ch2)
+		   (progn
+		     (setq before ch1)
+		     (setq after ch2)
+		     t))))
+	     (if (string= before "(**)") ;hack for ocaml and mathematica
+		 (progn
+		   (setq before "(*")
+		   (setq after "*)")
+		   t)))
+	(setq after (read-from-minibuffer "'After' string:")))
+    (setq pos2 (+ end (length before)))
+    (goto-char (region-beginning)) (insert before)
+    (goto-char pos2) (insert after)
+    )
+  )
+
+(global-set-key (kbd "M-&") 'add-before-after-region)
+
+
 ;;}}}
 
 ;; highlight symbol
@@ -271,13 +333,19 @@ Subsequent calls expands the selection to larger semantic unit."
 (global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
 
 
+(defun check-folding-line (line)
+  "Checks if there's an evidence that this line is a start of folded
+block -- if there are folding markups or if it matches outline regex"
+  (or (string-match "{{{" line) (string-match "}}}" line)))
+
 (defun indent-or-toggle-fold () ; doesn't work well w/ python?
   (interactive)
   (if (minibufferp)
       (ido-next-match)
     (let ((start-point (point)))
       (indent-according-to-mode)
-      (if (eq start-point (point))
+      (if (and (eq start-point (point)) 
+	       (check-folding-line (thing-at-point 'line)))
 	  (fold-dwim-toggle)))))
 
 (add-hook 'folding-mode-hook
@@ -675,6 +743,11 @@ in dired mode without it."
 
 (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
+;;(define-key tex-mode-map [(control \\)] 'TeX-electric-macro)
+;; (add-hook 'TeX-mode-hook
+;; 	  '(lambda ()
+;; 	     (define-key tex-mode-map [(control \\)] 'TeX-electric-macro)))
+
 
 (require 'abbrev)
 (setq save-abbrevs t) 
