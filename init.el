@@ -730,6 +730,7 @@ in dired mode without it."
 ;;}}}
 
 ;;{{{ LaTex/AucTeX settings
+
 (require 'tex-site)
 (when (eq system-type 'windows-nt)
      (require 'tex-mik))
@@ -743,10 +744,9 @@ in dired mode without it."
 
 (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
-;;(define-key tex-mode-map [(control \\)] 'TeX-electric-macro)
-;; (add-hook 'TeX-mode-hook
-;; 	  '(lambda ()
-;; 	     (define-key tex-mode-map [(control \\)] 'TeX-electric-macro)))
+(add-hook 'TeX-mode-hook
+	  '(lambda ()
+	     (define-key TeX-mode-map [(control \\)] 'TeX-electric-macro)))
 
 
 (require 'abbrev)
