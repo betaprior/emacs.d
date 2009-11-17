@@ -312,6 +312,16 @@ Subsequent calls expands the selection to larger semantic unit."
 (require 'highlight-symbol)
 (global-set-key [(meta f3)] 'highlight-symbol-at-point)
 
+;; From Xah Lee's page:
+;; temporarily set fill-column to a huge number (point-max); 
+;; thus, effectively, replaces all new line chars by spaces in
+;; current paragraph.
+(defun remove-line-breaks () 
+  "Remove line endings in a paragraph."
+  (interactive) 
+  (let ((fill-column (point-max))) 
+    (fill-paragraph nil)))
+
 ;; (require 'chop)
 ;; (global-set-key "\M-p" 'chop-move-up)
 ;; (global-set-key "\M-n" 'chop-move-down)
