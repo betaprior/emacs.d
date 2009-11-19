@@ -271,6 +271,7 @@ Subsequent calls expands the selection to larger semantic unit."
 ;  (interactive)
   (let (delim-pairs ldelim)
     (setq delim-pairs "<>()“”{}[]$$「」«»\"\"''‘’`\"")
+    (if (string= chstr1 "[") (setq chstr1 (concat "\\" chstr1)))
     (setq ldelim (string-match chstr1 delim-pairs))
     (if ldelim
 	(string= chstr2 (substring delim-pairs (1+ ldelim) (+ 2 ldelim)))
