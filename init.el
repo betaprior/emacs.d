@@ -1292,6 +1292,9 @@ With argument, do this that many times."
 (fset 'paste-EOL
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
 (global-set-key "\C-cpe" 'paste-EOL)
+(fset 'square-parens-and-sincos
+   [?\M-% ?\[ return ?\( return ?! up up up up up up up ?\M-< ?\M-% ?\] return ?\) return ?! ?\M-< ?\M-% ?C ?o ?s return ?c ?o ?s return ?! ?\M-< ?\M-% ?S ?i ?n return ?s ?i ?n return ?! ?\M-< ?\M-% ?G backspace])
+
 
 ;; TODO: figure out how to write this w/o all the copypasting
 (defvar TeX-output-view-style-commands)
