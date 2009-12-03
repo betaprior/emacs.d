@@ -910,8 +910,9 @@ in dired mode without it."
                          nil t))))
 
 (global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
+(add-hook 'find-file-hook '(lambda () (progn (recentf-save-list)
+						 (message nil))))
 ;;~ end set ido to do recent files
-
 
 
 ;; uniquify settings
@@ -952,6 +953,7 @@ in dired mode without it."
 
 
 ;;{{{ ido settings:
+
 (require 'ido)
 (ido-mode t)
 (setq ido-enable-flex-matching t)
@@ -1350,4 +1352,5 @@ With argument, do this that many times."
 
 ;; Local variables:
 ;; folded-file: t
+
 ;; end:
