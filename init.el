@@ -347,7 +347,7 @@ Subsequent calls expands the selection to larger semantic unit."
 (defun check-folding-line (line)
   "Checks if there's an evidence that this line is a start of folded
 block -- if there are folding markups or if it matches outline regex"
-  (or (string-match "{{{" line) (string-match "}}}" line)))
+  (or (string-match "{{{\\|}}}" line) (string-match outline-regexp line)))
 
 (defun indent-or-toggle-fold () ; doesn't work well w/ python?
   (interactive)
@@ -697,6 +697,9 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.mma\\'" . mathematica-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
+(add-hook 'mathematica-mode-hook
+  '(lambda ()
+    (set (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
 
 (if (eq emacs-profile 'windows-1)
   (setq mathematica-command-line "C:/Program Files/Wolfram Research/Mathematica/7.0/math")
