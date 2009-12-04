@@ -7,7 +7,7 @@
 	((string= hostname "matroskin") 'linux-1)
 	((string= hostname "leo-fujitsu-xp") 'linux-gateway)
 	(t 'linux-default))
-)
+  )
 
 
 ;; Increase the memory reserved
@@ -21,7 +21,7 @@
 (when (or (eq emacs-profile 'windows-1)
 	  (eq emacs-profile 'linux-1))
   (server-start)
-)
+  )
 
 ;; auto-fill defaults:
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
@@ -37,12 +37,12 @@
 ;; (add-to-list 'default-frame-alist '(height . 47))
 ;; (add-to-list 'default-frame-alist '(width . 90))
 
-;(set-default-font "Bitstream Vera Sans Mono-10")
-;(set-default-font "Consolas-11")
+					;(set-default-font "Bitstream Vera Sans Mono-10")
+					;(set-default-font "Consolas-11")
 (if (eq emacs-profile 'linux-1)
     (set-default-font "DejaVu Sans Mono-11")
   (set-default-font "DejaVu Sans Mono-10")
-)
+  )
 (setq inhibit-startup-message t)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -56,13 +56,13 @@
 
 ;;}}}
 
-; fix copy/paste in Linux?..
+					; fix copy/paste in Linux?..
 (when (eq emacs-profile 'linux-1)
   (setq x-select-enable-clipboard t)
   (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-)
+  )
 
-; Switch between windows using shift-arrows
+					; Switch between windows using shift-arrows
 (windmove-default-keybindings)
 (global-set-key (kbd "C-S-p") 'windmove-up)
 (global-set-key (kbd "C-S-n") 'windmove-down)
@@ -92,7 +92,7 @@
 ;;}}}
 
 
-; Make left window key act as super
+					; Make left window key act as super
 (setq w32-lwindow-modifier 'super)
 
 ;; Autosave tweaks
@@ -124,6 +124,9 @@
 
 ;; Misc. keybindings
 (global-set-key "\C-ci" 'indent-region)
+(global-set-key "\C-c\C-i" 'imenu)
+(global-set-key "\C-co" 'occur)
+(global-set-key [(control c) (control o)] 'occur)
 (global-set-key [(control f3)] 'explorer-here)
 (global-set-key [(control super f3)] 'explorer-here)
 (global-set-key [(control f4)] 'terminal-here)
@@ -329,12 +332,12 @@ Subsequent calls expands the selection to larger semantic unit."
 
 ;; folding mode
 (require 'folding)
-(folding-mode-add-find-file-hook)
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
 (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
-
+(if (load "folding" 'nomessage 'noerror)
+             (folding-mode-add-find-file-hook))
 
 
 
@@ -359,10 +362,25 @@ block -- if there are folding markups or if it matches outline regex"
 	       (check-folding-line (thing-at-point 'line)))
 	  (fold-dwim-toggle)))))
 
+
+(defun toggle-fold-or-indent () ; doesn't work well w/ python?
+  (interactive)
+  (if (minibufferp)
+      (ido-next-match)
+    (if (check-folding-line (thing-at-point 'line))
+	  (fold-dwim-toggle)
+      (indent-according-to-mode))))
+
 (add-hook 'folding-mode-hook
 	  '(lambda ()
 	     (define-key folding-mode-map [(tab)]
-                              'indent-or-toggle-fold)))
+	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+(add-hook 'outline-minor-mode-hook 	
+	  '(lambda ()
+	     (define-key outline-minor-mode-map [(tab)]
+	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+
+(global-set-key [(control c) tab]  'indent-according-to-mode)
 
 
 
@@ -693,13 +711,21 @@ in dired mode without it."
 
 
 ;; mathematica mode
-(load-file "~/.emacs.d/elisp/mathematica.el")
-(setq auto-mode-alist (append '(("\\.mma\\'" . mathematica-mode))
+;; (load-file "~/.emacs.d/elisp/mathematica.el")
+;; (setq auto-mode-alist (append '(("\\.mma\\'" . mathematica-mode))
+(load-file "~/.emacs.d/elisp/mma.el")
+(setq auto-mode-alist (append '(("\\.mma\\'" . mma-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
+<<<<<<< HEAD:init.el
 (add-hook 'mathematica-mode-hook
   (lambda ()
     (setq (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
+=======
+(add-hook 'mma-mode-hook
+  '(lambda ()
+    (set (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
+>>>>>>> 270fab431be06d8bcdb8f931a7b38d8f0c0cc685:init.el
 
 (if (eq emacs-profile 'windows-1)
   (setq mathematica-command-line "C:/Program Files/Wolfram Research/Mathematica/7.0/math")
@@ -1357,5 +1383,5 @@ With argument, do this that many times."
 
 ;; Local variables:
 ;; folded-file: t
-
 ;; end:
+
