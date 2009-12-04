@@ -362,12 +362,12 @@ block -- if there are folding markups or if it matches outline regex"
 	  (fold-dwim-toggle)))))
 
 
-(defun toggle-fold-or-indent () ; doesn't work well w/ python?
+(defun toggle-fold-or-indent () ;backward char o/w at end of ellipsis toggle fails
   (interactive)
   (if (minibufferp)
       (ido-next-match)
     (if (check-folding-line (thing-at-point 'line))
-	  (fold-dwim-toggle)
+	(progn (backward-char) (fold-dwim-toggle))
       (indent-according-to-mode))))
 
 (add-hook 'folding-mode-hook
@@ -716,7 +716,7 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.mma\\'" . mma-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
-(setq mma-outline-regexp "^\\w+\\[.*\\][^;\n]*:=\\|^\\w+::usage\\|^\\w+\\[[^;\n]+\n?[^;\n]+\\]\\(?:.*/;.*\\|[^;]*\\)\\(?:\n[ \t:]+.*\\)?:=") 
+(setq mma-outline-regexp "^\\w+\\[.*\\][^;\n]*:=\\|^\\w+::usage\\|^\\w+\\[[^;\n]+\n?[^;\n]+\\]\\(?:.*/;.*\\|[^;]*\\)\\(?:\n[ \t:]+.*\\)?:=\\|Begin\\[") 
 ;; match foo[], foo[x_] := (not foo[x];), foo::usage, 
 ;; foo[x_(opt \n for long list)](opt /; bar(opt \n)) :=
 (add-hook 'mma-mode-hook
