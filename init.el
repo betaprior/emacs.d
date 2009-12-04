@@ -308,7 +308,6 @@ Subsequent calls expands the selection to larger semantic unit."
 
 (global-set-key (kbd "M-&") 'add-before-after-region)
 
-
 ;;}}}
 
 ;; highlight symbol
@@ -346,7 +345,7 @@ Subsequent calls expands the selection to larger semantic unit."
 (global-set-key (kbd "<M-f7>")    'fold-dwim-hide-all)
 (global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
 
-
+;; useful to check: (check-folding-line (thing-at-point 'line))
 (defun check-folding-line (line)
   "Checks if there's an evidence that this line is a start of folded
 block -- if there are folding markups or if it matches outline regex"
@@ -717,9 +716,13 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.mma\\'" . mma-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
+(setq mma-outline-regexp "^\\w+\\[.*\\][^;\n]*:=\\|^\\w+::usage\\|^\\w+\\[[^;\n]+\n?[^;\n]+\\]\\(?:.*/;.*\\|[^;]*\\)\\(?:\n[ \t:]+.*\\)?:=") 
+;; match foo[], foo[x_] := (not foo[x];), foo::usage, 
+;; foo[x_(opt \n for long list)](opt /; bar(opt \n)) :=
 (add-hook 'mma-mode-hook
   '(lambda ()
-    (set (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
+    (set (make-local-variable 'outline-regexp) mma-outline-regexp)))
+
 
 (if (eq emacs-profile 'windows-1)
   (setq mathematica-command-line "C:/Program Files/Wolfram Research/Mathematica/7.0/math")
