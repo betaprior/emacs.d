@@ -595,6 +595,7 @@ in dired mode without it."
 ;;}}}
 
 ;;{{{ search enhancements:
+
 ;; Use isearch+ (cf http://www.emacswiki.org/emacs/IsearchPlus)
 (eval-after-load "isearch" '(require 'isearch+))
    ; avoid automatic mark that persists when terminating search w/ arrow keys:
@@ -633,6 +634,7 @@ in dired mode without it."
    (substitute-key-definition 'isearch-yank-word-or-char 
 			      'my-isearch-yank-word-or-char-from-beginning
 			      isearch-mode-map)))
+
 ;;}}}
 
 ;; turn on view mode for read-only files
@@ -722,6 +724,7 @@ in dired mode without it."
 (add-hook 'mma-mode-hook
   '(lambda ()
     (set (make-local-variable 'outline-regexp) mma-outline-regexp)))
+
 
 
 (if (eq emacs-profile 'windows-1)
@@ -1381,3 +1384,4 @@ With argument, do this that many times."
 ;; Local variables:
 ;; folded-file: t
 ;; end:
+
