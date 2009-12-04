@@ -698,8 +698,8 @@ in dired mode without it."
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
 (add-hook 'mathematica-mode-hook
-  '(lambda ()
-    (set (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
+  (lambda ()
+    (setq (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
 
 (if (eq emacs-profile 'windows-1)
   (setq mathematica-command-line "C:/Program Files/Wolfram Research/Mathematica/7.0/math")
