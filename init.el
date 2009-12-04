@@ -308,7 +308,6 @@ Subsequent calls expands the selection to larger semantic unit."
 
 (global-set-key (kbd "M-&") 'add-before-after-region)
 
-
 ;;}}}
 
 ;; highlight symbol
@@ -596,6 +595,7 @@ in dired mode without it."
 ;;}}}
 
 ;;{{{ search enhancements:
+
 ;; Use isearch+ (cf http://www.emacswiki.org/emacs/IsearchPlus)
 (eval-after-load "isearch" '(require 'isearch+))
    ; avoid automatic mark that persists when terminating search w/ arrow keys:
@@ -634,6 +634,7 @@ in dired mode without it."
    (substitute-key-definition 'isearch-yank-word-or-char 
 			      'my-isearch-yank-word-or-char-from-beginning
 			      isearch-mode-map)))
+
 ;;}}}
 
 ;; turn on view mode for read-only files
@@ -717,15 +718,10 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.mma\\'" . mma-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
-<<<<<<< HEAD:init.el
-(add-hook 'mathematica-mode-hook
-  (lambda ()
-    (setq (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
-=======
 (add-hook 'mma-mode-hook
   '(lambda ()
     (set (make-local-variable 'outline-regexp) "\\w+\\[.*\\] *:=\\|\\w+::usage")))
->>>>>>> 270fab431be06d8bcdb8f931a7b38d8f0c0cc685:init.el
+
 
 (if (eq emacs-profile 'windows-1)
   (setq mathematica-command-line "C:/Program Files/Wolfram Research/Mathematica/7.0/math")
