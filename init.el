@@ -332,12 +332,12 @@ Subsequent calls expands the selection to larger semantic unit."
 
 ;; folding mode
 (require 'folding)
-(folding-mode-add-find-file-hook)
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
 (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
-
+(if (load "folding" 'nomessage 'noerror)
+             (folding-mode-add-find-file-hook))
 
 
 
@@ -1377,5 +1377,4 @@ With argument, do this that many times."
 
 ;; Local variables:
 ;; folded-file: t
-
 ;; end:
