@@ -329,13 +329,13 @@ Subsequent calls expands the selection to larger semantic unit."
 ;; (global-set-key "\M-p" 'chop-move-up)
 ;; (global-set-key "\M-n" 'chop-move-down)
 
-;; folding mode
+;; folding mode 
 (require 'folding)
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
 (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
-(if (load "folding" 'nomessage 'noerror)
+(if (load "folding" 'nomessage 'noerror) 
              (folding-mode-add-find-file-hook))
 
 
@@ -349,7 +349,8 @@ Subsequent calls expands the selection to larger semantic unit."
 (defun check-folding-line (line)
   "Checks if there's an evidence that this line is a start of folded
 block -- if there are folding markups or if it matches outline regex"
-  (or (string-match "{{{\\|}}}" line) (string-match outline-regexp line)))
+  (or (string-match "{{{\\|}}}" line) ; could AND w/ (symbol-value folding-mode)
+      (and (symbol-value outline-minor-mode) (string-match outline-regexp line))))
 
 (defun indent-or-toggle-fold () ; doesn't work well w/ python?
   (interactive)
@@ -1175,7 +1176,7 @@ in dired mode without it."
 
 
 ;; make buffers focus when they are displayed in another frame 
-;; (i.e. make the display-buffer and pop-to-buffer identical in functionality
+;; (i.e. make the display-buffer and pop-to-buffer ical in functionality
 ;; (defadvice display-buffer (after display-buffer-focus activate compile)
 ;; "Focuses the buffer after switching to it, mimicking pop-to-buffer"
 ;; (other-window 1)
@@ -1185,6 +1186,7 @@ in dired mode without it."
 
 
 ;;{{{ -- enable killing/copying lines w/o having them marked --------------------
+
 ;; cf http://www.emacswiki.org/emacs/SlickCopy
 (defadvice kill-ring-save (before slick-copy activate compile)
   "When called interactively with no active region, copy a single line instead."
@@ -1240,6 +1242,7 @@ With argument, do this that many times."
 (global-set-key "\C-cd" 'emx-duplicate-current-line)
 (global-set-key (kbd "s-w") 'duplicate-current-line)
 (global-set-key (kbd "s-k") 'kill-ring-save)
+
 ;;}}}~end enable killing/copying lines w/o having them marked -------------------
 
 
