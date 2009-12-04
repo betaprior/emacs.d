@@ -165,10 +165,10 @@ Sets variable `mma-emacs-flavor'."
 (if mma-mode-map
     ()
   (setq mma-mode-map (make-sparse-keymap))
-  (define-key mma-mode-map [?\C-c ?i] 'mma-debug-insert)
-  (define-key mma-mode-map [?\C-c ?d] 'mma-debug-on)
-  (define-key mma-mode-map [?\C-c ?o] 'mma-debug-off)
-  (define-key mma-mode-map [?\C-c ?c] 'comment-region))
+  (define-key mma-mode-map [?\C-c ?m ?i] 'mma-debug-insert)
+  (define-key mma-mode-map [?\C-c ?m ?d] 'mma-debug-on)
+  (define-key mma-mode-map [?\C-c ?m ?o] 'mma-debug-off)
+  (define-key mma-mode-map [?\C-c ?m ?c] 'comment-region))
 
 (defcustom mma-indentation 2
   "*The width for further indentation in mma mode."
