@@ -363,13 +363,14 @@ block -- if there are folding markups or if it matches outline regex"
 	  (fold-dwim-toggle)))))
 
 
-(defun toggle-fold-or-indent () ;backward char o/w at end of ellipsis toggle fails
+(defun toggle-fold-or-indent () ;backward char fails after ellipsis...
   (interactive)
   (if (minibufferp)
       (ido-next-match)
     (if (check-folding-line (thing-at-point 'line))
 	(progn (skip-chars-backward "^\n") (fold-dwim-toggle))
       (indent-according-to-mode))))
+    
 
 (add-hook 'folding-mode-hook
 	  '(lambda ()
@@ -1365,7 +1366,8 @@ With argument, do this that many times."
  '(smooth-scroll-margin 5)
  '(speedbar-show-unknown-files t)
  '(thing-types (quote ("word" "symbol" "sexp" "list" "line" "paragraph" "page" "defun" "number" "form")))
- '(w32-symlinks-handle-shortcuts t))
+ '(w32-symlinks-handle-shortcuts t)
+ '(x-select-enable-clipboard t))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
