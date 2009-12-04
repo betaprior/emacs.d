@@ -367,7 +367,7 @@ block -- if there are folding markups or if it matches outline regex"
   (if (minibufferp)
       (ido-next-match)
     (if (check-folding-line (thing-at-point 'line))
-	(progn (move-beginning-of-line) (fold-dwim-toggle))
+	(progn (skip-chars-backward "^\n") (fold-dwim-toggle))
       (indent-according-to-mode))))
 
 (add-hook 'folding-mode-hook
