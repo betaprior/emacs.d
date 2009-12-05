@@ -1,4 +1,4 @@
-;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
+;;testgit;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
 
 ;; Customize according to the machine
 (defvar hostname (downcase (system-name))) 
