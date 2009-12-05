@@ -1,13 +1,13 @@
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
 
 ;; Customize according to the machine
-(defvar hostname (downcase (getenv "HOSTNAME")))
+(defvar hostname (downcase (system-name))) 
 (defvar emacs-profile 
   (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
 	((string= hostname "matroskin") 'linux-1)
-	((string= hostname "leo-fujitsu-xp") 'linux-gateway)
-	(t 'linux-default))
-  )
+	((string= hostname "leo-gateway") 'linux-gateway)
+	(t 'linux-default)))
+(defvar master-session (getenv "EMACS_MASTER"))
 
 
 ;; Increase the memory reserved
@@ -18,10 +18,7 @@
 			load-path))
 
 ;; start server
-(when (or (eq emacs-profile 'windows-1)
-	  (eq emacs-profile 'linux-1))
-  (server-start)
-  )
+(if master-session (server-start))
 
 ;; auto-fill defaults:
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
@@ -147,8 +144,7 @@
 ;; (global-set-key "\M-\C-n" 
 ;;   '(lambda () (interactive) (next-line 5)))
 
-
-(desktop-save-mode 1)
+(if master-session (desktop-save-mode 1))
 
 
 ;; ========== Line by line scrolling ==========
@@ -1351,7 +1347,6 @@ With argument, do this that many times."
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
- '(desktop-save-mode t)
  '(help-window-select t)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
