@@ -700,6 +700,9 @@ in dired mode without it."
         (cons '("\\.sc$" . scheme-mode)
                 auto-mode-alist))
 
+;; Haskell:
+(add-to-list 'load-path "~/.emacs.d/elisp/haskell-mode-2.7.0")
+(load "haskell-site-file")
 
 ;; Autohotkey (Windows-specific)
 ;; choose ahk-mode rather than ahk-org mode:
