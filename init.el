@@ -719,7 +719,7 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.mma\\'" . mma-mode))
 			      auto-mode-alist))
 (setq mathematica-never-start-kernel-with-mode t)
-(setq mma-outline-regexp "^\\w+\\[.*\\][^;\n]*:=\\|^\\w+::usage\\|^\\w+\\[[^;\n]+\n?[^;\n]+\\]\\(?:.*/;.*\\|[^;]*\\)\\(?:\n[ \t:]+.*\\)?:=\\|Begin\\[") 
+(setq mma-outline-regexp "^\\w+\\[.*\\][^;\n]*:=\\|^\\w+::usage\\|^\\w+\\[[^;\n]+\n?[^;\n]+\\]\\(?:.*/;.*\\|[^;]*\\)\\(?:\n[ \t:]+.*\\)?:=\\|Begin\\[\\|End\\[\\|EndPackage\\[") 
 ;; match foo[], foo[x_] := (not foo[x];), foo::usage, 
 ;; foo[x_(opt \n for long list)](opt /; bar(opt \n)) :=
 (add-hook 'mma-mode-hook
