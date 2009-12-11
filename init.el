@@ -1365,6 +1365,7 @@ With argument, do this that many times."
  '(speedbar-show-unknown-files t)
  '(thing-types (quote ("word" "symbol" "sexp" "list" "line" "paragraph" "page" "defun" "number" "form")))
  '(w32-symlinks-handle-shortcuts t)
+ '(winner-ring-size 100)
  '(x-select-enable-clipboard t))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
