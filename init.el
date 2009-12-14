@@ -712,8 +712,10 @@ in dired mode without it."
   (autoload 'ahk-mode "ahk-mode"))
 
 
-;; mathematica mode
-;; (load-file "~/.emacs.d/elisp/mathematica.el")
+;; mathematica mode -- there are two files: mathematica.el and mma.el
+;; one provides support for interactive evaluation (mathematica), the other provides
+;; better dev facilities (imenu support, etc) (mma)
+(load-file "~/.emacs.d/elisp/mathematica.el")
 ;; (setq auto-mode-alist (append '(("\\.mma\\'" . mathematica-mode))
 (load-file "~/.emacs.d/elisp/mma.el")
 (setq auto-mode-alist (append '(("\\.mma\\'" . mma-mode))
@@ -995,7 +997,12 @@ in dired mode without it."
 
 (defun ido-my-keys ()
  "Add my keybindings for ido."
+    (define-key ido-completion-map [(control tab)] 'ido-next-match)
+    (define-key ido-completion-map "`" 'ido-exit-minibuffer)
     (define-key ido-completion-map "\t" 'ido-next-match)
+    (define-key ido-completion-map [(control ?`)] '(lambda()(interactive)(insert "`")))
+    (define-key ido-completion-map "\C-n" 'ido-next-match)
+    (define-key ido-completion-map "\C-p" 'ido-prev-match)
     (define-key ido-completion-map [(shift tab)] 'ido-prev-match)
     (define-key ido-completion-map [backtab] 'ido-prev-match)
  )

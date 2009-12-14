@@ -391,7 +391,7 @@ part of an interrupt message." )
   (setq buffer-read-only t)
   )
 
-(defun mathematica-mode ()
+(defun mathematica-int-mode ()
   "Major mode for editing Mathematica plain text files (.m) in Emacs.
 Commands:
 \\{mathematica-mode-map}"
