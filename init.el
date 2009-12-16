@@ -118,6 +118,8 @@
 (setq woman-use-own-frame nil)
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
 
+;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
+(setq browse-url-browser-function 'browse-url-firefox)
 
 ;; Misc. keybindings
 (global-set-key "\C-ci" 'indent-region)
