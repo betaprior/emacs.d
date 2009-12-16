@@ -147,6 +147,16 @@
 (if master-session (desktop-save-mode 1))
 
 
+;; Navigation: (todo -- unify navi-related fns)
+(require 'goto-last-change)
+(global-set-key "\C-x\C-\\" 'goto-last-change)
+
+;; similar effect is obtained by exchange point and mark (turn off the highlighting)
+(defun transient-exchange-point-and-mark () (interactive) (exchange-point-and-mark 1))
+(global-set-key "\C-x\C-x" 'transient-exchange-point-and-mark)
+
+
+
 ;; ========== Line by line scrolling ==========
 
 ;; This makes the buffer scroll by only a single line when the up or
