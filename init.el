@@ -53,6 +53,11 @@
 
 ;;}}}
 
+
+;; re-builder extension that allows perl syntax:
+;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
+(require 're-builder-x)
+
 					; fix copy/paste in Linux?..
 (when (eq emacs-profile 'linux-1)
   (setq x-select-enable-clipboard t)
