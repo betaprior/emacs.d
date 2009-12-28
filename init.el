@@ -25,7 +25,11 @@
 
 ;;{{{ `-- Interface / appearance settings
 
-(set-frame-height (selected-frame) 37)
+(when (not (eq (symbol-value 'window-system) nil))
+;;  (color-theme-whatever)
+  (show-paren-mode nil) ;; somehow makes parens work in terminal
+  (set-frame-height (selected-frame) 37))
+
 ;; Set the buffer size for Windows 
 ;; good defaults for 1280x768 desktop and double-level horizontal 
 ;; taskbar: L 200, T 0, H 41, W 90
@@ -179,8 +183,9 @@
 ;; Color-theme:
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
 (require 'color-theme)
-(color-theme-initialize)
-(color-theme-midnight)
+(when (not nil) ;(not (eq (symbol-value 'window-system) nil))
+  (color-theme-initialize)
+  (color-theme-midnight))
 
 ;; thing at point mark:
 (require 'thing-cmds)
