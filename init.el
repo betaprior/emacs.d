@@ -1353,6 +1353,9 @@ With argument, do this that many times."
 (global-set-key "\C-cpe" 'paste-EOL)
 (fset 'square-parens-and-sincos
    [?\M-% ?\[ return ?\( return ?! up up up up up up up ?\M-< ?\M-% ?\] return ?\) return ?! ?\M-< ?\M-% ?C ?o ?s return ?c ?o ?s return ?! ?\M-< ?\M-% ?S ?i ?n return ?s ?i ?n return ?! ?\M-< ?\M-% ?G backspace])
+(fset 'quote-list
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([201326624 134217766 34 34 return C-right C-left] 0 "%d")) arg)))
+(global-set-key "\C-cmq" 'quote-list)
 
 
 ;; TODO: figure out how to write this w/o all the copypasting
