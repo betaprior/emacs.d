@@ -20,8 +20,16 @@
 ;; start server
 (if master-session (server-start))
 
+(if master-session (desktop-save-mode 1))
+
 ;; auto-fill defaults:
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+
+;; enable winner mode for swiching windows configurations
+(when (fboundp 'winner-mode)
+  (winner-mode 1))
+
 
 ;;{{{ `-- Interface / appearance settings
 
@@ -155,7 +163,6 @@
 ;; (global-set-key "\M-\C-n" 
 ;;   '(lambda () (interactive) (next-line 5)))
 
-(if master-session (desktop-save-mode 1))
 
 
 ;; Navigation: (todo -- unify navi-related fns)
@@ -183,7 +190,7 @@
 ;; Color-theme:
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
 (require 'color-theme)
-(when (not nil) ;(not (eq (symbol-value 'window-system) nil))
+(when (not (eq (symbol-value 'window-system) nil)) ;(not nil)
   (color-theme-initialize)
   (color-theme-midnight))
 
@@ -205,15 +212,14 @@ Delimiters are paired characters: ()[]$$<>«»“”‘’「」, including \"\"
    (setq b1 (point))
    (setq ldelim (char-before))
    (setq ldstring (make-string 1 ldelim))
-   (if (string= ldstring "[") (setq ldstring (concat "\\" ldstring)))
+   (if (or (string= ldstring "[") (string= ldstring "$")) (setq ldstring (concat "\\" ldstring)))
    (setq rdpos (1+ (string-match ldstring delim-pairs)))
    (setq rdelim (substring delim-pairs rdpos (1+ rdpos)))
 ;   (message "rdelim is %s." rdelim)
    (skip-chars-forward (concat "^" rdelim))
    (setq b2 (point))
    (set-mark b1)
-   )
- )
+   ))
 
 (defun adjacent-to-matched-delims-p (start end)
   "if start and end are near matched delims, mark region including delims"
@@ -347,6 +353,8 @@ Subsequent calls expands the selection to larger semantic unit."
 ;; (global-set-key "\M-p" 'chop-move-up)
 ;; (global-set-key "\M-n" 'chop-move-down)
 
+;;------ Folding keys: C-c-TAB (indent acc to mode), F7/M-F7/S-M-F7 fold dwim
+;;{{{ -- Folding stuff: modes, DWIM keybindings, indent-or-toggle-fold, etc
 ;; folding mode 
 (require 'folding)
 (autoload 'folding-mode          "folding" "Folding mode" t)
@@ -402,6 +410,17 @@ block -- if there are folding markups or if it matches outline regex"
 (global-set-key [(control c) tab]  'indent-according-to-mode)
 
 
+;; Automatically enable hideshow minor mode for specified major modes
+(add-hook 'c-mode-hook 'hs-minor-mode)
+(add-hook 'c++-mode-hook 'hs-minor-mode)
+(add-hook 'perl-mode-hook 'hs-minor-mode)
+
+
+(global-unset-key [f1])
+(global-set-key [f1] 'hs-toggle-hiding)
+;;~end folding stuff 
+;;}}}
+
 
 ;; speedbar
 (require 'sr-speedbar)
@@ -435,6 +454,7 @@ block -- if there are folding markups or if it matches outline regex"
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 
+;;{{{ -- Windows/cygwin-related settings 
 
 (when (eq system-type 'windows-nt)
   (require 'cygwin-mount)
@@ -444,18 +464,41 @@ block -- if there are folding markups or if it matches outline regex"
   )
 
 
-
 ;; Make dired sort case-insensitive on Windows
 (when (eq system-type 'windows-nt)
   (setq ls-lisp-emulation   'MS-Windows
 	ls-lisp-dirs-first  t
 	ls-lisp-ignore-case t
 	ls-lisp-verbosity   (nconc (and (w32-using-nt)
-					'(links)) '(uid)))
+					'(links)) '(uid))))
+
+
+;; Replace DOS shell w/ bash ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;(let ((var (getenv "HOME")))
+;  home-env-var
+;  )
+
+;(setenv "HOME" "C:\\cygwin\\home\\Leo")
+
+(when (eq system-type 'windows-nt)
+  (add-hook 'comint-output-filter-functions
+	    'shell-strip-ctrl-m nil t)
+  (add-hook 'comint-output-filter-functions
+	    'comint-watch-for-password-prompt nil t)
+  (setq exec-path (cons "C:/cygwin/bin" exec-path))
+  (setenv "PATH" (concat "C:\\cygwin\\bin;" (getenv "PATH")))
+  (setq explicit-shell-file-name "bash")
+  (setq explicit-bash-args '("--login" "-i"))
+  ;;C:\cygwin\bin\bash -c "/bin/xhere /bin/bash.exe '%L'"
+  ;; For subprocesses invoked via the shell
+  ;; (e.g., "shell -c command")
+  (setq shell-file-name explicit-shell-file-name)
 )
 
+;;}}}
 
-;;{{{ `-- Explorer here / terminal here functions
+
+;;{{{ `-- Explorer here / terminal here functions (Windows)
 
 ; Windows explorer to go to the file in the current buffer
 ;; (defun explorer-here ()  
@@ -952,22 +995,6 @@ in dired mode without it."
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
 
-(defun ido-choose-from-recentf ()
- "Use ido to select a recently opened file from the `recentf-list'"
- (interactive)
- (let ((home (expand-file-name (getenv "HOME"))))
-   (find-file
-    (ido-completing-read "Recentf open: "
-                         (mapcar (lambda (path)
-                                   (replace-regexp-in-string home "~" path))
-                                 recentf-list)
-                         nil t))))
-
-(global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
-(add-hook 'find-file-hook '(lambda () (progn (recentf-save-list)
-						 (message nil))))
-;;~ end set ido to do recent files
-
 
 ;; uniquify settings
 (require 'uniquify)
@@ -1006,7 +1033,7 @@ in dired mode without it."
 ;(setq load-path (cons "~/.emacs.d/elisp/icicles/" load-path))
 
 
-;;{{{ ido settings:
+;;{{{ ido settings (incl keymap, ido recentf, compl. read defadvice):
 
 (require 'ido)
 (ido-mode t)
@@ -1081,6 +1108,23 @@ in dired mode without it."
 ;; (global-set-key "\C-x\C-m" 'ido-execute)
 ;; (global-set-key "\C-c\C-m" 'ido-execute)
 
+
+(defun ido-choose-from-recentf ()
+ "Use ido to select a recently opened file from the `recentf-list'"
+ (interactive)
+ (let ((home (expand-file-name (getenv "HOME"))))
+   (find-file
+    (ido-completing-read "Recentf open: "
+                         (mapcar (lambda (path)
+                                   (replace-regexp-in-string home "~" path))
+                                 recentf-list)
+                         nil t))))
+
+(global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
+(add-hook 'find-file-hook '(lambda () (progn (recentf-save-list)
+						 (message nil))))
+;;~ end set ido to do recent files
+
 	  
 ;;~ end ido-related stuff
 
@@ -1148,15 +1192,6 @@ in dired mode without it."
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 
-;; Automatically enable hideshow minor mode for specified major modes
-(add-hook 'c-mode-hook 'hs-minor-mode)
-(add-hook 'c++-mode-hook 'hs-minor-mode)
-(add-hook 'perl-mode-hook 'hs-minor-mode)
-
-
-(global-unset-key [f1])
-(global-set-key [f1] 'hs-toggle-hiding)
-
 
 ;;{{{ -- Andrei's magic line-dragging code --------------------------------------
 
@@ -1192,13 +1227,11 @@ in dired mode without it."
 (defun jump-forward-lines()
    " This function will move the cursor forward some lines (currently 10)."
    (interactive)
-   (forward-line 5)
-)
+   (forward-line 5))
 (defun jump-back-lines()
    " This function will move the cursor back a few lines (currently 10)."
    (interactive)
-   (forward-line -5)
-)
+   (forward-line -5))
 (global-set-key (kbd "M-<down>") 'jump-forward-lines)
 (global-set-key (kbd "M-<up>") 'jump-back-lines)
 
@@ -1274,7 +1307,8 @@ With argument, do this that many times."
 
 ;;}}}~end enable killing/copying lines w/o having them marked -------------------
 
-
+;;------ compilation: 'recompile and 'compile bound to f-keys
+;;{{{ -- compilation stuff  -----------------------------------------------------
 (defun save-windows-recompile () "Recompiling"
   (proc
    (window-configuration-to-register ?w)
@@ -1298,9 +1332,6 @@ With argument, do this that many times."
 ;; ;; Specify my function (maybe I should have done a lambda function)
 ;; (setq compilation-exit-message-function 'compilation-exit-autoclose)
 
-;; enable winner mode for swiching windows configurations
-(when (fboundp 'winner-mode)
-  (winner-mode 1))
 
 ;; (setq compilation-finish-functions 'compile-autoclose)
 ;; (defun compile-autoclose (buffer string)
@@ -1311,7 +1342,7 @@ With argument, do this that many times."
 ;; 	 (message "Build successful."))
 ;; 	(t                                                                    
 ;; 	 (message "Compilation exited abnormally: %s" string))))
-
+;;}}}
 
 ;; Line-wrapping stuff: ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; disable line wrap
@@ -1323,28 +1354,6 @@ With argument, do this that many times."
 
 ;; Optionally add key to toggle line wrap
 ;; (global-set-key [f10] 'toggle-truncate-lines)
-
-;; Replace DOS shell w/ bash ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;(let ((var (getenv "HOME")))
-;  home-env-var
-;  )
-
-;(setenv "HOME" "C:\\cygwin\\home\\Leo")
-
-(when (eq system-type 'windows-nt)
-  (add-hook 'comint-output-filter-functions
-	    'shell-strip-ctrl-m nil t)
-  (add-hook 'comint-output-filter-functions
-	    'comint-watch-for-password-prompt nil t)
-  (setq exec-path (cons "C:/cygwin/bin" exec-path))
-  (setenv "PATH" (concat "C:\\cygwin\\bin;" (getenv "PATH")))
-  (setq explicit-shell-file-name "bash")
-  (setq explicit-bash-args '("--login" "-i"))
-  ;;C:\cygwin\bin\bash -c "/bin/xhere /bin/bash.exe '%L'"
-  ;; For subprocesses invoked via the shell
-  ;; (e.g., "shell -c command")
-  (setq shell-file-name explicit-shell-file-name)
-)
 
 
 
@@ -1420,4 +1429,3 @@ With argument, do this that many times."
 ;; Local variables:
 ;; folded-file: t
 ;; end:
-
