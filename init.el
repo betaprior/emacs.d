@@ -25,11 +25,29 @@
 ;; auto-fill defaults:
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 
-
 ;; enable winner mode for swiching windows configurations
 (when (fboundp 'winner-mode)
   (winner-mode 1))
 
+;;{{{ -- anything.el and anything-config
+(require 'anything)
+(require 'anything-config)
+(setq anything-sources
+      (list anything-c-source-buffers
+            anything-c-source-file-name-history
+	    anything-c-source-files-in-current-dir
+            anything-c-source-info-pages
+            anything-c-source-man-pages
+	    anything-c-source-file-cache
+            anything-c-source-emacs-commands))
+(global-set-key (kbd "M-z") 'anything)
+(global-set-key (kbd "\C-xc") 'anything)
+(global-set-key "\C-c\M-z" 'zap-to-char)
+(define-key anything-map "\t" 'anything-next-line)
+(define-key anything-map [(control tab)] 'anything-select-action)
+(define-key anything-map [(shift tab)] 'anything-previous-line)
+(define-key anything-map [backtab] 'anything-previous-line)
+;;}}}
 
 ;;{{{ `-- Interface / appearance settings
 
@@ -355,6 +373,7 @@ Subsequent calls expands the selection to larger semantic unit."
 
 ;;------ Folding keys: C-c-TAB (indent acc to mode), F7/M-F7/S-M-F7 fold dwim
 ;;{{{ -- Folding stuff: modes, DWIM keybindings, indent-or-toggle-fold, etc
+
 ;; folding mode 
 (require 'folding)
 (autoload 'folding-mode          "folding" "Folding mode" t)
@@ -419,6 +438,7 @@ block -- if there are folding markups or if it matches outline regex"
 (global-unset-key [f1])
 (global-set-key [f1] 'hs-toggle-hiding)
 ;;~end folding stuff 
+
 ;;}}}
 
 
