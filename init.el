@@ -1419,7 +1419,7 @@ With argument, do this that many times."
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)
  '(quack-programs (quote ("C:/Program Files/MzScheme/mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
- '(safe-local-variable-values (quote ((folded-file . t))))
+ '(safe-local-variable-values (quote ((TeX-auto-save . t) (TeX-parse-self . t) (folded-file . t))))
  '(scroll-preserve-screen-position 1)
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
