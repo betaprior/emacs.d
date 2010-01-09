@@ -24,7 +24,31 @@
 
 ;; auto-fill defaults:
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
+;;{{{ fix auto-fill for rcirc:
 
+;;
+;; dynamically set fill-column at redisplay time
+;;
+(defvar dim:dynamic-fill-column-margin 3
+  "Safety margin used to calculate fill-column depending on window-width")
+
+;; dynamically set fill-column at redisplay time
+(defun dim:dynamic-fill-column-window (window &optional margin)
+  "Dynamically get window's width and adjust fill-column accordingly"
+  (with-current-buffer (window-buffer window)
+    (when (eq major-mode 'rcirc-mode)
+      (setq fill-column
+	    (- (window-width window) 
+	       (or margin dim:dynamic-fill-column-margin))))))
+
+(defun dim:dynamic-fill-column (frame)
+  "Dynamically tune fill-column for a frame's windows at redisplay time"
+  (walk-windows 'dim:dynamic-fill-column-window 'no-minibuf frame))
+  
+(eval-after-load 'rcirc
+  '(add-to-list 'window-size-change-functions 'dim:dynamic-fill-column))
+
+;;}}}
 ;; enable winner mode for swiching windows configurations
 (when (fboundp 'winner-mode)
   (winner-mode 1))
@@ -835,7 +859,7 @@ in dired mode without it."
 (setq load-path (cons "~/.emacs.d/elisp/matlab-emacs/" load-path))
 
 ; (require 'matlab-load)
-(setq-default matlab-show-mlint-warnings t)
+(setq-default matlab-show-mlint-warnings nil)
 (setq-default matlab-highlight-cross-function-variables t)
 
 
@@ -1004,10 +1028,30 @@ in dired mode without it."
 ;;dark room:
 ;; (require 'martin-darkroom)
 
-;;word counting:
+;;{{{ text-processing functions: word counting, appending line numbers
 (defun wc ()
   (interactive)
   (message "Word count: %s" (how-many "\\w+" (point-min) (point-max))))
+
+(defun number-lines-region (start end &optional beg)
+  (interactive "*r\np")
+  (let* ((lines (count-lines start end))
+	 (from (or beg 1))
+	 (to (+ lines (1- from)))
+	 (numbers (number-sequence from to))
+	 (width (max (length (int-to-string lines))
+		     (length (int-to-string from)))))
+    (if (= start (point))
+	(setq numbers (reverse numbers)))
+    (goto-char start)
+    (dolist (n numbers)
+      (beginning-of-line)
+      (save-match-data
+	(if (looking-at " *-?[0-9]+\\. ")
+	    (replace-match "")))
+      (insert (format (concat "%" (int-to-string width) "d. ") n))
+      (forward-line))))
+;;}}}
 
 ;;  Allow ido to open recent files
 (require 'recentf)
@@ -1329,6 +1373,7 @@ With argument, do this that many times."
 
 ;;------ compilation: 'recompile and 'compile bound to f-keys
 ;;{{{ -- compilation stuff  -----------------------------------------------------
+
 (defun save-windows-recompile () "Recompiling"
   (proc
    (window-configuration-to-register ?w)
@@ -1362,6 +1407,7 @@ With argument, do this that many times."
 ;; 	 (message "Build successful."))
 ;; 	(t                                                                    
 ;; 	 (message "Compilation exited abnormally: %s" string))))
+
 ;;}}}
 
 ;; Line-wrapping stuff: ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
