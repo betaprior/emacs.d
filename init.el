@@ -996,7 +996,8 @@ in dired mode without it."
 
 (add-hook 'ess-mode-hook
 	  '(lambda()
-	     (local-set-key [(shift return)] 'my-ess-eval)))
+	     (local-set-key [(shift return)] 'my-ess-eval)
+	     (local-set-key [(control c) tab] 'ess-complete-object-name)))
 
 (add-hook 'ess-mode-hook
 	  '(lambda()
@@ -1005,7 +1006,10 @@ in dired mode without it."
 (add-hook 'inferior-ess-mode-hook
 	  '(lambda()
 	     (local-set-key [C-up] 'comint-previous-input)
-	     (local-set-key [C-down] 'comint-next-input)))
+	     (local-set-key [C-down] 'comint-next-input)
+;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
+	     (local-set-key "\M-o" 'prev-input-goto-paren)))
+
 
 ;; Linking ESS with AucTex
 
@@ -1227,6 +1231,7 @@ in dired mode without it."
 
 
 ;;{{{ --- Breadcrumb settings ---------------------------------------------------
+
 ;(require 'breadcrumb)
 ;; (autoload 'bc-set "breadcrumb" "Set bookmark in current point." t)
 ;; (autoload 'bc-previous "breadcrumb" "Go to previous bookmark." t)
@@ -1443,6 +1448,10 @@ With argument, do this that many times."
 (fset 'quote-list
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([201326624 134217766 34 34 return C-right C-left] 0 "%d")) arg)))
 (global-set-key "\C-cmq" 'quote-list)
+(fset 'prev-input-goto-paren
+   [?\M-p ?\C-a ?\C-s ?\( ?\C-m left])
+;;(global-set-key "\M-o" 'prev-input-goto-paren)
+
 
 
 ;; TODO: figure out how to write this w/o all the copypasting
