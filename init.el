@@ -404,6 +404,9 @@ Subsequent calls expands the selection to larger semantic unit."
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
 (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
+(folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
+(folding-add-to-marks-list 'ess-mode "### {{{" "### }}}" " ")
+(folding-add-to-marks-list 'ess-mode "## {{{" "## }}}" " ")
 (if (load "folding" 'nomessage 'noerror) 
              (folding-mode-add-find-file-hook))
 
@@ -1457,6 +1460,7 @@ With argument, do this that many times."
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
+ '(ess-eval-deactivate-mark t)
  '(help-window-select t)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
