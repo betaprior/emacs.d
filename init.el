@@ -54,6 +54,7 @@
   (winner-mode 1))
 
 ;;{{{ -- anything.el and anything-config
+
 (require 'anything)
 (require 'anything-config)
 (setq anything-sources
@@ -71,6 +72,7 @@
 (define-key anything-map [(control tab)] 'anything-select-action)
 (define-key anything-map [(shift tab)] 'anything-previous-line)
 (define-key anything-map [backtab] 'anything-previous-line)
+
 ;;}}}
 
 ;;{{{ `-- Interface / appearance settings
@@ -799,8 +801,8 @@ in dired mode without it."
 ;;{{{ Language modes: scheme/ahk/mathematica/matlab
 
 ;; needed just for Matlab(?)  Part of ECB:
-(load-file (expand-file-name 
-	    "~/.emacs.d/elisp/cedet-1.0pre4/common/cedet.el"))
+;;(load-file (expand-file-name 
+;;	    "~/.emacs.d/elisp/cedet-1.0pre4/common/cedet.el"))
 
 ;; Scheme:
 (when (eq emacs-profile 'windows-1)
@@ -969,6 +971,8 @@ in dired mode without it."
 ;; Do not echo the evaluated commands into the transcript (R process window)
 ;; (the output is going to be displayed, however)
 (setq  ess-eval-visibly-p nil)
+(autoload 'ess-rdired "ess-rdired"
+       "View *R* objects in a dired-like buffer." t)
 
 ;; This stuff (stolen from emacs wiki?) evaluates things via shift-return
 (defun my-ess-start-R ()
@@ -1461,6 +1465,7 @@ With argument, do this that many times."
  '(TeX-output-view-style TeX-output-view-style-commands)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(ess-eval-deactivate-mark t)
+ '(ess-r-args-show-as (quote tooltip))
  '(help-window-select t)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
@@ -1469,7 +1474,7 @@ With argument, do this that many times."
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)
  '(quack-programs (quote ("C:/Program Files/MzScheme/mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
- '(safe-local-variable-values (quote ((folded-file . t))))
+ '(safe-local-variable-values (quote ((TeX-auto-save . t) (TeX-parse-self . t) (folded-file . t))))
  '(scroll-preserve-screen-position 1)
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
