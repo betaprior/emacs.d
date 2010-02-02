@@ -9,6 +9,19 @@
 	(t 'linux-default)))
 (defvar master-session (getenv "EMACS_MASTER"))
 
+;; Because GNOME refuses to divulge environment variables without some voodoo
+;; set them up here 
+(setenv "RPATH"
+	(if (eq system-type 'windows-nt)
+	    (concat
+	     "e:\\code\\R\\addons" ";"
+	     "e:\\code\\R\\addons\\misc" ";"
+	     (getenv "RPATH"))
+	   (concat
+	    "/home/leo/code/R/addons/" ":"
+	    "/home/leo/code/R/addons/misc/" ":"
+	    (getenv "RPATH")))) 
+
 
 ;; Increase the memory reserved
 (setq gc-cons-threshold 80000000)
