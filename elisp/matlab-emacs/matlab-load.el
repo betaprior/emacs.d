@@ -3,14 +3,36 @@
 ;;; Code:
 
 
+;;;### (autoloads (matlab-cedet-setup) "cedet-matlab" "cedet-matlab.el"
+;;;;;;  (19345 39489))
+;;; Generated autoloads from cedet-matlab.el
+
+(autoload 'matlab-cedet-setup "cedet-matlab" "\
+Update various paths to get SRecode to identify our macros.
+
+\(fn)" t nil)
+
+;;;***
+
+;;;### (autoloads (company-matlab-shell) "company-matlab-shell" "company-matlab-shell.el"
+;;;;;;  (19345 39489))
+;;; Generated autoloads from company-matlab-shell.el
+
+(autoload 'company-matlab-shell "company-matlab-shell" "\
+A `company-mode' completion back-end for Matlab-Shell.
+
+\(fn COMMAND &optional ARG &rest IGNORED)" t nil)
+
+;;;***
+
 ;;;### (autoloads (matlab-shell matlab-mode) "matlab" "matlab.el"
-;;;;;;  (18680 58079))
+;;;;;;  (19345 39489))
 ;;; Generated autoloads from matlab.el
 
-(add-to-list (quote auto-mode-alist) (quote ("\\.m$" . matlab-mode)))
+(add-to-list 'auto-mode-alist '("\\.m$" . matlab-mode))
 
-(autoload (quote matlab-mode) "matlab" "\
-MATLAB-mode is a major mode for editing MATLAB dot-m files.
+(autoload 'matlab-mode "matlab" "\
+MATLAB(R) mode is a major mode for editing MATLAB dot-m files.
 \\<matlab-mode-map>
 Convenient editing commands are:
  \\[matlab-comment-region]   - Comment/Uncomment out a region of code.
@@ -65,7 +87,7 @@ All Key Bindings:
 
 \(fn)" t nil)
 
-(autoload (quote matlab-shell) "matlab" "\
+(autoload 'matlab-shell "matlab" "\
 Create a buffer with MATLAB running as a subprocess.
 
 MATLAB shell cannot work on the MS Windows platform because MATLAB is not
@@ -75,35 +97,33 @@ a console application.
 
 ;;;***
 
-;;;### (autoloads (matlab-eei-connect) "matlab-eei" "matlab-eei.el"
-;;;;;;  (18955 40794))
-;;; Generated autoloads from matlab-eei.el
+;;;### (autoloads (mlint-minor-mode) "mlint" "mlint.el" (19345 39489))
+;;; Generated autoloads from mlint.el
 
-(autoload (quote matlab-eei-connect) "matlab-eei" "\
-Connects Emacs to MATLAB's external editor interface
-on socket 5600.
+(autoload 'mlint-minor-mode "mlint" "\
+Toggle mlint minor mode, a mode for showing mlint errors.
+With prefix ARG, turn mlint minor mode on iff ARG is positive.
+\\{mlint-minor-mode-map\\}
 
-\(fn)" nil nil)
+\(fn &optional ARG)" t nil)
 
 ;;;***
 
 ;;;### (autoloads (semantic-default-matlab-setup) "semantic-matlab"
-;;;;;;  "semantic-matlab.el" (18629 14712))
+;;;;;;  "semantic-matlab.el" (19345 39489))
 ;;; Generated autoloads from semantic-matlab.el
 
-(autoload (quote semantic-default-matlab-setup) "semantic-matlab" "\
+(autoload 'semantic-default-matlab-setup "semantic-matlab" "\
 Set up a buffer for parsing of MATLAB files.
 
 \(fn)" nil nil)
 
-(add-hook (quote matlab-mode-hook) (quote semantic-default-matlab-setup))
-
 ;;;***
 
-;;;### (autoloads (tlc-mode) "tlc" "tlc.el" (17295 18976))
+;;;### (autoloads (tlc-mode) "tlc" "tlc.el" (19345 39489))
 ;;; Generated autoloads from tlc.el
 
-(autoload (quote tlc-mode) "tlc" "\
+(autoload 'tlc-mode "tlc" "\
 Major mode for editing Tlc files, or files found in tlc directories.
 
 \(fn)" t nil)
@@ -111,14 +131,16 @@ Major mode for editing Tlc files, or files found in tlc directories.
 
 ;;;***
 
-;;;### (autoloads nil nil ("mlint.el" "semanticdb-matlab.el") (18955
-;;;;;;  42719 875000))
+;;;### (autoloads nil nil ("matlab-publish.el" "semanticdb-matlab.el")
+;;;;;;  (19345 41641 990518))
 
 ;;;***
 
+(provide 'matlab-load)
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
 ;; no-update-autoloads: t
+;; coding: utf-8
 ;; End:
 ;;; matlab-load.el ends here

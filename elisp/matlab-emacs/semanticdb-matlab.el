@@ -36,8 +36,11 @@
 ;; personal MATLAB files here.
 
 (defvar semanticdb-matlab-include-paths
-  (list (expand-file-name "~/matlab") ;; Default location for extra code.
-  )
+  (if (file-exists-p (expand-file-name "~/matlab"))
+      (list (expand-file-name "~/matlab") ;; Default location for extra code.
+	    )
+    ;; Else, no default path.
+    nil)
   "Directories which should be scanned for m-files.")
 
 ;;; Classes:
@@ -208,7 +211,8 @@ will be included in the search.  If EXCLUDE-CLASSES, class
 directories (beginning with '@') will be skipped.  If
 EXCLUDE-PRIVATE, 'private' directories will be skipped."
   (if dirs
-      (let (files)
+      (let ((working-status-dynamic-type 'working-spinner-display)
+	    files)
 	(dolist (dir dirs)
 	  (when (and (boundp 'working-message)
 		     working-message)
