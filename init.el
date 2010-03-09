@@ -11,16 +11,16 @@
 
 ;; Because GNOME refuses to divulge environment variables without some voodoo
 ;; set them up here 
-(setenv "RPATH"
+(setenv "R_PATH"
 	(if (eq system-type 'windows-nt)
 	    (concat
 	     "e:\\code\\R\\addons" ";"
 	     "e:\\code\\R\\addons\\misc" ";"
-	     (getenv "RPATH"))
+	     (getenv "R_PATH"))
 	   (concat
 	    "/home/leo/code/R/addons/" ":"
 	    "/home/leo/code/R/addons/misc/" ":"
-	    (getenv "RPATH")))) 
+	    (getenv "R_PATH")))) 
 
 
 ;; Increase the memory reserved
@@ -1506,6 +1506,7 @@ With argument, do this that many times."
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
  '(help-window-select t)
+ '(isearch-allow-scroll t)
  '(matlab-fill-fudge-hard-maximum 89)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
