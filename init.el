@@ -9,6 +9,19 @@
 	(t 'linux-default)))
 (defvar master-session (getenv "EMACS_MASTER"))
 
+;; Because GNOME refuses to divulge environment variables without some voodoo
+;; set them up here 
+(setenv "RPATH"
+	(if (eq system-type 'windows-nt)
+	    (concat
+	     "e:\\code\\R\\addons" ";"
+	     "e:\\code\\R\\addons\\misc" ";"
+	     (getenv "RPATH"))
+	   (concat
+	    "/home/leo/code/R/addons/" ":"
+	    "/home/leo/code/R/addons/misc/" ":"
+	    (getenv "RPATH")))) 
+
 
 ;; Increase the memory reserved
 (setq gc-cons-threshold 80000000)
@@ -213,6 +226,8 @@
 ;; Navigation: (todo -- unify navi-related fns)
 (require 'goto-last-change)
 (global-set-key "\C-x\C-\\" 'goto-last-change)
+(global-set-key "\C-x\\" 'goto-last-change)
+(global-set-key "\C-x|" 'goto-last-change)
 
 ;; similar effect is obtained by exchange point and mark (turn off the highlighting)
 (defun transient-exchange-point-and-mark () (interactive) (exchange-point-and-mark 1))
@@ -449,10 +464,11 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'folding-mode-hook
 	  '(lambda ()
-	     (define-key folding-mode-map [(tab)]
-	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
+	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
 	     (define-key outline-minor-mode-map [(tab)]
 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
 
@@ -805,8 +821,8 @@ in dired mode without it."
 ;;{{{ Language modes: scheme/ahk/mathematica/matlab
 
 ;; needed just for Matlab(?)  Part of ECB:
-;;(load-file (expand-file-name 
-;;	    "~/.emacs.d/elisp/cedet-1.0pre4/common/cedet.el"))
+;; (load-file (expand-file-name 
+;; 	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
 
 ;; Scheme:
 (when (eq emacs-profile 'windows-1)
@@ -866,8 +882,11 @@ in dired mode without it."
 ;(add-to-list 'load-path "~/.emacs.d/elisp/matlab-emacs/") 
 
 (setq load-path (cons "~/.emacs.d/elisp/matlab-emacs/" load-path))
-
-; (require 'matlab-load)
+;; NB: installation instructions that say (require 'matlab-load) are WRONG; 
+;; use the following instead:
+;; (load-file (expand-file-name 
+;; 	    "~/.emacs.d/elisp/matlab-emacs/matlab-load.el"))
+(load-library "matlab-load")
 (setq-default matlab-show-mlint-warnings nil)
 (setq-default matlab-highlight-cross-function-variables t)
 
@@ -881,11 +900,20 @@ in dired mode without it."
 
 (setq matlab-indent-function t)	; if you want function bodies indented
 (setq matlab-verify-on-save-flag nil)	; turn off auto-verify on save
+
+(defun my-matlab-eval ()
+  (interactive)
+  (matlab-shell-run-region-or-line)
+  (matlab-show-matlab-shell-buffer))
+
 (defun my-matlab-mode-hook ()
-;  (define-key matlab-mode-map [(meta j)] 'bc-previous)
+  (define-key matlab-mode-map (kbd "C-c RET") 'my-matlab-eval)
+  ;; (local-set-key (kbd "C-c RET") 'my-matlab-eval)
+  (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
   (setq fill-column 77)
-  (imenu-add-to-menubar "Find"))	; where auto-fill should wrap
+  (imenu-add-to-menubar "Find"))
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
+
 ; ~matlab-mode-stuff
 
 ;;}}}
@@ -1045,6 +1073,7 @@ in dired mode without it."
 ;; (require 'martin-darkroom)
 
 ;;{{{ text-processing functions: word counting, appending line numbers
+
 (defun wc ()
   (interactive)
   (message "Word count: %s" (how-many "\\w+" (point-min) (point-max))))
@@ -1067,6 +1096,7 @@ in dired mode without it."
 	    (replace-match "")))
       (insert (format (concat "%" (int-to-string width) "d. ") n))
       (forward-line))))
+
 ;;}}}
 
 ;;  Allow ido to open recent files
@@ -1479,6 +1509,7 @@ With argument, do this that many times."
  '(ess-r-args-show-as (quote tooltip))
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
+ '(matlab-fill-fudge-hard-maximum 89)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
