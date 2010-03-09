@@ -178,13 +178,14 @@
 ;; make woman not pop up a new frame
 (setq woman-use-own-frame nil)
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
+(setq isearch-allow-scroll t)
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
 (setq browse-url-browser-function 'browse-url-firefox)
 
 ;; Misc. keybindings
-(global-set-key "\C-ci" 'indent-region)
-(global-set-key "\C-c\C-i" 'imenu)
+(global-set-key "\C-c\S-i" 'indent-region)
+(global-set-key "\C-ci" 'imenu)
 (global-set-key "\C-co" 'occur)
 (global-set-key [(control c) (control o)] 'occur)
 (global-set-key [(control f3)] 'explorer-here)
@@ -457,15 +458,18 @@ block -- if there are folding markups or if it matches outline regex"
 
 (global-set-key [(control c) tab]  'indent-according-to-mode)
 
+;; HideShow stuff:
+(require 'hideshow-org)
+(require 'hideshowvis)
+(autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
+(load-library "hideshowvis-settings")
 
-;; Automatically enable hideshow minor mode for specified major modes
 (add-hook 'c-mode-hook 'hs-minor-mode)
 (add-hook 'c++-mode-hook 'hs-minor-mode)
 (add-hook 'perl-mode-hook 'hs-minor-mode)
 
-
-(global-unset-key [f1])
-(global-set-key [f1] 'hs-toggle-hiding)
+;; (global-unset-key [f1])
+;; (global-set-key [f1] 'hs-toggle-hiding)
 ;;~end folding stuff 
 
 ;;}}}
@@ -784,11 +788,11 @@ in dired mode without it."
 (setq tramp-verbose 2)
 (setq tramp-default-method "ssh")
 (setq tramp-debug-buffer nil)
-;; (setq tramp-password-end-of-line "\r\n")
-(nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
-       '(("bash" "-i")))
-(setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
-	'("bash -i"))
+(setq tramp-password-end-of-line "\r\n")
+;; (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
+;;        '(("bash" "-i")))
+;; (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
+;; 	'("bash -i"))
 
 
 ;; stuff that was necessary to get tramp to work under cygwin
@@ -977,7 +981,8 @@ in dired mode without it."
 ;; This stuff (stolen from emacs wiki?) evaluates things via shift-return
 (defun my-ess-start-R ()
   (interactive)
-  (if (not (member "*R*" (mapcar (function buffer-name) (buffer-list))))
+  (if (not (or (member "*R*" (mapcar (function buffer-name) (buffer-list)))
+	       (member "*shell*" (mapcar (function buffer-name) (buffer-list)))))
       (progn
 	(delete-other-windows)
 	(setq w1 (selected-window))
@@ -1109,7 +1114,6 @@ in dired mode without it."
 
 
 ;;{{{ ido settings (incl keymap, ido recentf, compl. read defadvice):
-
 (require 'ido)
 (ido-mode t)
 (setq ido-enable-flex-matching t)
@@ -1200,9 +1204,7 @@ in dired mode without it."
 						 (message nil))))
 ;;~ end set ido to do recent files
 
-	  
 ;;~ end ido-related stuff
-
 ;;}}}
 
 ;;this functionality is superceded by smex:
@@ -1476,6 +1478,7 @@ With argument, do this that many times."
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
  '(help-window-select t)
+ '(hideshowvis-ignore-same-line nil)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
@@ -1497,7 +1500,7 @@ With argument, do this that many times."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- )
+ '(hs-face ((nil (:box nil)))))
 
 (put 'narrow-to-region 'disabled nil)
 
