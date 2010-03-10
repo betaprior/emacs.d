@@ -11,16 +11,16 @@
 
 ;; Because GNOME refuses to divulge environment variables without some voodoo
 ;; set them up here 
-(setenv "RPATH"
+(setenv "R_PATH"
 	(if (eq system-type 'windows-nt)
 	    (concat
 	     "e:\\code\\R\\addons" ";"
 	     "e:\\code\\R\\addons\\misc" ";"
-	     (getenv "RPATH"))
+	     (getenv "R_PATH"))
 	   (concat
 	    "/home/leo/code/R/addons/" ":"
 	    "/home/leo/code/R/addons/misc/" ":"
-	    (getenv "RPATH")))) 
+	    (getenv "R_PATH")))) 
 
 
 ;; Increase the memory reserved
@@ -996,7 +996,7 @@ in dired mode without it."
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
 (setq ansi-color-for-comint-mode 'filter)
-(setq comint-prompt-read-only t)
+;; (setq comint-prompt-read-only t)
 (setq comint-scroll-to-bottom-on-input t)
 (setq comint-scroll-to-bottom-on-output t)
 (setq comint-move-point-for-output t)
