@@ -913,12 +913,16 @@ in dired mode without it."
   (define-key matlab-mode-map (kbd "C-c RET") 'my-matlab-eval)
   ;; (local-set-key (kbd "C-c RET") 'my-matlab-eval)
   (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
-  (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
-  (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
-  (local-set-key "\M-o" 'prev-input-goto-paren)
   (setq fill-column 77)
   (imenu-add-to-menubar "Find"))
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
+
+
+(add-hook 'M-shell-mode-hook
+	  '(lambda()
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
+	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
+	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
 ; ~matlab-mode-stuff
 
