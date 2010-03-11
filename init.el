@@ -907,7 +907,7 @@ in dired mode without it."
 (defun my-matlab-eval ()
   (interactive)
   (matlab-shell-run-region-or-line)
-  (deactivate mark)
+  (deactivate-mark)
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()
