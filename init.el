@@ -907,15 +907,7 @@ in dired mode without it."
 (defun my-matlab-eval ()
   (interactive)
   (matlab-shell-run-region-or-line)
-<<<<<<< HEAD:init.el
-<<<<<<< HEAD:init.el
-  (deactivate mark)
-=======
   (deactivate-mark) ;; doesn't work, have to go manually modify matlab.el
->>>>>>> e123d78... matlab.el modified to deactivate mark:init.el
-=======
-  (deactivate-mark)
->>>>>>> b02a94eec12a0312bb77dd5f2c253ee9e34caa18:init.el
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()
@@ -1193,6 +1185,7 @@ in dired mode without it."
 
 
 ;;{{{ ido settings (incl keymap, ido recentf, compl. read defadvice):
+
 (require 'ido)
 (ido-mode t)
 (setq ido-enable-flex-matching t)
@@ -1284,6 +1277,7 @@ in dired mode without it."
 ;;~ end set ido to do recent files
 
 ;;~ end ido-related stuff
+
 ;;}}}
 
 ;;this functionality is superceded by smex:
