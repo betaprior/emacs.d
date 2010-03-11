@@ -906,7 +906,11 @@ in dired mode without it."
 (defun my-matlab-eval ()
   (interactive)
   (matlab-shell-run-region-or-line)
+<<<<<<< HEAD:init.el
   (deactivate mark)
+=======
+  (deactivate-mark) ;; doesn't work, have to go manually modify matlab.el
+>>>>>>> e123d78... matlab.el modified to deactivate mark:init.el
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()

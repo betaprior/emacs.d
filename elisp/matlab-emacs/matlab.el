@@ -4967,6 +4967,7 @@ This command requires an active MATLAB shell."
 	;; We are done error checking, run the command.
 	(matlab-shell-send-string command)
 	(insert lastcmd))
+      (deactivate-mark)
       (set-buffer msbn)
       (goto-char (point-max))
       (display-buffer msbn))
