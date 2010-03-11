@@ -81,6 +81,7 @@
 (global-set-key (kbd "M-z") 'anything)
 (global-set-key (kbd "\C-xc") 'anything)
 (global-set-key "\C-c\M-z" 'zap-to-char)
+(global-set-key "\M-Z" 'zap-to-char)
 (define-key anything-map "\t" 'anything-next-line)
 (define-key anything-map [(control tab)] 'anything-select-action)
 (define-key anything-map [(shift tab)] 'anything-previous-line)
@@ -907,23 +908,30 @@ in dired mode without it."
   (interactive)
   (matlab-shell-run-region-or-line)
 <<<<<<< HEAD:init.el
+<<<<<<< HEAD:init.el
   (deactivate mark)
 =======
   (deactivate-mark) ;; doesn't work, have to go manually modify matlab.el
 >>>>>>> e123d78... matlab.el modified to deactivate mark:init.el
+=======
+  (deactivate-mark)
+>>>>>>> b02a94eec12a0312bb77dd5f2c253ee9e34caa18:init.el
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()
   (define-key matlab-mode-map (kbd "C-c RET") 'my-matlab-eval)
   ;; (local-set-key (kbd "C-c RET") 'my-matlab-eval)
   (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
-  (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
-  (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
-  (local-set-key "\M-o" 'prev-input-goto-paren))
-
   (setq fill-column 77)
   (imenu-add-to-menubar "Find"))
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
+
+
+(add-hook 'matlab-shell-mode-hook
+	  '(lambda()
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
+	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
+	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
 ; ~matlab-mode-stuff
 
