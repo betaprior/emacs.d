@@ -915,8 +915,7 @@ in dired mode without it."
   (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
   (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
   (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
-  (local-set-key "\M-o" 'prev-input-goto-paren))
-
+  (local-set-key "\M-o" 'prev-input-goto-paren)
   (setq fill-column 77)
   (imenu-add-to-menubar "Find"))
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
