@@ -919,7 +919,7 @@ in dired mode without it."
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
 
 
-(add-hook 'M-shell-mode-hook
+(add-hook 'matlab-shell-mode-hook
 	  '(lambda()
 	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
 	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
