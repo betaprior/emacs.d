@@ -81,6 +81,7 @@
 (global-set-key (kbd "M-z") 'anything)
 (global-set-key (kbd "\C-xc") 'anything)
 (global-set-key "\C-c\M-z" 'zap-to-char)
+(global-set-key "\M-Z" 'zap-to-char)
 (define-key anything-map "\t" 'anything-next-line)
 (define-key anything-map [(control tab)] 'anything-select-action)
 (define-key anything-map [(shift tab)] 'anything-previous-line)
