@@ -685,6 +685,7 @@ in dired mode without it."
 
 
 ;;{{{ dired enhancements:
+
 (require 'dired-details)
 ;; (dired-details-install)  ;;;; this seems to break dired, TODO: fix
 (require 'dired+)
@@ -724,6 +725,7 @@ in dired mode without it."
   (interactive)
   (let ((fill-column (point-max)))
   (fill-paragraph nil)))
+
 ;;}}}
 
 ;;{{{ search enhancements:
@@ -904,12 +906,17 @@ in dired mode without it."
 (defun my-matlab-eval ()
   (interactive)
   (matlab-shell-run-region-or-line)
+  (deactivate mark)
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()
   (define-key matlab-mode-map (kbd "C-c RET") 'my-matlab-eval)
   ;; (local-set-key (kbd "C-c RET") 'my-matlab-eval)
   (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
+  (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
+  (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
+  (local-set-key "\M-o" 'prev-input-goto-paren))
+
   (setq fill-column 77)
   (imenu-add-to-menubar "Find"))
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
@@ -1036,13 +1043,43 @@ in dired mode without it."
 	  '(lambda()
 	     (setq fill-column 78)))
 
+(defun my-matlab-shell-next-matching-input-from-input (n)
+  "Get the Nth next matching input from for the command line."
+  (interactive "p")
+  (my-matlab-shell-previous-matching-input-from-input (- n)))
+
+;; my slight modification of Eric Ludlam's code from matlab.el
+(defun my-matlab-shell-previous-matching-input-from-input (n)
+  "Get the Nth previous matching input from for the command line."
+  (interactive "p")
+  (let ((start-point (point)) (at-bol nil))
+    (save-excursion (comint-bol)
+		    (if (eq start-point (point))
+			(setq at-bol t)))
+  (if (and (comint-after-pmark-p) (not at-bol))
+      (if (memq last-command '(my-matlab-shell-previous-matching-input-from-input
+			       my-matlab-shell-next-matching-input-from-input))
+	  ;; This hack keeps the cycling working well. (this is f-ing clever -- LA)
+	  (let ((last-command 'comint-previous-matching-input-from-input))
+	    (comint-next-matching-input-from-input (- n)))
+	;; first time.
+	(comint-next-matching-input-from-input (- n)))
+
+    ;; If somewhere else, just move around.
+    (previous-line n))))
+
+
 (add-hook 'inferior-ess-mode-hook
 	  '(lambda()
-	     (local-set-key [C-up] 'comint-previous-input)
-	     (local-set-key [C-down] 'comint-next-input)
+	     ;; (local-set-key [C-up] 'comint-previous-matching-input-from-input)
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
+	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
+(add-hook 'ess-help-mode-hook
+	  '(lambda()
+	     (define-key ess-help-mode-map "q" 'winner-undo)))
 
 ;; Linking ESS with AucTex
 
@@ -1308,13 +1345,14 @@ in dired mode without it."
  (interactive "p")
  (when (null n)
    (setq n 1))
- (let ((col (current-column)))
+ (let ((col (current-column)) 
+       (line-move-visual nil))
    (interactive)
    (beginning-of-line)
    (next-line 1)
    (transpose-lines n)
    (previous-line 1)
-   (forward-char col)))
+   (move-to-column col)))
 
 (defun move-line-up (n)
  "Moves current line N (1) lines up leaving point in place."
