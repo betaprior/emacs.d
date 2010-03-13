@@ -808,6 +808,20 @@ in dired mode without it."
 (setq tramp-default-method "ssh")
 (setq tramp-debug-buffer nil)
 (setq tramp-password-end-of-line "\r\n")
+
+(defun sudo-edit (&optional arg)
+  (interactive "p")
+  (if arg
+      (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
+    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+ 
+(defun sudo-edit-current-file ()
+  (interactive)
+  (let ((pos (point)))
+    (find-alternate-file (concat "/sudo:root@localhost:" (buffer-file-name (current-buffer))))
+    (goto-char pos)))
+
+
 ;; (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
 ;;        '(("bash" "-i")))
 ;; (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
@@ -1085,6 +1099,10 @@ in dired mode without it."
 	  '(lambda()
 	     (define-key ess-help-mode-map "q" 'winner-undo)))
 
+(defadvice ess-display-help-on-object (after ess-help-turn-off-viewmode () activate)
+  "Turns off viewmode if it's on due to read-onlyness of the ESS help buffer"
+  (setq view-mode nil))
+
 ;; Linking ESS with AucTex
 
 (add-to-list 'auto-mode-alist '("\\.Rnw\\'" . Rnw-mode))
@@ -1142,6 +1160,7 @@ in dired mode without it."
 
 ;;  Allow ido to open recent files
 (require 'recentf)
+(setq recentf-keep '(file-remote-p file-readable-p))
 (recentf-mode 1)
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
@@ -1187,6 +1206,10 @@ in dired mode without it."
 ;;{{{ ido settings (incl keymap, ido recentf, compl. read defadvice):
 
 (require 'ido)
+;; prevent ido from running ido-wash-history when doing sudo (this doesn't play well with tramp)
+(defadvice ido-wash-history (around dont-run-if-root activate)
+  (message "IWH advice"))
+  ;; (unless (string= (getenv "USER") "root") ad-do-it))
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 (setq ido-create-new-buffer 'no-prompt)
@@ -1242,6 +1265,8 @@ in dired mode without it."
                (all-completions "" collection predicate)
                nil require-match initial-input hist def))))
 
+
+
 ;; (defun ido-execute ()
 ;;  (interactive)
 ;;  (let ((ido-max-prospects 7))
@@ -1275,6 +1300,7 @@ in dired mode without it."
 (add-hook 'find-file-hook '(lambda () (progn (recentf-save-list)
 						 (message nil))))
 ;;~ end set ido to do recent files
+
 
 ;;~ end ido-related stuff
 
@@ -1566,6 +1592,7 @@ With argument, do this that many times."
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
  '(speedbar-show-unknown-files t)
+ '(temp-buffer-show-function (quote pop-to-buffer))
  '(thing-types (quote ("word" "symbol" "sexp" "list" "line" "paragraph" "page" "defun" "number" "form")))
  '(w32-symlinks-handle-shortcuts t)
  '(winner-ring-size 100)
