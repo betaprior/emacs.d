@@ -519,10 +519,11 @@ block -- if there are folding markups or if it matches outline regex"
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
 (add-hook 'org-mode-hook 'turn-on-auto-fill)
 
-
-
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
+
+(defadvice org-goto (around dont-focus-temp-buffer activate)
+  (let ((temp-buffer-show-function nil)) ad-do-it))
 
 ;;{{{ -- Windows/cygwin-related settings 
 
