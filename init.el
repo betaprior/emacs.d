@@ -839,8 +839,13 @@ in dired mode without it."
 ;;{{{ Language modes: scheme/ahk/mathematica/matlab
 
 ;; needed just for Matlab(?)  Part of ECB:
-;; (load-file (expand-file-name 
-;; 	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
+(load-file (expand-file-name 
+	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
+;; (semantic-load-enable-minimum-features)
+(semantic-load-enable-code-helpers) 
+(global-semantic-tag-folding-mode)
+(add-to-list 'load-path "~/.emacs.d/elisp/ecb")
+(require 'ecb-autoloads)
 
 ;; Scheme:
 (when (eq emacs-profile 'windows-1)
@@ -1576,6 +1581,7 @@ With argument, do this that many times."
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
+ '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
  '(help-window-select t)
