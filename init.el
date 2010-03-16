@@ -822,11 +822,11 @@ in dired mode without it."
     (find-alternate-file (concat "/sudo:root@localhost:" (buffer-file-name (current-buffer))))
     (goto-char pos)))
 
-
-;; (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
-;;        '(("bash" "-i")))
-;; (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
-;; 	'("bash -i"))
+(when (eq system-type 'windows-nt)
+  (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
+	 '(("bash" "-i")))
+  (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
+	  '("bash -i")))
 
 
 ;; stuff that was necessary to get tramp to work under cygwin
