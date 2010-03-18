@@ -423,9 +423,11 @@ Subsequent calls expands the selection to larger semantic unit."
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
 (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
-(folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
+(folding-add-to-marks-list 'mma-mode "(*{{{" "(*}}}" nil t)
+(folding-add-to-marks-list 'mathematica-mode "(*{{{" "(*}}}" nil t)
 (folding-add-to-marks-list 'ess-mode "### {{{" "### }}}" " ")
 (folding-add-to-marks-list 'ess-mode "## {{{" "## }}}" " ")
+(folding-add-to-marks-list 'ess-mode "##{{{" "##}}}" " ")
 (if (load "folding" 'nomessage 'noerror) 
              (folding-mode-add-find-file-hook))
 
@@ -480,10 +482,13 @@ block -- if there are folding markups or if it matches outline regex"
 (require 'hideshowvis)
 (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
 (load-library "hideshowvis-settings")
+(add-to-list 'hs-special-modes-alist '(ess-mode "{" "}" "#" nil nil))
+(add-hook 'hs-minor-mode-hook 'hs-org/minor-mode)
 
 (add-hook 'c-mode-hook 'hs-minor-mode)
 (add-hook 'c++-mode-hook 'hs-minor-mode)
 (add-hook 'perl-mode-hook 'hs-minor-mode)
+(add-hook 'ess-mode-hook 'hs-minor-mode)
 
 ;; (global-unset-key [f1])
 ;; (global-set-key [f1] 'hs-toggle-hiding)
@@ -1067,14 +1072,16 @@ in dired mode without it."
 	  '(lambda()
 	     (setq fill-column 78)))
 
-(defun my-matlab-shell-next-matching-input-from-input (n)
-  "Get the Nth next matching input from for the command line."
+(defun my-matlab-shell-next-matching-input-from-input (n alt-action)
+  "Get the Nth next matching input from for the command line
+   unless we are at BOL in which case perform alt-action"
   (interactive "p")
-  (my-matlab-shell-previous-matching-input-from-input (- n)))
+  (my-matlab-shell-previous-matching-input-from-input (- n) alt-action))
 
 ;; my slight modification of Eric Ludlam's code from matlab.el
-(defun my-matlab-shell-previous-matching-input-from-input (n)
-  "Get the Nth previous matching input from for the command line."
+(defun my-matlab-shell-previous-matching-input-from-input (n alt-action)
+  "Get the Nth previous matching input from for the command line,
+   unless we are at BOL in which case perform alt-action"
   (interactive "p")
   (let ((start-point (point)) (at-bol nil))
     (save-excursion (comint-bol)
@@ -1083,27 +1090,41 @@ in dired mode without it."
   (if (and (comint-after-pmark-p) (not at-bol))
       (if (memq last-command '(my-matlab-shell-previous-matching-input-from-input
 			       my-matlab-shell-next-matching-input-from-input))
-	  ;; This hack keeps the cycling working well. (this is f-ing clever -- LA)
+	  ;; This hack keeps the cycling working well. 
 	  (let ((last-command 'comint-previous-matching-input-from-input))
 	    (comint-next-matching-input-from-input (- n)))
 	;; first time.
 	(comint-next-matching-input-from-input (- n)))
 
     ;; If somewhere else, just move around.
-    (previous-line n))))
+    (funcall alt-action n))))
+
+(defun my-matlab-shell-next-matching-input-from-input-prevline (n)
+  (interactive "p")
+  (my-matlab-shell-next-matching-input-from-input n 'previous-line))
+(defun my-matlab-shell-previous-matching-input-from-input-prevline (n)
+  (interactive "p")
+  (my-matlab-shell-previous-matching-input-from-input n 'previous-line))
+(defun my-matlab-shell-next-matching-input-from-input-previnput (n)
+  (interactive "p")
+  (my-matlab-shell-next-matching-input-from-input n 'comint-previous-input))
+(defun my-matlab-shell-previous-matching-input-from-input-previnput (n)
+  (interactive "p")
+  (my-matlab-shell-previous-matching-input-from-input n 'comint-previous-input))
+
 
 
 (add-hook 'inferior-ess-mode-hook
 	  '(lambda()
 	     ;; (local-set-key [C-up] 'comint-previous-matching-input-from-input)
-	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
-	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input-prevline)
+	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input-prevline)
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
-(add-hook 'ess-help-mode-hook
-	  '(lambda()
-	     (define-key ess-help-mode-map "q" 'winner-undo)))
+;; (add-hook 'ess-help-mode-hook
+;; 	  '(lambda()
+;; 	     (define-key ess-help-mode-map "q" 'winner-undo)))
 
 (defadvice ess-display-help-on-object (after ess-help-turn-off-viewmode () activate)
   "Turns off viewmode if it's on due to read-onlyness of the ESS help buffer"
