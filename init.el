@@ -192,7 +192,16 @@
 ;; make woman not pop up a new frame
 (setq woman-use-own-frame nil)
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
-(setq isearch-allow-scroll t)
+(setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
+
+(cua-mode 'emacs)
+(global-set-key (kbd "C-SPC") ;; hit C-SPC twice for the awesome rectangle editing power 
+		'(lambda(&optional arg) (interactive "P")
+		   (if (or (not mark-active) arg)
+		       (cua-set-mark arg)
+		     (cua-set-rectangle-mark))))
+
+
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
 (setq browse-url-browser-function 'browse-url-firefox)
@@ -424,7 +433,9 @@ Subsequent calls expands the selection to larger semantic unit."
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
 (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
 (folding-add-to-marks-list 'mma-mode "(*{{{" "(*}}}" nil t)
+(folding-add-to-marks-list 'mma-mode "(* {{{" "(* }}}" nil t)
 (folding-add-to-marks-list 'mathematica-mode "(*{{{" "(*}}}" nil t)
+(folding-add-to-marks-list 'mathematica-mode "(* {{{" "(* }}}" nil t)
 (folding-add-to-marks-list 'ess-mode "### {{{" "### }}}" " ")
 (folding-add-to-marks-list 'ess-mode "## {{{" "## }}}" " ")
 (folding-add-to-marks-list 'ess-mode "##{{{" "##}}}" " ")
@@ -1257,6 +1268,7 @@ in dired mode without it."
     (define-key ido-completion-map [backtab] 'ido-prev-match)
  )
 
+
 ;; (defvar ido-execute-command-cache nil)
 
 ;; (defun ido-execute ()
@@ -1601,6 +1613,10 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
+ '(cua-delete-selection nil)
+ '(cua-enable-cua-keys nil)
+ '(cua-remap-control-v nil)
+ '(cua-remap-control-z nil)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
