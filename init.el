@@ -8,6 +8,7 @@
 	((string= hostname "leo-gateway") 'linux-gateway)
 	(t 'linux-default)))
 (defvar master-session (getenv "EMACS_MASTER"))
+(setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
 
 ;; Because GNOME refuses to divulge environment variables without some voodoo
 ;; set them up here 
@@ -71,15 +72,17 @@
 (require 'anything)
 (require 'anything-config)
 (setq anything-sources
-      (list anything-c-source-buffers
-            anything-c-source-file-name-history
+      (list anything-c-source-buffers+
+	    anything-c-source-recentf
 	    anything-c-source-files-in-current-dir
             anything-c-source-info-pages
+            anything-c-source-file-name-history
             anything-c-source-man-pages
 	    anything-c-source-file-cache
             anything-c-source-emacs-commands))
 (global-set-key (kbd "M-z") 'anything)
 (global-set-key (kbd "\C-xc") 'anything)
+(global-set-key (kbd "\C-xx") 'anything)
 (global-set-key "\C-c\M-z" 'zap-to-char)
 (global-set-key "\M-Z" 'zap-to-char)
 (define-key anything-map "\t" 'anything-next-line)
@@ -195,7 +198,7 @@
 (setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
 
 (cua-mode 'emacs)
-(global-set-key (kbd "C-SPC") ;; hit C-SPC twice for the awesome rectangle editing power 
+(global-set-key (kbd "C-@") ;; hit C-SPC twice for the awesome rectangle editing power 
 		'(lambda(&optional arg) (interactive "P")
 		   (if (or (not mark-active) arg)
 		       (cua-set-mark arg)
@@ -453,8 +456,9 @@ Subsequent calls expands the selection to larger semantic unit."
 (defun check-folding-line (line)
   "Checks if there's an evidence that this line is a start of folded
 block -- if there are folding markups or if it matches outline regex"
-  (or (string-match "{{{\\|}}}" line) ; could AND w/ (symbol-value folding-mode)
-      (and (symbol-value outline-minor-mode) (string-match outline-regexp line))))
+  (or (and (string-match "{{{\\|}}}" line) (symbol-value folding-mode))
+      (and (symbol-value outline-minor-mode) (string-match outline-regexp line))
+      (and (symbol-value hs-minor-mode) (string-match hs-block-start-regexp line))))
 
 (defun indent-or-toggle-fold () ; doesn't work well w/ python?
   (interactive)
@@ -486,13 +490,21 @@ block -- if there are folding markups or if it matches outline regex"
 	     (define-key outline-minor-mode-map [(tab)]
 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
 
+
+(defadvice hs-org/hideshow (around hs-org-check-line activate)
+  (save-excursion
+    (end-of-line)
+    (if (check-folding-line (thing-at-point 'line)) ad-do-it)))
+
+
 (global-set-key [(control c) tab]  'indent-according-to-mode)
 
 ;; HideShow stuff:
 (require 'hideshow-org)
-(require 'hideshowvis)
-(autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
-(load-library "hideshowvis-settings")
+(when window-system
+  (require 'hideshowvis)
+  (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
+  (load-library "hideshowvis-settings"))
 (add-to-list 'hs-special-modes-alist '(ess-mode "{" "}" "#" nil nil))
 (add-hook 'hs-minor-mode-hook 'hs-org/minor-mode)
 
@@ -859,7 +871,8 @@ in dired mode without it."
 	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
 ;; (semantic-load-enable-minimum-features)
 (semantic-load-enable-code-helpers) 
-(global-semantic-tag-folding-mode)
+(if window-system ;; don't turn this on in terminal mode
+    (global-semantic-tag-folding-mode))
 (add-to-list 'load-path "~/.emacs.d/elisp/ecb")
 (require 'ecb-autoloads)
 
@@ -1332,7 +1345,7 @@ in dired mode without it."
     (ido-completing-read "Recentf open: "
                          (mapcar (lambda (path)
                                    (replace-regexp-in-string home "~" path))
-                                 recentf-list)
+                                 recentf-list) 
                          nil t))))
 
 (global-set-key (kbd "C-x f") 'ido-choose-from-recentf)
