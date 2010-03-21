@@ -876,6 +876,24 @@ in dired mode without it."
 (add-to-list 'load-path "~/.emacs.d/elisp/ecb")
 (require 'ecb-autoloads)
 
+;; Python:
+(defun my-python-eval ()
+  "python-shell-run-region-or-defun-and-go"
+   (interactive)
+ (if (and transient-mark-mode mark-active)
+     (python-send-region (mark) (point))
+   (python-send-defun))
+ (deactivate-mark)
+ (python-switch-to-python t))
+
+(defun my-python-mode-hook ()
+  (define-key python-mode-map (kbd "C-c r") 'my-python-eval)
+  (define-key python-mode-map (kbd "C-c RET") 'my-python-eval)
+  ;; (local-set-key (kbd "C-c RET") 'my-python-eval)
+  (define-key python-mode-map [(shift return)] 'my-python-eval))
+(add-hook 'python-mode-hook 'my-python-mode-hook) 
+
+
 ;; Scheme:
 (when (eq emacs-profile 'windows-1)
   (setq scheme-program-name "C:/Program-Files/MzScheme/mzscheme")
@@ -953,6 +971,7 @@ in dired mode without it."
 (setq matlab-indent-function t)	; if you want function bodies indented
 (setq matlab-verify-on-save-flag nil)	; turn off auto-verify on save
 
+
 (defun my-matlab-eval ()
   (interactive)
   (matlab-shell-run-region-or-line)
@@ -960,6 +979,7 @@ in dired mode without it."
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()
+  (define-key matlab-mode-map (kbd "C-c r") 'my-matlab-eval)
   (define-key matlab-mode-map (kbd "C-c RET") 'my-matlab-eval)
   ;; (local-set-key (kbd "C-c RET") 'my-matlab-eval)
   (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
