@@ -490,9 +490,10 @@ block -- if there are folding markups or if it matches outline regex"
 
 ;; HideShow stuff:
 (require 'hideshow-org)
-(require 'hideshowvis)
-(autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
-(load-library "hideshowvis-settings")
+(when window-system ;; hideshowvis crashes in terminal
+  (require 'hideshowvis)
+  (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
+  (load-library "hideshowvis-settings"))
 (add-to-list 'hs-special-modes-alist '(ess-mode "{" "}" "#" nil nil))
 (add-hook 'hs-minor-mode-hook 'hs-org/minor-mode)
 
