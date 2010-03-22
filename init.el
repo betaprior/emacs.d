@@ -889,9 +889,25 @@ in dired mode without it."
 (defun my-python-mode-hook ()
   (define-key python-mode-map (kbd "C-c r") 'my-python-eval)
   (define-key python-mode-map (kbd "C-c RET") 'my-python-eval)
+  (define-key python-mode-map [f1] 'my-python-documentation)
+  (define-key inferior-python-mode-map [f1] 'my-python-documentation)
   ;; (local-set-key (kbd "C-c RET") 'my-python-eval)
   (define-key python-mode-map [(shift return)] 'my-python-eval))
 (add-hook 'python-mode-hook 'my-python-mode-hook) 
+
+(defun my-python-documentation (w)
+  "Launch PyDOC on the Word at Point"
+  (interactive
+   (list (let* ((word (thing-at-point 'word))
+		(input (read-string 
+			(format "pydoc entry%s: " 
+				(if (not word) "" (format " (default %s)" word))))))
+	   (if (string= input "") 
+	       (if (not word) (error "No pydoc args given")
+		 word) ;sinon word
+	     input)))) ;sinon input
+  (shell-command (concat python-command " -c \"from pydoc import help;help(\'" w "\')\"") "*PYDOCS*")
+  (view-buffer-other-window "*PYDOCS*" t '(lambda (arg) (quit-window t))))
 
 
 ;; Scheme:
