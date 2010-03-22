@@ -895,6 +895,10 @@ in dired mode without it."
   (define-key python-mode-map [(shift return)] 'my-python-eval))
 (add-hook 'python-mode-hook 'my-python-mode-hook) 
 
+(add-hook 'inferior-python-mode-hook
+	  '(lambda()
+	     (local-set-key "\M-o" 'prev-input-goto-paren)))
+
 (defun my-python-documentation (w)
   "Launch PyDOC on the Word at Point"
   (interactive
