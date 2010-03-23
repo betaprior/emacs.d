@@ -442,6 +442,8 @@ Subsequent calls expands the selection to larger semantic unit."
 (folding-add-to-marks-list 'ess-mode "### {{{" "### }}}" " ")
 (folding-add-to-marks-list 'ess-mode "## {{{" "## }}}" " ")
 (folding-add-to-marks-list 'ess-mode "##{{{" "##}}}" " ")
+(folding-add-to-marks-list 'ahk-mode "; {{{" "; }}}" " ")
+(folding-add-to-marks-list 'ahk-mode ";; {{{" ";; }}}" " ")
 (if (load "folding" 'nomessage 'noerror) 
              (folding-mode-add-find-file-hook))
 
