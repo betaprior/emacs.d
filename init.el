@@ -8,6 +8,7 @@
 	((string= hostname "leo-gateway") 'linux-gateway)
 	(t 'linux-default)))
 (defvar master-session (getenv "EMACS_MASTER"))
+(setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
 
 ;; Because GNOME refuses to divulge environment variables without some voodoo
 ;; set them up here 
@@ -71,16 +72,19 @@
 (require 'anything)
 (require 'anything-config)
 (setq anything-sources
-      (list anything-c-source-buffers
-            anything-c-source-file-name-history
+      (list anything-c-source-buffers+
+	    anything-c-source-recentf
 	    anything-c-source-files-in-current-dir
             anything-c-source-info-pages
+            anything-c-source-file-name-history
             anything-c-source-man-pages
 	    anything-c-source-file-cache
             anything-c-source-emacs-commands))
 (global-set-key (kbd "M-z") 'anything)
 (global-set-key (kbd "\C-xc") 'anything)
+(global-set-key (kbd "\C-xx") 'anything)
 (global-set-key "\C-c\M-z" 'zap-to-char)
+(global-set-key "\M-Z" 'zap-to-char)
 (define-key anything-map "\t" 'anything-next-line)
 (define-key anything-map [(control tab)] 'anything-select-action)
 (define-key anything-map [(shift tab)] 'anything-previous-line)
@@ -191,7 +195,16 @@
 ;; make woman not pop up a new frame
 (setq woman-use-own-frame nil)
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
-(setq isearch-allow-scroll t)
+(setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
+
+(cua-mode 'emacs)
+(global-set-key (kbd "C-@") ;; hit C-SPC twice for the awesome rectangle editing power 
+		'(lambda(&optional arg) (interactive "P")
+		   (if (or (not mark-active) arg)
+		       (cua-set-mark arg)
+		     (cua-set-rectangle-mark))))
+
+
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
 (setq browse-url-browser-function 'browse-url-firefox)
@@ -421,10 +434,17 @@ Subsequent calls expands the selection to larger semantic unit."
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
-(folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
-(folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
-(folding-add-to-marks-list 'ess-mode "### {{{" "### }}}" " ")
+(folding-add-to-marks-list 'matlab-mode "% {{{" "% }}}" nil t)
+;; (folding-add-to-marks-list 'matlab-mode "%{{{" "%}}}" nil t)
+(folding-add-to-marks-list 'mma-mode "(* {{{" "(* }}}" nil t)
+;; (folding-add-to-marks-list 'mma-mode "(*{{{" "(*}}}" nil t)
+(folding-add-to-marks-list 'mathematica-mode "(* {{{" "(* }}}" nil t)
+;; (folding-add-to-marks-list 'mathematica-mode "(*{{{" "(*}}}" nil t)
 (folding-add-to-marks-list 'ess-mode "## {{{" "## }}}" " ")
+(folding-add-to-marks-list 'ess-mode "##{{{" "##}}}" " ")
+(folding-add-to-marks-list 'ess-mode "### {{{" "### }}}" " ")
+(folding-add-to-marks-list 'ahk-mode ";; {{{" ";; }}}" " ")
+(folding-add-to-marks-list 'ahk-mode "; {{{" "; }}}" " ")
 (if (load "folding" 'nomessage 'noerror) 
              (folding-mode-add-find-file-hook))
 
@@ -439,8 +459,9 @@ Subsequent calls expands the selection to larger semantic unit."
 (defun check-folding-line (line)
   "Checks if there's an evidence that this line is a start of folded
 block -- if there are folding markups or if it matches outline regex"
-  (or (string-match "{{{\\|}}}" line) ; could AND w/ (symbol-value folding-mode)
-      (and (symbol-value outline-minor-mode) (string-match outline-regexp line))))
+  (or (and (string-match "{{{\\|}}}" line) (symbol-value folding-mode))
+      (and (symbol-value outline-minor-mode) (string-match outline-regexp line))
+      (and (symbol-value hs-minor-mode) (string-match hs-block-start-regexp line))))
 
 (defun indent-or-toggle-fold () ; doesn't work well w/ python?
   (interactive)
@@ -472,17 +493,28 @@ block -- if there are folding markups or if it matches outline regex"
 	     (define-key outline-minor-mode-map [(tab)]
 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
 
+
+(defadvice hs-org/hideshow (around hs-org-check-line activate)
+  (save-excursion
+    (end-of-line)
+    (if (check-folding-line (thing-at-point 'line)) ad-do-it)))
+
+
 (global-set-key [(control c) tab]  'indent-according-to-mode)
 
 ;; HideShow stuff:
 (require 'hideshow-org)
-(require 'hideshowvis)
-(autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
-(load-library "hideshowvis-settings")
+(when window-system ;; hideshowvis crashes in terminal
+  (require 'hideshowvis)
+  (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
+  (load-library "hideshowvis-settings"))
+(add-to-list 'hs-special-modes-alist '(ess-mode "{" "}" "#" nil nil))
+(add-hook 'hs-minor-mode-hook 'hs-org/minor-mode)
 
 (add-hook 'c-mode-hook 'hs-minor-mode)
 (add-hook 'c++-mode-hook 'hs-minor-mode)
 (add-hook 'perl-mode-hook 'hs-minor-mode)
+(add-hook 'ess-mode-hook 'hs-minor-mode)
 
 ;; (global-unset-key [f1])
 ;; (global-set-key [f1] 'hs-toggle-hiding)
@@ -518,10 +550,11 @@ block -- if there are folding markups or if it matches outline regex"
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
 (add-hook 'org-mode-hook 'turn-on-auto-fill)
 
-
-
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
+
+(defadvice org-goto (around dont-focus-temp-buffer activate)
+  (let ((temp-buffer-show-function nil)) ad-do-it))
 
 ;;{{{ -- Windows/cygwin-related settings 
 
@@ -685,6 +718,7 @@ in dired mode without it."
 
 
 ;;{{{ dired enhancements:
+
 (require 'dired-details)
 ;; (dired-details-install)  ;;;; this seems to break dired, TODO: fix
 (require 'dired+)
@@ -724,6 +758,7 @@ in dired mode without it."
   (interactive)
   (let ((fill-column (point-max)))
   (fill-paragraph nil)))
+
 ;;}}}
 
 ;;{{{ search enhancements:
@@ -805,10 +840,24 @@ in dired mode without it."
 (setq tramp-default-method "ssh")
 (setq tramp-debug-buffer nil)
 (setq tramp-password-end-of-line "\r\n")
-;; (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
-;;        '(("bash" "-i")))
-;; (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
-;; 	'("bash -i"))
+
+(defun sudo-edit (&optional arg)
+  (interactive "p")
+  (if arg
+      (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
+    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+ 
+(defun sudo-edit-current-file ()
+  (interactive)
+  (let ((pos (point)))
+    (find-alternate-file (concat "/sudo:root@localhost:" (buffer-file-name (current-buffer))))
+    (goto-char pos)))
+
+(when (eq system-type 'windows-nt)
+  (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
+	 '(("bash" "-i")))
+  (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
+	  '("bash -i")))
 
 
 ;; stuff that was necessary to get tramp to work under cygwin
@@ -821,8 +870,52 @@ in dired mode without it."
 ;;{{{ Language modes: scheme/ahk/mathematica/matlab
 
 ;; needed just for Matlab(?)  Part of ECB:
-;; (load-file (expand-file-name 
-;; 	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
+(load-file (expand-file-name 
+	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
+;; (semantic-load-enable-minimum-features)
+(semantic-load-enable-code-helpers) 
+(if window-system ;; don't turn this on in terminal mode
+    (global-semantic-tag-folding-mode))
+(add-to-list 'load-path "~/.emacs.d/elisp/ecb")
+(require 'ecb-autoloads)
+
+;; Python:
+(defun my-python-eval ()
+  "python-shell-run-region-or-defun-and-go"
+   (interactive)
+ (if (and transient-mark-mode mark-active)
+     (python-send-region (mark) (point))
+   (python-send-defun))
+ (deactivate-mark)
+ (python-switch-to-python t))
+
+(defun my-python-mode-hook ()
+  (define-key python-mode-map (kbd "C-c r") 'my-python-eval)
+  (define-key python-mode-map (kbd "C-c RET") 'my-python-eval)
+  (define-key python-mode-map [f1] 'my-python-documentation)
+  (define-key inferior-python-mode-map [f1] 'my-python-documentation)
+  ;; (local-set-key (kbd "C-c RET") 'my-python-eval)
+  (define-key python-mode-map [(shift return)] 'my-python-eval))
+(add-hook 'python-mode-hook 'my-python-mode-hook) 
+
+(add-hook 'inferior-python-mode-hook
+	  '(lambda()
+	     (local-set-key "\M-o" 'prev-input-goto-paren)))
+
+(defun my-python-documentation (w)
+  "Launch PyDOC on the Word at Point"
+  (interactive
+   (list (let* ((word (thing-at-point 'word))
+		(input (read-string 
+			(format "pydoc entry%s: " 
+				(if (not word) "" (format " (default %s)" word))))))
+	   (if (string= input "") 
+	       (if (not word) (error "No pydoc args given")
+		 word) ;sinon word
+	     input)))) ;sinon input
+  (shell-command (concat python-command " -c \"from pydoc import help;help(\'" w "\')\"") "*PYDOCS*")
+  (view-buffer-other-window "*PYDOCS*" t '(lambda (arg) (quit-window t))))
+
 
 ;; Scheme:
 (when (eq emacs-profile 'windows-1)
@@ -901,18 +994,28 @@ in dired mode without it."
 (setq matlab-indent-function t)	; if you want function bodies indented
 (setq matlab-verify-on-save-flag nil)	; turn off auto-verify on save
 
+
 (defun my-matlab-eval ()
   (interactive)
   (matlab-shell-run-region-or-line)
+  (deactivate-mark) ;; doesn't work, have to go manually modify matlab.el
   (matlab-show-matlab-shell-buffer))
 
 (defun my-matlab-mode-hook ()
+  (define-key matlab-mode-map (kbd "C-c r") 'my-matlab-eval)
   (define-key matlab-mode-map (kbd "C-c RET") 'my-matlab-eval)
   ;; (local-set-key (kbd "C-c RET") 'my-matlab-eval)
   (define-key matlab-mode-map [(shift return)] 'my-matlab-eval)
   (setq fill-column 77)
   (imenu-add-to-menubar "Find"))
 (add-hook 'matlab-mode-hook 'my-matlab-mode-hook)
+
+
+(add-hook 'matlab-shell-mode-hook
+	  '(lambda()
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input)
+	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input)
+	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
 ; ~matlab-mode-stuff
 
@@ -1036,13 +1139,63 @@ in dired mode without it."
 	  '(lambda()
 	     (setq fill-column 78)))
 
+(defun my-matlab-shell-next-matching-input-from-input (n alt-action)
+  "Get the Nth next matching input from for the command line
+   unless we are at BOL in which case perform alt-action"
+  (interactive "p")
+  (my-matlab-shell-previous-matching-input-from-input (- n) alt-action))
+
+;; my slight modification of Eric Ludlam's code from matlab.el
+(defun my-matlab-shell-previous-matching-input-from-input (n alt-action)
+  "Get the Nth previous matching input from for the command line,
+   unless we are at BOL in which case perform alt-action"
+  (interactive "p")
+  (let ((start-point (point)) (at-bol nil))
+    (save-excursion (comint-bol)
+		    (if (eq start-point (point))
+			(setq at-bol t)))
+  (if (and (comint-after-pmark-p) (not at-bol))
+      (if (memq last-command '(my-matlab-shell-previous-matching-input-from-input
+			       my-matlab-shell-next-matching-input-from-input))
+	  ;; This hack keeps the cycling working well. 
+	  (let ((last-command 'comint-previous-matching-input-from-input))
+	    (comint-next-matching-input-from-input (- n)))
+	;; first time.
+	(comint-next-matching-input-from-input (- n)))
+
+    ;; If somewhere else, just move around.
+    (funcall alt-action n))))
+
+(defun my-matlab-shell-next-matching-input-from-input-prevline (n)
+  (interactive "p")
+  (my-matlab-shell-next-matching-input-from-input n 'previous-line))
+(defun my-matlab-shell-previous-matching-input-from-input-prevline (n)
+  (interactive "p")
+  (my-matlab-shell-previous-matching-input-from-input n 'previous-line))
+(defun my-matlab-shell-next-matching-input-from-input-previnput (n)
+  (interactive "p")
+  (my-matlab-shell-next-matching-input-from-input n 'comint-previous-input))
+(defun my-matlab-shell-previous-matching-input-from-input-previnput (n)
+  (interactive "p")
+  (my-matlab-shell-previous-matching-input-from-input n 'comint-previous-input))
+
+
+
 (add-hook 'inferior-ess-mode-hook
 	  '(lambda()
-	     (local-set-key [C-up] 'comint-previous-input)
-	     (local-set-key [C-down] 'comint-next-input)
+	     ;; (local-set-key [C-up] 'comint-previous-matching-input-from-input)
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input-prevline)
+	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input-prevline)
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
+;; (add-hook 'ess-help-mode-hook
+;; 	  '(lambda()
+;; 	     (define-key ess-help-mode-map "q" 'winner-undo)))
+
+(defadvice ess-display-help-on-object (after ess-help-turn-off-viewmode () activate)
+  "Turns off viewmode if it's on due to read-onlyness of the ESS help buffer"
+  (setq view-mode nil))
 
 ;; Linking ESS with AucTex
 
@@ -1101,6 +1254,7 @@ in dired mode without it."
 
 ;;  Allow ido to open recent files
 (require 'recentf)
+(setq recentf-keep '(file-remote-p file-readable-p))
 (recentf-mode 1)
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
@@ -1144,7 +1298,12 @@ in dired mode without it."
 
 
 ;;{{{ ido settings (incl keymap, ido recentf, compl. read defadvice):
+
 (require 'ido)
+;; prevent ido from running ido-wash-history when doing sudo (this doesn't play well with tramp)
+(defadvice ido-wash-history (around dont-run-if-root activate)
+  (message "IWH advice"))
+  ;; (unless (string= (getenv "USER") "root") ad-do-it))
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 (setq ido-create-new-buffer 'no-prompt)
@@ -1164,6 +1323,7 @@ in dired mode without it."
     (define-key ido-completion-map [(shift tab)] 'ido-prev-match)
     (define-key ido-completion-map [backtab] 'ido-prev-match)
  )
+
 
 ;; (defvar ido-execute-command-cache nil)
 
@@ -1200,6 +1360,8 @@ in dired mode without it."
                (all-completions "" collection predicate)
                nil require-match initial-input hist def))))
 
+
+
 ;; (defun ido-execute ()
 ;;  (interactive)
 ;;  (let ((ido-max-prospects 7))
@@ -1234,7 +1396,9 @@ in dired mode without it."
 						 (message nil))))
 ;;~ end set ido to do recent files
 
+
 ;;~ end ido-related stuff
+
 ;;}}}
 
 ;;this functionality is superceded by smex:
@@ -1308,13 +1472,14 @@ in dired mode without it."
  (interactive "p")
  (when (null n)
    (setq n 1))
- (let ((col (current-column)))
+ (let ((col (current-column)) 
+       (line-move-visual nil))
    (interactive)
    (beginning-of-line)
    (next-line 1)
    (transpose-lines n)
    (previous-line 1)
-   (forward-char col)))
+   (move-to-column col)))
 
 (defun move-line-up (n)
  "Moves current line N (1) lines up leaving point in place."
@@ -1503,8 +1668,13 @@ With argument, do this that many times."
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
- '(TeX-output-view-style TeX-output-view-style-commands t)
+ '(TeX-output-view-style TeX-output-view-style-commands)
+ '(cua-delete-selection nil)
+ '(cua-enable-cua-keys nil)
+ '(cua-remap-control-v nil)
+ '(cua-remap-control-z nil)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
+ '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
  '(help-window-select t)
@@ -1523,6 +1693,7 @@ With argument, do this that many times."
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
  '(speedbar-show-unknown-files t)
+ '(temp-buffer-show-function (quote pop-to-buffer))
  '(thing-types (quote ("word" "symbol" "sexp" "list" "line" "paragraph" "page" "defun" "number" "form")))
  '(w32-symlinks-handle-shortcuts t)
  '(winner-ring-size 100)
