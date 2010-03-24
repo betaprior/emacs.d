@@ -1,8 +1,8 @@
-This is semantic.info, produced by makeinfo version 4.9 from
+This is semantic.info, produced by makeinfo version 4.13 from
 semantic.texi.
 
-   This manual documents Semantic, a new intrastructure for parser
-based text analysis for Emacs.
+This manual documents Semantic, a new intrastructure for parser based
+text analysis for Emacs.
 
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Eric M.
 Ludlam Copyright (C) 2001, 2002, 2003, 2005 David Ponce Copyright (C)
@@ -353,7 +353,7 @@ File: semantic.info,  Node: Search Optimization,  Next: Parsing Optimization,  P
 
 A common use of semantic is for smart completion and tag browsing.
 These operations involve searching through the tags of your files.  For
-complete documentation on configuring your searches, *Note
+complete documentation on configuring your searches, *note
 (semantic-user)Semanticdb Search Configuration::.
 
 The default configuration is for the most complete set of searches
@@ -463,7 +463,7 @@ cause particular problems to semantic.
 2.3.2 Parsing in idle time
 --------------------------
 
-Tags are usually kept up to date when Emacs is idle *Note
+Tags are usually kept up to date when Emacs is idle *note
 (semantic-user)Idle Scheduler::.  The semantic idle-scheduler
 automatically updates the tags in various buffers before executing
 specific idle modes, such as summary mode.
@@ -477,8 +477,8 @@ You might choose to tune the scheduler with some code like this in your
      (setq semantic-idle-scheduler-max-buffer-size 100000)
 
 There is also a secondary idle services that runs after a longer delay.
-The secondary idle service will perform large scale parsing of any
-file semantic thinks you may need to reference, and then saves all the
+The secondary idle service will perform large scale parsing of any file
+semantic thinks you may need to reference, and then saves all the
 databases.
 
 You might want to tune the scheduler timer in your `.emacs' file like
@@ -831,60 +831,48 @@ File: semantic.info,  Node: Glossary,  Next: GNU Free Documentation License,  Pr
 Appendix A Glossary
 *******************
 
-
-     BNF
+BNF
      In semantic 1.4, a BNF file represented "Bovine Normal Form", the
      grammar file used for the 1.4 parser generator.  This was a play on
      Backus-Naur Form which proved too confusing.
 
-
-     bovinate
+bovinate
      A verb representing what happens when a bovine parser parses a
      file.
 
-
-     bovine lambda
+bovine lambda
      In a bovine, or LL parser, the bovine lambda is a function to
      execute when a specific set of match rules has succeeded in
      matching text from the buffer.
 
-
-     bovine parser
+bovine parser
      A parser using the bovine parser generator.  It is an LL parser
      suitible for small simple languages.
 
+context
 
-     context
+LALR
 
-
-     LALR
-
-
-     lexer
+lexer
      A program which converts text into a stream of tokens by analyzing
      them lexically.  Lexers will commonly create strings, symbols,
      keywords and punctuation, and strip whitespaces and comments.
 
+LL
 
-     LL
-
-
-     nonterminal
+nonterminal
      A nonterminal symbol or simply a nonterminal stands for a class of
      syntactically equivalent groupings. A nonterminal symbol name is
      used in writing grammar rules.
 
-
-     overloadable
+overloadable
      Some functions are defined via `define-overload'.  These can be
      overloaded via ....
 
-
-     parser
+parser
      A program that converts tokens to tags.
 
-
-     tag
+tag
      A tag is a representation of some entity in a language file, such
      as a function, variable, or include statement.  In semantic, the
      word tag is used the same way it is used for the etags or ctags
@@ -893,17 +881,14 @@ Appendix A Glossary
      A tag is usually bound to a buffer region via overlay, or it just
      specifies character locations in a file.
 
-
-     token
+token
      A single atomic item returned from a lexer.  It represents some set
      of characters found in a buffer.
 
-
-     token stream
+token stream
      The output of the lexer as well as the input to the parser.
 
-
-     wisent parser
+wisent parser
      A parser using the wisent parser generator.  It is a port of bison
      to Emacs Lisp.  It is an LALR parser suitable for complex
      languages.
@@ -1102,20 +1087,19 @@ Appendix B GNU Free Documentation License
      H. Include an unaltered copy of this License.
      I. Preserve the section entitled "History", and its title, and add
      to    it an item stating at least the title, year, new authors, and
-       publisher of the Modified Version as given on the Title Page.
-     If    there is no section entitled "History" in the Document,
-     create one    stating the title, year, authors, and publisher of
-     the Document as    given on its Title Page, then add an item
+       publisher of the Modified Version as given on the Title Page.  If
+       there is no section entitled "History" in the Document, create
+     one    stating the title, year, authors, and publisher of the
+     Document as    given on its Title Page, then add an item
      describing the Modified    Version as stated in the previous
      sentence.
      J. Preserve the network location, if any, given in the Document for
-       public access to a Transparent copy of the Document, and
-     likewise    the network locations given in the Document for
-     previous versions    it was based on.  These may be placed in the
-     "History" section.     You may omit a network location for a work
-     that was published at    least four years before the Document
-     itself, or if the original    publisher of the version it refers
-     to gives permission.
+       public access to a Transparent copy of the Document, and likewise
+       the network locations given in the Document for previous versions
+       it was based on.  These may be placed in the "History" section.
+       You may omit a network location for a work that was published at
+       least four years before the Document itself, or if the original
+      publisher of the version it refers to gives permission.
      K. In any section entitled "Acknowledgements" or "Dedications",
      preserve the section's title, and preserve in the section all the
       substance and tone of each of the contributor acknowledgements
@@ -1274,10 +1258,10 @@ notices just after the title page:
        Front-Cover Texts being LIST, and with the Back-Cover Texts being LIST.
        A copy of the license is included in the section entitled ``GNU
        Free Documentation License''.
-If you have no Invariant Sections, write "with no Invariant
-Sections" instead of saying which ones are invariant.  If you have no
-Front-Cover Texts, write "no Front-Cover Texts" instead of "Front-Cover
-Texts being LIST"; likewise for Back-Cover Texts.
+If you have no Invariant Sections, write "with no Invariant Sections"
+instead of saying which ones are invariant.  If you have no Front-Cover
+Texts, write "no Front-Cover Texts" instead of "Front-Cover Texts being
+LIST"; likewise for Back-Cover Texts.
 
 If your document contains nontrivial examples of program code, we
 recommend releasing these examples in parallel under your choice of
@@ -1311,45 +1295,45 @@ Index
 
 
 Tag Table:
-Node: Top1107
-Node: Overview1998
-Node: Semantic Components6182
-Node: Installation/Basic Configuration7602
-Node: Canned Configuration8214
-Ref: semantic-load-enable-minimum-features8800
-Ref: semantic-enable-all-exuberent-ctags-support9954
-Ref: semantic-load-enable-code-helpers10616
-Ref: semantic-load-enable-gaudy-code-helpers11949
-Ref: semantic-load-enable-excessive-code-helpers13164
-Ref: semantic-load-enable-semantic-debugging-helpers13685
-Node: Search Optimization14290
-Node: Parsing Optimization17868
-Ref: semantic-inhibit-functions18468
-Node: Semantic manuals19758
-Node: Semantic Internals20579
-Node: Parser code21296
-Node: Tag handling23050
-Node: Semanticdb24719
-Node: Analyzer26811
-Node: Tools28734
-Node: Tests30411
-Node: Glossary30869
-Ref: BNF31026
-Ref: bovinate31231
-Ref: bovine lambda31326
-Ref: bovine parser31515
-Ref: context31647
-Ref: LALR31662
-Ref: lexer31674
-Ref: LL31894
-Ref: nonterminal31904
-Ref: overloadable32101
-Ref: parser32215
-Ref: tag32274
-Ref: token32625
-Ref: token stream32749
-Ref: wisent parser32834
-Node: GNU Free Documentation License33007
-Node: Index52739
+Node: Top1105
+Node: Overview1996
+Node: Semantic Components6180
+Node: Installation/Basic Configuration7600
+Node: Canned Configuration8212
+Ref: semantic-load-enable-minimum-features8798
+Ref: semantic-enable-all-exuberent-ctags-support9952
+Ref: semantic-load-enable-code-helpers10614
+Ref: semantic-load-enable-gaudy-code-helpers11947
+Ref: semantic-load-enable-excessive-code-helpers13162
+Ref: semantic-load-enable-semantic-debugging-helpers13683
+Node: Search Optimization14288
+Node: Parsing Optimization17866
+Ref: semantic-inhibit-functions18466
+Node: Semantic manuals19756
+Node: Semantic Internals20577
+Node: Parser code21294
+Node: Tag handling23048
+Node: Semanticdb24717
+Node: Analyzer26809
+Node: Tools28732
+Node: Tests30409
+Node: Glossary30867
+Ref: BNF31024
+Ref: bovinate31223
+Ref: bovine lambda31312
+Ref: bovine parser31495
+Ref: context31621
+Ref: LALR31630
+Ref: lexer31636
+Ref: LL31850
+Ref: nonterminal31854
+Ref: overloadable32045
+Ref: parser32153
+Ref: tag32206
+Ref: token32551
+Ref: token stream32669
+Ref: wisent parser32748
+Node: GNU Free Documentation License32915
+Node: Index52635
 
 End Tag Table

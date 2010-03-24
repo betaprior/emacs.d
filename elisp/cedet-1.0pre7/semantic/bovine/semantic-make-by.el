@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2008 Eric M. Ludlam
 
-;; Author: Leo Alekseyev <leo@matroskin>
-;; Created: 2010-03-05 20:41:49-0500
+;; Author:  <Leo@LEO-FUJITSU-XP>
+;; Created: 2010-03-06 05:21:00-0500
 ;; Keywords: syntax
 ;; X-RCS: $Id$
 

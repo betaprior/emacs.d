@@ -1503,7 +1503,7 @@ With argument, do this that many times."
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
- '(TeX-output-view-style TeX-output-view-style-commands)
+ '(TeX-output-view-style TeX-output-view-style-commands t)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
@@ -1511,6 +1511,7 @@ With argument, do this that many times."
  '(hideshowvis-ignore-same-line nil)
  '(matlab-fill-fudge-hard-maximum 89)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
+ '(org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
  '(org-hide-leading-stars t)

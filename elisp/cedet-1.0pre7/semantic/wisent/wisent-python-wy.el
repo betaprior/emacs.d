@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2002, 2003, 2004, 2007 Richard Kim
 
-;; Author: Leo Alekseyev <leo@matroskin>
-;; Created: 2010-03-05 20:41:46-0500
+;; Author:  <Leo@LEO-FUJITSU-XP>
+;; Created: 2010-03-06 05:17:08-0500
 ;; Keywords: syntax
 ;; X-RCS: $Id$
 
