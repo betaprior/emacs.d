@@ -1191,9 +1191,11 @@ in dired mode without it."
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
-;; (add-hook 'ess-help-mode-hook
-;; 	  '(lambda()
-;; 	     (define-key ess-help-mode-map "q" 'winner-undo)))
+(defun my-kill-this-buffer ()
+  (interactive) (kill-buffer (buffer-name)))
+(add-hook 'ess-help-mode-hook
+	  '(lambda()
+	     (define-key ess-help-mode-map "q" 'my-kill-this-buffer)))
 
 (defadvice ess-display-help-on-object (after ess-help-turn-off-viewmode () activate)
   "Turns off viewmode if it's on due to read-onlyness of the ESS help buffer"
