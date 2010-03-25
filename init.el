@@ -548,8 +548,9 @@ block -- if there are folding markups or if it matches outline regex"
 (global-set-key "\C-cq" 'org-iswitchb)
 (setq org-todo-keywords
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
-(add-hook 'org-mode-hook 'turn-on-auto-fill)
-
+(add-hook 'org-mode-hook 
+	  '(lambda () (auto-fill-mode t) (setq comment-start nil)))
+(setq org-return-follows-link t)
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 
