@@ -205,6 +205,9 @@
     (cua-set-rectangle-mark)))
 (global-set-key (kbd "C-@") 'my-cua-rect-set-mark);; hit C-SPC twice for the awesome rectangle editing power 
 (global-set-key (kbd "C-SPC") 'my-cua-rect-set-mark);; hit C-SPC twice for the awesome rectangle editing power 
+;; make C-SPC cycle mark->cua rect->unset mark
+(defadvice cua--init-rectangles (after cua-rect-toggle-mark () activate)
+    (define-key cua--rectangle-keymap [remap my-cua-rect-set-mark] 'cua-clear-rectangle-mark))
 
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
@@ -266,7 +269,8 @@
 (require 'color-theme)
 (when (not (eq (symbol-value 'window-system) nil)) ;(not nil)
   (color-theme-initialize)
-  (color-theme-midnight))
+  (color-theme-tango-2))
+  ;; (color-theme-midnight))
 
 ;; thing at point mark:
 (require 'thing-cmds)
@@ -1673,7 +1677,7 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
- '(color-theme-is-cumulative nil)
+ '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
  '(cua-remap-control-v nil)
