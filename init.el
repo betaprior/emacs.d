@@ -198,12 +198,13 @@
 (setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
 
 (cua-mode 'emacs)
-(global-set-key (kbd "C-@") ;; hit C-SPC twice for the awesome rectangle editing power 
-		'(lambda(&optional arg) (interactive "P")
-		   (if (or (not mark-active) arg)
-		       (cua-set-mark arg)
-		     (cua-set-rectangle-mark))))
-
+(defun my-cua-rect-set-mark (&optional arg) 
+  (interactive "P")
+  (if (or (not mark-active) arg)
+      (cua-set-mark arg)
+    (cua-set-rectangle-mark)))
+(global-set-key (kbd "C-@") 'my-cua-rect-set-mark);; hit C-SPC twice for the awesome rectangle editing power 
+(global-set-key (kbd "C-SPC") 'my-cua-rect-set-mark);; hit C-SPC twice for the awesome rectangle editing power 
 
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
@@ -1669,6 +1670,7 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
+ '(color-theme-is-cumulative nil)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
  '(cua-remap-control-v nil)
@@ -1684,6 +1686,7 @@ With argument, do this that many times."
  '(org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
+ '(org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default) ("\\.pdf\\'" . "evince %s") (" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") ("\\.nb\\'" . "mathematica %s"))))
  '(org-hide-leading-stars t)
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)

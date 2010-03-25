@@ -23,7 +23,10 @@
   (interactive)
   (color-theme-install
    '(color-theme-tango-2
-     ((background-color . "#121212")
+     ;; ((background-color . "#030303")
+     ((background-color . "#050505")
+     ;; ((background-color . "black")
+     ;; ((background-color . "#121212")
       (background-mode . dark)
       (border-color . "#888a85")
       (foreground-color . "#eeeeec")
