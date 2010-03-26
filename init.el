@@ -500,9 +500,11 @@ block -- if there are folding markups or if it matches outline regex"
 
 
 (defadvice hs-org/hideshow (around hs-org-check-line activate)
-  (save-excursion
-    (end-of-line)
-    (if (check-folding-line (thing-at-point 'line)) ad-do-it)))
+    (if (check-folding-line (thing-at-point 'line)) 
+	(save-excursion
+	  (end-of-line)
+	  ad-do-it)
+      (indent-according-to-mode)))
 
 
 (global-set-key [(control c) tab]  'indent-according-to-mode)
