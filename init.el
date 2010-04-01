@@ -168,7 +168,7 @@
 
 
 					; Make left window key act as super
-(setq w32-lwindow-modifier 'super)
+;; (setq w32-lwindow-modifier 'super)
 
 ;; Autosave tweaks
 (setq auto-save-interval 120)
