@@ -80,7 +80,6 @@
             anything-c-source-man-pages
 	    anything-c-source-file-cache
             anything-c-source-emacs-commands))
-(global-set-key (kbd "M-z") 'anything)
 (global-set-key (kbd "\C-xc") 'anything)
 (global-set-key (kbd "\C-xx") 'anything)
 (global-set-key "\C-c\M-z" 'zap-to-char)
@@ -198,12 +197,16 @@
 (setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
 
 (cua-mode 'emacs)
-(global-set-key (kbd "C-@") ;; hit C-SPC twice for the awesome rectangle editing power 
-		'(lambda(&optional arg) (interactive "P")
-		   (if (or (not mark-active) arg)
-		       (cua-set-mark arg)
-		     (cua-set-rectangle-mark))))
-
+(defun my-cua-rect-set-mark (&optional arg) 
+  (interactive "P")
+  (if (or (not mark-active) arg)
+      (cua-set-mark arg)
+    (cua-set-rectangle-mark)))
+(global-set-key (kbd "C-@") 'my-cua-rect-set-mark);; hit C-SPC twice for the awesome rectangle editing power 
+(global-set-key (kbd "C-SPC") 'my-cua-rect-set-mark);; hit C-SPC twice for the awesome rectangle editing power 
+;; make C-SPC cycle mark->cua rect->unset mark
+(defadvice cua--init-rectangles (after cua-rect-toggle-mark () activate)
+    (define-key cua--rectangle-keymap [remap my-cua-rect-set-mark] 'cua-clear-rectangle-mark))
 
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
@@ -265,13 +268,49 @@
 (require 'color-theme)
 (when (not (eq (symbol-value 'window-system) nil)) ;(not nil)
   (color-theme-initialize)
-  (color-theme-midnight))
+  (color-theme-tango-2))
+  ;; (color-theme-midnight))
 
 ;; thing at point mark:
 (require 'thing-cmds)
 (global-set-key [?\C-\M- ] 'cycle-thing-region)
 (global-set-key [(meta ?@)] 'mark-thing)
 
+;; autopair
+(require 'autopair)
+(autopair-global-mode) ;; to enable in all buffers
+(setq autopair-autowrap t)
+
+;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
+;; Behave like vi's o command
+(defun open-next-line (arg)
+  "Move to the next line and then opens a line.
+    See also `newline-and-indent'."
+  (interactive "p")
+  (end-of-line)
+  (open-line arg)
+  (next-line 1)
+  (when newline-and-indent
+    (indent-according-to-mode)))
+
+(global-set-key (kbd "C-o") 'open-next-line)
+
+;; Behave like vi's O command
+(defun open-previous-line (arg)
+  "Open a new line before the current one. 
+     See also `newline-and-indent'."
+  (interactive "p")
+  (beginning-of-line)
+  (open-line arg)
+  (when newline-and-indent
+    (indent-according-to-mode)))
+
+(global-set-key (kbd "M-o") 'open-previous-line)
+
+;; Autoindent open-*-lines
+(defvar newline-and-indent t
+  "Modify the behavior of the open-*-line functions to cause them to autoindent.")
+;;}}}
 
 ;;{{{ select quotes/extend selection/do stuff with region (M-S-8,M-8,M-S-7)
 
@@ -495,9 +534,11 @@ block -- if there are folding markups or if it matches outline regex"
 
 
 (defadvice hs-org/hideshow (around hs-org-check-line activate)
-  (save-excursion
-    (end-of-line)
-    (if (check-folding-line (thing-at-point 'line)) ad-do-it)))
+    (if (check-folding-line (thing-at-point 'line)) 
+	(save-excursion
+	  (end-of-line)
+	  ad-do-it)
+      (indent-according-to-mode)))
 
 
 (global-set-key [(control c) tab]  'indent-according-to-mode)
@@ -548,8 +589,9 @@ block -- if there are folding markups or if it matches outline regex"
 (global-set-key "\C-cq" 'org-iswitchb)
 (setq org-todo-keywords
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
-(add-hook 'org-mode-hook 'turn-on-auto-fill)
-
+(add-hook 'org-mode-hook 
+	  '(lambda () (auto-fill-mode t) (setq comment-start nil)))
+(setq org-return-follows-link t)
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 
@@ -1031,7 +1073,7 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
 			      auto-mode-alist))    
 
-;(add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
+(add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
                             ; via some other magic, this will turn it OFF
 
 (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
@@ -1061,6 +1103,7 @@ in dired mode without it."
 ;; 			      (setq outline-minor-mode-prefix "\C-c\C-o")))
 (setq-default fill-column 77)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex) 
+(setq reftex-plug-into-AUCTeX t)
 (add-hook 'LaTeX-mode-hook (lambda ()
 			     (TeX-fold-mode 1))) ;turn on
 					;tex-fold-mode
@@ -1189,9 +1232,11 @@ in dired mode without it."
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
 
-;; (add-hook 'ess-help-mode-hook
-;; 	  '(lambda()
-;; 	     (define-key ess-help-mode-map "q" 'winner-undo)))
+(defun my-kill-this-buffer ()
+  (interactive) (kill-buffer (buffer-name)))
+(add-hook 'ess-help-mode-hook
+	  '(lambda()
+	     (define-key ess-help-mode-map "q" 'my-kill-this-buffer)))
 
 (defadvice ess-display-help-on-object (after ess-help-turn-off-viewmode () activate)
   "Turns off viewmode if it's on due to read-onlyness of the ESS help buffer"
@@ -1669,6 +1714,7 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
+ '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
  '(cua-remap-control-v nil)
@@ -1684,6 +1730,7 @@ With argument, do this that many times."
  '(org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
+ '(org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default) ("\\.pdf\\'" . "evince %s") (" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") ("\\.nb\\'" . "mathematica %s"))))
  '(org-hide-leading-stars t)
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)
@@ -1715,6 +1762,15 @@ With argument, do this that many times."
 
 ; (require 'frame-restore) ; don't work for me
 
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
 
 ;; Local variables:
 ;; folded-file: t
