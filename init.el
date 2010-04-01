@@ -80,7 +80,6 @@
             anything-c-source-man-pages
 	    anything-c-source-file-cache
             anything-c-source-emacs-commands))
-(global-set-key (kbd "M-z") 'anything)
 (global-set-key (kbd "\C-xc") 'anything)
 (global-set-key (kbd "\C-xx") 'anything)
 (global-set-key "\C-c\M-z" 'zap-to-char)
@@ -277,6 +276,41 @@
 (global-set-key [?\C-\M- ] 'cycle-thing-region)
 (global-set-key [(meta ?@)] 'mark-thing)
 
+;; autopair
+(require 'autopair)
+(autopair-global-mode) ;; to enable in all buffers
+(setq autopair-autowrap t)
+
+;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
+;; Behave like vi's o command
+(defun open-next-line (arg)
+  "Move to the next line and then opens a line.
+    See also `newline-and-indent'."
+  (interactive "p")
+  (end-of-line)
+  (open-line arg)
+  (next-line 1)
+  (when newline-and-indent
+    (indent-according-to-mode)))
+
+(global-set-key (kbd "C-o") 'open-next-line)
+
+;; Behave like vi's O command
+(defun open-previous-line (arg)
+  "Open a new line before the current one. 
+     See also `newline-and-indent'."
+  (interactive "p")
+  (beginning-of-line)
+  (open-line arg)
+  (when newline-and-indent
+    (indent-according-to-mode)))
+
+(global-set-key (kbd "M-o") 'open-previous-line)
+
+;; Autoindent open-*-lines
+(defvar newline-and-indent t
+  "Modify the behavior of the open-*-line functions to cause them to autoindent.")
+;;}}}
 
 ;;{{{ select quotes/extend selection/do stuff with region (M-S-8,M-8,M-S-7)
 
@@ -1039,7 +1073,7 @@ in dired mode without it."
 (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
 			      auto-mode-alist))    
 
-;(add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
+(add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
                             ; via some other magic, this will turn it OFF
 
 (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
@@ -1069,6 +1103,7 @@ in dired mode without it."
 ;; 			      (setq outline-minor-mode-prefix "\C-c\C-o")))
 (setq-default fill-column 77)
 (add-hook 'LaTeX-mode-hook 'turn-on-reftex) 
+(setq reftex-plug-into-AUCTeX t)
 (add-hook 'LaTeX-mode-hook (lambda ()
 			     (TeX-fold-mode 1))) ;turn on
 					;tex-fold-mode
@@ -1727,6 +1762,15 @@ With argument, do this that many times."
 
 ; (require 'frame-restore) ; don't work for me
 
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
 
 ;; Local variables:
 ;; folded-file: t
