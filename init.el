@@ -169,7 +169,7 @@
 					; Make left window key act as super
 (setq w32-lwindow-modifier 'super)
 
-;; Autosave tweaks
+;;{{{ Autosave tweaks
 (setq auto-save-interval 120)
 (setq auto-save-timeout 30) 
 
@@ -185,7 +185,7 @@
 (setq backup-directory-alist '(("." . "~/.emacs.d/autosave")))
 (setq version-control t)
 (setq delete-old-versions t)
-
+;;}}}
 
 ;; Misc. tweaks
 (fset 'yes-or-no-p 'y-or-n-p) ; stop forcing me to spell out "yes"
@@ -196,6 +196,12 @@
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
 (setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
 
+;;{{{ cua mode (used for its rectangle prowess)
+(add-hook 'cua-mode-hook
+          '(lambda () ;; don't want default C-RET behavior
+             (define-key cua--rectangle-keymap [(control return)] nil)
+             (define-key cua--region-keymap    [(control return)] nil)
+             (define-key cua-global-keymap     [(control return)] nil)))
 (cua-mode 'emacs)
 (defun my-cua-rect-set-mark (&optional arg) 
   (interactive "P")
@@ -207,7 +213,10 @@
 ;; make C-SPC cycle mark->cua rect->unset mark
 (defadvice cua--init-rectangles (after cua-rect-toggle-mark () activate)
     (define-key cua--rectangle-keymap [remap my-cua-rect-set-mark] 'cua-clear-rectangle-mark))
-
+;; by default, cua-rect includes current cursor position into the rectangle (not how default rectangles work)
+(defadvice cua-set-rectangle-mark (after cua-adjust-rect-size () activate)
+    (call-interactively 'cua-resize-rectangle-left))
+;;}}}
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
 (setq browse-url-browser-function 'browse-url-firefox)
@@ -276,10 +285,18 @@
 (global-set-key [?\C-\M- ] 'cycle-thing-region)
 (global-set-key [(meta ?@)] 'mark-thing)
 
+;; Hippie-expand:
+(global-set-key (kbd "M-/") 'hippie-expand)
+(setq hippie-expand-try-functions-list '(try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+
 ;; autopair
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 (setq autopair-autowrap t)
+;; stuff to deal with foo()bar-type situations
+(fset 'autopair-paren-fwd-1
+   [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
+(global-set-key (kbd "\C-cf") 'autopair-paren-fwd-1)
 
 ;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
 ;; Behave like vi's o command
@@ -597,6 +614,10 @@ block -- if there are folding markups or if it matches outline regex"
 
 (defadvice org-goto (around dont-focus-temp-buffer activate)
   (let ((temp-buffer-show-function nil)) ad-do-it))
+;; override default list-buffers to use pop-to-buffer
+(defadvice list-buffers (around pop-to-list-buffers activate)
+    (pop-to-buffer (list-buffers-noselect files-only)))
+
 
 ;;{{{ -- Windows/cygwin-related settings 
 
@@ -1299,6 +1320,7 @@ in dired mode without it."
 
 ;;  Allow ido to open recent files
 (require 'recentf)
+(setq recentf-exclude '(".ftp:.*" ".sudo:.*" ".*\.recentf" ".*\.ido.last"))
 (setq recentf-keep '(file-remote-p file-readable-p))
 (recentf-mode 1)
 (setq recentf-max-saved-items 500)
@@ -1583,17 +1605,6 @@ in dired mode without it."
      (list (line-beginning-position)
 	   (line-beginning-position 2)))))
 
-(defun duplicate-current-line ()
-  (interactive)
-  (beginning-of-line nil)
-  (let ((b (point)))
-    (end-of-line nil)
-    (copy-region-as-kill b (point)))
-  (beginning-of-line 2)
-  (open-line 1)
-  (yank)
-  (back-to-indentation))
-
 ;; Author: Eberhard Mattes <mattes@azu.informatik.uni-stuttgart.de>
 (defun emx-duplicate-current-line (arg)
   "Duplicate current line.
@@ -1612,6 +1623,20 @@ With argument, do this that many times."
       (setq arg (1- arg)))
     (goto-char s))))
 
+(defun djcb-duplicate-line (&optional commentfirst)
+  "comment line at point; if COMMENTFIRST is non-nil, comment the original" 
+  (interactive)
+  (beginning-of-line)
+  (push-mark)
+  (end-of-line)
+  (let ((str (buffer-substring (region-beginning) (region-end))))
+    (when commentfirst
+    (comment-region (region-beginning) (region-end)))
+    (insert-string
+      (concat (if (= 0 (forward-line 1)) "" "\n") str "\n"))
+    (forward-line -1)))
+
+
 
 (defun duplicate-current-region ()
   (interactive)
@@ -1619,7 +1644,9 @@ With argument, do this that many times."
   (yank)
   (back-to-indentation))
 
-(global-set-key "\C-cd" 'emx-duplicate-current-line)
+(global-set-key (kbd "C-c d") 'djcb-duplicate-line) ; or dup + comment:
+(global-set-key (kbd "C-c C-d") (lambda()(interactive)(djcb-duplicate-line t)))
+;; (global-set-key "\C-cd" 'emx-duplicate-current-line)
 (global-set-key (kbd "s-w") 'duplicate-current-line)
 (global-set-key (kbd "s-k") 'kill-ring-save)
 
