@@ -1565,8 +1565,16 @@ in dired mode without it."
 ;(setq pop-up-windows t)
 
 
-;;{{{ -- enable killing/copying lines w/o having them marked --------------------
+;;{{{ -- kill/yank enhancements -------------------------
 
+(when (require 'browse-kill-ring nil 'noerror)
+  (browse-kill-ring-default-keybindings))
+
+(global-set-key "\C-cy" '(lambda ()
+   (interactive)
+   (popup-menu 'yank-menu)))
+
+;; enable killing/copying lines w/o having them marked
 ;; cf http://www.emacswiki.org/emacs/SlickCopy
 (defadvice kill-ring-save (before slick-copy activate compile)
   "When called interactively with no active region, copy a single line instead."
@@ -1713,7 +1721,7 @@ With argument, do this that many times."
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
- '(TeX-output-view-style TeX-output-view-style-commands)
+ '(TeX-output-view-style TeX-output-view-style-commands t)
  '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
