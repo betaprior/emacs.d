@@ -841,7 +841,7 @@ in dired mode without it."
 (define-key isearch-mode-map [f11] 'isearch-repeat-forward)
 (global-set-key [(shift f11)] 'isearch-backward)
 (define-key isearch-mode-map [(shift f11)] 'isearch-repeat-backward)
-(define-key view-mode-map (kbd "/") 'isearch-forward)
+;; (define-key view-mode-map (kbd "/") 'isearch-forward)
 (define-key dired-mode-map (kbd "/") 'isearch-forward)
 ; overrides default mark directories
 (define-key isearch-mode-map (kbd "<C-n>") 'isearch-repeat-forward)
@@ -896,9 +896,9 @@ in dired mode without it."
 (add-hook 'w3m-mode-hook 'w3m-type-ahead-mode)
 
 ;; mew
-(add-to-list 'load-path "~/.emacs.d/elisp/mew-6.2.51")
-(autoload 'mew "mew" nil t)
-(autoload 'mew-send "mew" nil t)
+;; (add-to-list 'load-path "~/.emacs.d/elisp/mew-6.2.51")
+;; (autoload 'mew "mew" nil t)
+;; (autoload 'mew-send "mew" nil t)
 
 
 
@@ -1657,7 +1657,7 @@ With argument, do this that many times."
   (yank)
   (back-to-indentation))
 
-(global-set-key (kbd "C-c d") 'djcb-duplicate-line) ; or dup + comment:
+(global-set-key (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
 (global-set-key (kbd "C-c C-d") (lambda()(interactive)(djcb-duplicate-line t)))
 ;; (global-set-key "\C-cd" 'emx-duplicate-current-line)
 (global-set-key (kbd "s-w") 'duplicate-current-line)
