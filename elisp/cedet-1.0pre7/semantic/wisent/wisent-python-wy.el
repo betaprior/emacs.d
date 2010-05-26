@@ -3,7 +3,7 @@
 ;; Copyright (C) 2002, 2003, 2004, 2007 Richard Kim
 
 ;; Author:  <Leo@LEO-FUJITSU-XP>
-;; Created: 2010-03-06 05:17:08-0500
+;; Created: 2010-05-09 15:14:42-0400
 ;; Keywords: syntax
 ;; X-RCS: $Id$
 

@@ -24,6 +24,32 @@
 	    (getenv "R_PATH")))) 
 
 
+;;{{{ utility elisp functions
+
+(defun lva-string-match-in-list (regex lst)
+  "Returns the indices where there are regex matches in the list, similar to
+the grep command in R"
+  (delq nil (let ((idx -1)) 
+	      (mapcar (lambda (x) (progn (setq idx (1+ idx)) (if x idx)))
+		      (mapcar (lambda (x) (string-match
+					   regex x)) lst)))))
+(defun lva-get-first-matching-string (regex lst)
+  "Return the first string in list that matches the regex"
+  (let ((idx (car (lva-string-match-in-list regex lst))))
+    (if idx (nth idx lst)
+      nil)))
+
+;;}}}
+
+;; bind cnotes and memos to keys:
+(defvar lva-quick-file-1 "memos\\.txt\\'")
+(defvar lva-quick-file-2 "cnotes\\.org\\'")
+
+;; filter recentf-list to get full path by doing regex matching;
+
+;; then call find-file?...
+
+
 ;; Increase the memory reserved
 (setq gc-cons-threshold 80000000)
 (setq garbage-collection-messages t) 
@@ -224,6 +250,8 @@
 ; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
 (global-set-key [(control c) (control \\)] 'toggle-input-method)
 
+
+
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
 ; alternative bindings for M-x as per Steve Yegge's suggestion
@@ -280,6 +308,7 @@
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 (setq autopair-autowrap t)
+
 
 ;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
 ;; Behave like vi's o command
@@ -594,6 +623,13 @@ block -- if there are folding markups or if it matches outline regex"
 (setq org-return-follows-link t)
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
+(setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
+(if (eq system-type 'windows-nt)
+  (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+  (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
+  (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
+
+
 
 (defadvice org-goto (around dont-focus-temp-buffer activate)
   (let ((temp-buffer-show-function nil)) ad-do-it))
@@ -815,7 +851,7 @@ in dired mode without it."
 (define-key isearch-mode-map [f11] 'isearch-repeat-forward)
 (global-set-key [(shift f11)] 'isearch-backward)
 (define-key isearch-mode-map [(shift f11)] 'isearch-repeat-backward)
-(define-key view-mode-map (kbd "/") 'isearch-forward)
+;; (define-key view-mode-map (kbd "/") 'isearch-forward)
 (define-key dired-mode-map (kbd "/") 'isearch-forward)
 ; overrides default mark directories
 (define-key isearch-mode-map (kbd "<C-n>") 'isearch-repeat-forward)
@@ -912,14 +948,14 @@ in dired mode without it."
 ;;{{{ Language modes: scheme/ahk/mathematica/matlab
 
 ;; needed just for Matlab(?)  Part of ECB:
-(load-file (expand-file-name 
-	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
+;; (load-file (expand-file-name 
+;; 	    "~/.emacs.d/elisp/cedet-1.0pre7/common/cedet.el"))
 ;; (semantic-load-enable-minimum-features)
-(semantic-load-enable-code-helpers) 
-(if window-system ;; don't turn this on in terminal mode
-    (global-semantic-tag-folding-mode))
-(add-to-list 'load-path "~/.emacs.d/elisp/ecb")
-(require 'ecb-autoloads)
+;; (semantic-load-enable-code-helpers) 
+;; (if window-system ;; don't turn this on in terminal mode
+;;     (global-semantic-tag-folding-mode))
+;; (add-to-list 'load-path "~/.emacs.d/elisp/ecb")
+;; (require 'ecb-autoloads)
 
 ;; Python:
 (defun my-python-eval ()
@@ -1300,10 +1336,17 @@ in dired mode without it."
 ;;  Allow ido to open recent files
 (require 'recentf)
 (setq recentf-keep '(file-remote-p file-readable-p))
+(setq recentf-exclude '("\\.ido\\.last" "\\.recentf"))
 (recentf-mode 1)
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
 
+(defvar lva-quick-file-1-fname 
+  (lva-get-first-matching-string lva-quick-file-1 recentf-list))
+(defvar lva-quick-file-2-fname 
+  (lva-get-first-matching-string lva-quick-file-2 recentf-list))  
+(global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
+(global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
 
 ;; uniquify settings
 (require 'uniquify)
@@ -1396,14 +1439,15 @@ in dired mode without it."
 ;; )
 
 (defadvice completing-read
-      (around foo activate)
-      (if (boundp 'ido-cur-list)
-          ad-do-it
-        (setq ad-return-value
-              (ido-completing-read
-               prompt
-               (all-completions "" collection predicate)
-               nil require-match initial-input hist def))))
+       (around foo activate)
+       (if (boundp 'ido-cur-list)
+           ad-do-it
+         (setq ad-return-value
+               (ido-completing-read
+                prompt
+                (all-completions "" collection predicate)
+                nil require-match initial-input hist def))))
+
 
 
 
@@ -1738,7 +1782,6 @@ With argument, do this that many times."
  '(org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
  '(org-cycle-include-plain-lists nil)
  '(org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
- '(org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default) ("\\.pdf\\'" . "evince %s") (" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") ("\\.nb\\'" . "mathematica %s"))))
  '(org-hide-leading-stars t)
  '(org-replace-disputed-keys t)
  '(preview-transparent-color nil)

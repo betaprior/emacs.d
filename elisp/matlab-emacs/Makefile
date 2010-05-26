@@ -10,8 +10,8 @@ top=
 ede_FILES=Project.ede Makefile
 
 EMACS=emacs
-LOADPATH= ../cedet/common/  ../cedet/eieio/\
-    ../cedet/semantic/bovine/ ../cedet/semantic/
+LOADPATH=../cedet/common/  ../cedet/eieio/    ../cedet/semantic/bovine/ ../cedet/semantic/
+#LOADPATH=/c/Emacs/emacs-current/lisp/cedet /c/Emacs/emacs-current/lisp/cedet/semantic
 LOADDEFS=matlab-load.el
 LOADDIRS=.
 misc_MISC=ChangeLog ChangeLog.old1 ChangeLog.old2 INSTALL README dl_emacs_support.m

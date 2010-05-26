@@ -2,8 +2,8 @@
 
 ;;; Copyright (C) 2007 Daniel Debertin (debertin@gmail.com)
 
-;; Author:  <Leo@LEO-FUJITSU-XP>
-;; Created: 2010-03-06 05:21:50-0500
+;; Author: Eric M. Ludlam <zappo@projectile.siege-engine.com>
+;; Created: 2009-08-30 09:51:01-0400
 ;; Keywords: syntax
 ;; X-RCS: $Id$
 

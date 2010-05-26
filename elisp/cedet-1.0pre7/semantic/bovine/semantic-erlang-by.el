@@ -3,7 +3,7 @@
 ;; Copyright (C) 2002, 2003 Vladimir G. Sekissov
 
 ;; Author:  <Leo@LEO-FUJITSU-XP>
-;; Created: 2010-03-06 05:21:02-0500
+;; Created: 2010-05-09 15:15:06-0400
 ;; Keywords: syntax
 ;; X-RCS: $Id$
 
