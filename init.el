@@ -325,6 +325,22 @@ the grep command in R"
 (fset 'autopair-paren-fwd-1
    [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
 (global-set-key (kbd "\C-cf") 'autopair-paren-fwd-1)
+(defun autopair-skip-dollar-action (action pair pos-before)
+  "Let |.| define the position of the cursor.  Want the following behavior
+when pressing $: 
+   $|$| -> $$|$|$, but $a|$| -> $a$| |"
+  (if (and (looking-at "\\$")
+	   (save-excursion
+	     (backward-char)
+	     (not (looking-at "\\$"))))
+      (autopair-default-handle-action 'skip-quote pair pos-before)
+    (autopair-default-handle-action action pair pos-before)))
+
+(add-hook 'TeX-mode-hook
+          #'(lambda ()
+              (setq autopair-handle-action-fns
+                    (list #'autopair-skip-dollar-action))))
+
 
 
 ;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
@@ -824,7 +840,8 @@ in dired mode without it."
 (toggle-dired-find-file-reuse-dir 1)	; show subdirs in same buffer
 
 (define-key dired-mode-map [(backspace)] 'dired-up-directory) 
-
+(define-key dired-mode-map (kbd "DEL") 'dired-up-directory)  ; need when working
+					; in terminal
 
 
 (defun dired-show-only (regexp)		; show only files that match a 
@@ -834,9 +851,18 @@ in dired mode without it."
    (dired-do-kill-lines))
 (define-key dired-mode-map [?%?h] 'dired-show-only) 
 
+;; rename the dired buffer; take care of possible buffer name collisions
+(defun buffer-exists (bufname) (not (eq nil (get-buffer bufname)))) 
 (add-hook 'dired-after-readin-hook	; put "dired" in buffer name
           #'(lambda () (unless (string-match "*dired*" (buffer-name))
-			 (rename-buffer (concat "*dired* " (buffer-name))))))
+			 (let ((new-buf-name (concat "*dired* "
+						     (buffer-name))) (count 1))
+			   (while (buffer-exists new-buf-name)
+			     (setq new-buf-name (concat new-buf-name "|"
+							(number-to-string
+							 count)))
+			     (setq count (1+ count)))
+			   (rename-buffer new-buf-name)))))
 
 ;;    (add-hook 'dired-load-hook
 ;;             (lambda () (load "dired-x") 
