@@ -258,7 +258,8 @@ the grep command in R"
 (global-set-key [(control super f4)] 'terminal-here)
 ; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
 (global-set-key [(control c) (control \\)] 'toggle-input-method)
-
+(global-unset-key [\C-down-mouse-3])
+(define-key function-key-map [\C-mouse-3] [mouse-2])
 
 
 ; work-around for C-M-p broken in my windows
