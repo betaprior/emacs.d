@@ -141,7 +141,8 @@ the grep command in R"
 (setq inhibit-startup-message t)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
-(scroll-bar-mode -1)
+(when (not (eq (symbol-value 'window-system) nil))
+  (scroll-bar-mode -1))
 
 
 (setq transient-mark-mode t)
@@ -1161,9 +1162,11 @@ in dired mode without it."
 
 ;;{{{ LaTex/AucTeX settings
 
+(if (not (eq emacs-profile 'linux-default))
 (require 'tex-site)
 (when (eq system-type 'windows-nt)
      (require 'tex-mik))
+)
 
 ;;Anrei says forcing latex mode for tex files explicitly is better in some way
 (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
