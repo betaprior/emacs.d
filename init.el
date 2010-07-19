@@ -245,7 +245,7 @@ the grep command in R"
 ;;}}}
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
-(setq browse-url-browser-function 'browse-url-firefox)
+;;(setq browse-url-browser-function 'browse-url-firefox)
 
 ;; Misc. keybindings
 (global-set-key "\C-c\S-i" 'indent-region)
@@ -345,6 +345,7 @@ when pressing $:
 
 
 ;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
+
 ;; Behave like vi's o command
 (defun open-next-line (arg)
   "Move to the next line and then opens a line.
@@ -373,6 +374,7 @@ when pressing $:
 ;; Autoindent open-*-lines
 (defvar newline-and-indent t
   "Modify the behavior of the open-*-line functions to cause them to autoindent.")
+
 ;;}}}
 
 ;;{{{ select quotes/extend selection/do stuff with region (M-S-8,M-8,M-S-7)
@@ -492,12 +494,17 @@ Subsequent calls expands the selection to larger semantic unit."
 		   (progn
 		     (setq before ch1)
 		     (setq after ch2)
-		     t))))
-	     (if (string= before "(**)") ;hack for ocaml and mathematica
-		 (progn
-		   (setq before "(*")
-		   (setq after "*)")
-		   t)))
+		     t)))) ;; dealt with matched delimiters
+	     (cond ((string= before "(**)") ;hack for ocaml and mathematica
+		    (progn
+		      (setq before "(*")
+		      (setq after "*)")
+		      t))
+		   ((string= before ":DE") ;for org-mode drawers
+		    (progn
+		      (setq before ":DETAILS:\n")
+		      (setq after "\n:END:")
+		      t)))) ;; end checking for special cases
 	(setq after (read-from-minibuffer "'After' string:")))
     (setq pos2 (+ end (length before)))
     (goto-char (region-beginning)) (insert before)
@@ -1494,7 +1501,7 @@ in dired mode without it."
 
 (defadvice completing-read
        (around foo activate)
-       (if (boundp 'ido-cur-list)
+       (if (boundp 'ido-cur-item)
            ad-do-it
          (setq ad-return-value
                (ido-completing-read
@@ -1545,8 +1552,10 @@ in dired mode without it."
 ;;}}}
 
 ;;this functionality is superceded by smex:
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp/smex.git"))
 (require 'smex)
 ;  (smex-initialize) is put at the end of .emacs
+(setq smex-save-file "~/.emacs.d/.smex-items")
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 (global-set-key (kbd "C-c M-x") 'smex-update-and-run)

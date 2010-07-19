@@ -1,0 +1,12 @@
+[submodule "elisp/magit"]
+	path = elisp/magit
+	url = http://github.com/philjackson/magit.git
+[submodule "elisp/smex.git"]
+	path = elisp/smex.git
+	url = http://github.com/nonsequitur/smex.git
+[submodule "elisp/grep-a-lot.git"]
+	path = elisp/grep-a-lot.git
+	url = git://github.com/ZungBang/emacs-grep-a-lot.git
+[submodule "elisp/org-mode.git"]
+	path = elisp/org-mode.git
+	url = git://repo.or.cz/org-mode.git
