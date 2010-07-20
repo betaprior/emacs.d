@@ -1,0 +1,4 @@
+*.elc
+*.el~
+autosave*
+auto-save*
