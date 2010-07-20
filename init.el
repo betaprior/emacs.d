@@ -343,6 +343,10 @@ when pressing $:
               (setq autopair-handle-action-fns
                     (list #'autopair-skip-dollar-action))))
 
+;; Grep enhancements:
+(add-to-list 'load-path "~/.emacs.d/elisp/grep-a-lot.git")
+(require 'grep-a-lot)
+(grep-a-lot-setup-keys)
 
 
 ;;{{{ Modify open line behavior to be like in VI (C-o open line, M-o open prev line)
@@ -505,6 +509,11 @@ Subsequent calls expands the selection to larger semantic unit."
 		    (progn
 		      (setq before ":DETAILS:\n")
 		      (setq after "\n:END:")
+		      t))
+		   ((string= before ":CODE") ;for org-mode drawers
+		    (progn
+		      (setq before ":CODE:\n")
+		      (setq after "\n:END:")
 		      t)))) ;; end checking for special cases
 	(setq after (read-from-minibuffer "'After' string:")))
     (setq pos2 (+ end (length before)))
@@ -518,7 +527,7 @@ Subsequent calls expands the selection to larger semantic unit."
 ;;}}}
 
 ;; highlight symbol
-(add-to-list 'load-path "~/.emacs.d/elisp/highlight-symbol")
+;; (add-to-list 'load-path "~/.emacs.d/elisp/highlight-symbol")
 (require 'highlight-symbol)
 (global-set-key [(meta f3)] 'highlight-symbol-at-point)
 
@@ -651,8 +660,12 @@ block -- if there are folding markups or if it matches outline regex"
 ;;    (buffer-file-name (current-buffer))))
 ;; (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
-;; Org-mode:
-(setq load-path (cons "~/.emacs.d/elisp/org-6.31a/lisp" load-path))
+;;{{{ -- Org-mode:
+
+(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/lisp" load-path))
+;(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
+(require 'org-install)
+(setq org-startup-indented t)
 ;; The following lines are always needed.  Choose your own keys.
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (global-set-key "\C-cl" 'org-store-link)
@@ -671,8 +684,20 @@ block -- if there are folding markups or if it matches outline regex"
   (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
   (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
 
+;; active Babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((R . t) (sh . t) (python . t) (perl . t) (matlab . t) (latex . t)))
 
+;; Make windmove work in org-mode:
+(add-hook 'org-shiftup-final-hook 'windmove-up)
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
 
+;;}}}
+
+;; fix misbehaving overloaded temp-buffer display function
 (defadvice org-goto (around dont-focus-temp-buffer activate)
   (let ((temp-buffer-show-function nil)) ad-do-it))
 ;; override default list-buffers to use pop-to-buffer
@@ -724,7 +749,7 @@ block -- if there are folding markups or if it matches outline regex"
 ;;}}}
 
 
-;;{{{ `-- Explorer here / terminal here functions (Windows)
+;;{{{ -- Explorer here / terminal here functions (Windows)
 
 ; Windows explorer to go to the file in the current buffer
 ;; (defun explorer-here ()  
@@ -839,7 +864,8 @@ in dired mode without it."
 (if (eq system-type 'windows-nt)
     (require 'git-mswin)
   (require 'git))
-
+(setq load-path (cons "~/.emacs.d/elisp/magit" load-path))
+(require 'magit)
 
 ;;{{{ dired enhancements:
 
@@ -1846,6 +1872,7 @@ With argument, do this that many times."
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
+ '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
  '(matlab-fill-fudge-hard-maximum 89)
