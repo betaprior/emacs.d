@@ -44,6 +44,7 @@ the grep command in R"
 ;; bind cnotes and memos to keys:
 (defvar lva-quick-file-1 "memos\\.txt\\'")
 (defvar lva-quick-file-2 "cnotes\\.org\\'")
+(defvar lva-quick-file-3 "imageshack\\.org\\'")
 
 ;; filter recentf-list to get full path by doing regex matching;
 
@@ -510,7 +511,7 @@ Subsequent calls expands the selection to larger semantic unit."
 		      (setq before ":DETAILS:\n")
 		      (setq after "\n:END:")
 		      t))
-		   ((string= before ":CODE") ;for org-mode drawers
+		   ((or (string= before ":CODE") (string= before ":CO"))  ;for org-mode drawers
 		    (progn
 		      (setq before ":CODE:\n")
 		      (setq after "\n:END:")
@@ -1434,9 +1435,12 @@ in dired mode without it."
 (defvar lva-quick-file-1-fname 
   (lva-get-first-matching-string lva-quick-file-1 recentf-list))
 (defvar lva-quick-file-2-fname 
-  (lva-get-first-matching-string lva-quick-file-2 recentf-list))  
+  (lva-get-first-matching-string lva-quick-file-2 recentf-list)) 
+(defvar lva-quick-file-3-fname 
+  (lva-get-first-matching-string lva-quick-file-3 recentf-list))  
 (global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
 (global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
+(global-set-key "\C-c3" '(lambda () (interactive) (find-file lva-quick-file-3-fname)))
 
 ;; uniquify settings
 (require 'uniquify)
