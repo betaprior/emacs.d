@@ -624,11 +624,16 @@ block -- if there are folding markups or if it matches outline regex"
 	  '(lambda ()
 	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
 	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+;; (add-hook 'outline-minor-mode-hook 	
+;; 	  '(lambda ()
+;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+;; 	     (define-key outline-minor-mode-map [(tab)]
+;; 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
-	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
-	     (define-key outline-minor-mode-map [(tab)]
-	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+	     (require 'outline-magic)
+	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 
 
 (defadvice hs-org/hideshow (around hs-org-check-line activate)
@@ -1138,6 +1143,10 @@ in dired mode without it."
   '(lambda ()
     (set (make-local-variable 'outline-regexp) mma-outline-regexp)))
 
+(setq sql-outline-regexp "-- \\*+ ")
+(add-hook 'sql-mode-hook
+  '(lambda ()
+    (set (make-local-variable 'outline-regexp) sql-outline-regexp)))
 
 
 (if (eq emacs-profile 'windows-1)
@@ -1281,7 +1290,8 @@ in dired mode without it."
 ;;{{{ ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
-(require 'ess-site)
+(if (not (eq emacs-profile 'linux-default))
+    (require 'ess-site))
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
 (setq ansi-color-for-comint-mode 'filter)
@@ -1864,6 +1874,8 @@ With argument, do this that many times."
 (fset 'prev-input-goto-paren
    [?\M-p ?\C-a ?\C-s ?\( ?\C-m left])
 ;;(global-set-key "\M-o" 'prev-input-goto-paren)
+(fset 'hive-grab-column-names
+   "\C-s\C-q\C-i\C-m\C-k\C-[[1;5D\C-[[1;5C,\C-[OB\C-[^ ")
 
 
 
