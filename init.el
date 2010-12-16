@@ -39,11 +39,23 @@ the grep command in R"
     (if idx (nth idx lst)
       nil)))
 
+
+(defun lva-show-buffer-name-and-put-on-kill-ring () (interactive)
+ ; (describe-variable 'buffer-file-name)
+  (kill-new buffer-file-name)
+  (minibuffer-message (concat "Filename [copied]:" buffer-file-name))
+)
+(global-set-key "\C-cn" 'lva-show-buffer-name-and-put-on-kill-ring)
+
+
 ;;}}}
 
 ;; bind cnotes and memos to keys:
 (defvar lva-quick-file-1 "memos\\.txt\\'")
 (defvar lva-quick-file-2 "cnotes\\.org\\'")
+(defvar lva-quick-file-3 "imageshack\\.org\\'")
+
+
 
 ;; filter recentf-list to get full path by doing regex matching;
 
@@ -215,6 +227,8 @@ the grep command in R"
 ;;}}}
 
 ;; Misc. tweaks
+(add-hook 'sql-interactive-mode-hook '(lambda () (setq comint-move-point-for-output nil))) ; don't force scroll to the bottom on output
+(add-hook 'shell-mode-hook '(lambda () (setq comint-move-point-for-output nil))) ; don't force scroll to the bottom on output
 (fset 'yes-or-no-p 'y-or-n-p) ; stop forcing me to spell out "yes"
 ;; use Unix-style line endings
 (setq-default buffer-file-coding-system 'undecided-unix)
@@ -261,7 +275,11 @@ the grep command in R"
 (global-set-key [(control c) (control \\)] 'toggle-input-method)
 (global-unset-key [\C-down-mouse-3])
 (define-key function-key-map [\C-mouse-3] [mouse-2])
-
+; keybindings for screen running inside shell, as per
+; http://blog.nguyenvq.com/2010/07/11/using-r-ess-remote-with-screen-in-emacs/
+;; used to send screen keybindings to shell in emacs
+(define-key shell-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
+(define-key inferior-ess-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
 
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
@@ -510,7 +528,7 @@ Subsequent calls expands the selection to larger semantic unit."
 		      (setq before ":DETAILS:\n")
 		      (setq after "\n:END:")
 		      t))
-		   ((string= before ":CODE") ;for org-mode drawers
+		   ((or (string= before ":CODE") (string= before ":CO"))  ;for org-mode drawers
 		    (progn
 		      (setq before ":CODE:\n")
 		      (setq after "\n:END:")
@@ -1280,7 +1298,8 @@ in dired mode without it."
 ;; (setq comint-prompt-read-only t)
 (setq comint-scroll-to-bottom-on-input t)
 (setq comint-scroll-to-bottom-on-output t)
-(setq comint-move-point-for-output t)
+(add-hook 'ess-mode-hook '(lambda () (setq comint-move-point-for-output t)))
+
 ;; Do not echo the evaluated commands into the transcript (R process window)
 ;; (the output is going to be displayed, however)
 (setq  ess-eval-visibly-p nil)
@@ -1444,9 +1463,12 @@ in dired mode without it."
 (defvar lva-quick-file-1-fname 
   (lva-get-first-matching-string lva-quick-file-1 recentf-list))
 (defvar lva-quick-file-2-fname 
-  (lva-get-first-matching-string lva-quick-file-2 recentf-list))  
+  (lva-get-first-matching-string lva-quick-file-2 recentf-list)) 
+(defvar lva-quick-file-3-fname 
+  (lva-get-first-matching-string lva-quick-file-3 recentf-list))  
 (global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
 (global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
+(global-set-key "\C-c3" '(lambda () (interactive) (find-file lva-quick-file-3-fname)))
 
 ;; uniquify settings
 (require 'uniquify)
