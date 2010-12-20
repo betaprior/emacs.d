@@ -23,7 +23,6 @@
 	    "/home/leo/code/R/addons/misc/" ":"
 	    (getenv "R_PATH")))) 
 
-
 ;;{{{ utility elisp functions
 
 (defun lva-string-match-in-list (regex lst)
@@ -693,6 +692,17 @@ block -- if there are folding markups or if it matches outline regex"
 ;; (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
 ;;{{{ -- Org-mode:
+;; don't clobber windmove bindings: code must be placed _before_ org loads
+;; also, the (add-hook 'org-shiftup-final-hook 'windmove-up), etc lines don't seem to do squat
+;; default disputed keys remap so that windowmove commands aren't overridden
+(setq org-disputed-keys '(([(shift up)] . [(meta p)])
+			  ([(shift down)] . [(meta n)])
+			  ([(shift left)] . [(meta -)])
+			  ([(shift right)] . [(meta +)])
+			  ([(meta return)] . [(control meta return)])
+			  ([(control shift right)] . [(meta shift +)])
+			  ([(control shift left)] . [(meta shift -)])))
+(setq org-replace-disputed-keys t)
 
 (setq load-path (cons "~/.emacs.d/elisp/org-mode.git/lisp" load-path))
 ;(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
@@ -726,6 +736,7 @@ block -- if there are folding markups or if it matches outline regex"
 (add-hook 'org-shiftleft-final-hook 'windmove-left)
 (add-hook 'org-shiftdown-final-hook 'windmove-down)
 (add-hook 'org-shiftright-final-hook 'windmove-right)
+
 
 ;;}}}
 
