@@ -10,3 +10,6 @@
 [submodule "elisp/org-mode.git"]
 	path = elisp/org-mode.git
 	url = git://repo.or.cz/org-mode.git
+[submodule "elisp/color-theme-twilight-emacs.git"]
+	path = elisp/color-theme-twilight-emacs.git
+	url = https://github.com/crafterm/twilight-emacs.git

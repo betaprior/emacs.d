@@ -39,12 +39,30 @@ the grep command in R"
     (if idx (nth idx lst)
       nil)))
 
+
+(defun lva-show-buffer-name-and-put-on-kill-ring () (interactive)
+ ; (describe-variable 'buffer-file-name)
+  (kill-new buffer-file-name)
+  (minibuffer-message (concat "Filename [copied]:" buffer-file-name))
+)
+(global-set-key "\C-cn" 'lva-show-buffer-name-and-put-on-kill-ring)
+
+(defun lva-hive-template-find-file () (interactive)
+  (require 'template)
+  (template-initialize)
+  (let ((file (read-file-name "New file (from HiveShelRun.tpl): "
+			       nil "")))
+      (template-new-file file "~/.emacs.d/.templates/HiveShellRun.tpl")
+))
+
 ;;}}}
 
 ;; bind cnotes and memos to keys:
 (defvar lva-quick-file-1 "memos\\.txt\\'")
 (defvar lva-quick-file-2 "cnotes\\.org\\'")
 (defvar lva-quick-file-3 "imageshack\\.org\\'")
+
+
 
 ;; filter recentf-list to get full path by doing regex matching;
 
@@ -157,7 +175,8 @@ the grep command in R"
 ;; re-builder extension that allows perl syntax:
 ;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
 (require 're-builder-x)
-
+;; shebang chmods files automatically if they are scripts:
+(require 'shebang)
 					; fix copy/paste in Linux?..
 (when (eq emacs-profile 'linux-1)
   (setq x-select-enable-clipboard t)
@@ -216,6 +235,8 @@ the grep command in R"
 ;;}}}
 
 ;; Misc. tweaks
+(add-hook 'sql-interactive-mode-hook '(lambda () (setq comint-move-point-for-output nil))) ; don't force scroll to the bottom on output
+(add-hook 'shell-mode-hook '(lambda () (setq comint-move-point-for-output nil))) ; don't force scroll to the bottom on output
 (fset 'yes-or-no-p 'y-or-n-p) ; stop forcing me to spell out "yes"
 ;; use Unix-style line endings
 (setq-default buffer-file-coding-system 'undecided-unix)
@@ -262,7 +283,12 @@ the grep command in R"
 (global-set-key [(control c) (control \\)] 'toggle-input-method)
 (global-unset-key [\C-down-mouse-3])
 (define-key function-key-map [\C-mouse-3] [mouse-2])
-
+; keybindings for screen running inside shell, as per
+; http://blog.nguyenvq.com/2010/07/11/using-r-ess-remote-with-screen-in-emacs/
+;; used to send screen keybindings to shell in emacs
+;; for some reason shell-mode-map thing might have to be moved further in the file, while inferior-ess-mode map line made conditional on ess being present
+;(define-key shell-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
+;(define-key inferior-ess-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
 
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
@@ -607,11 +633,16 @@ block -- if there are folding markups or if it matches outline regex"
 	  '(lambda ()
 	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
 	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+;; (add-hook 'outline-minor-mode-hook 	
+;; 	  '(lambda ()
+;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+;; 	     (define-key outline-minor-mode-map [(tab)]
+;; 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
-	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
-	     (define-key outline-minor-mode-map [(tab)]
-	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+	     (require 'outline-magic)
+	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 
 
 (defadvice hs-org/hideshow (around hs-org-check-line activate)
@@ -1121,6 +1152,10 @@ in dired mode without it."
   '(lambda ()
     (set (make-local-variable 'outline-regexp) mma-outline-regexp)))
 
+(setq sql-outline-regexp "-- \\*+ ")
+(add-hook 'sql-mode-hook
+  '(lambda ()
+    (set (make-local-variable 'outline-regexp) sql-outline-regexp)))
 
 
 (if (eq emacs-profile 'windows-1)
@@ -1264,14 +1299,16 @@ in dired mode without it."
 ;;{{{ ESS/R options ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
-(require 'ess-site)
+(if (not (eq emacs-profile 'linux-default))
+    (require 'ess-site))
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
 (setq ansi-color-for-comint-mode 'filter)
 ;; (setq comint-prompt-read-only t)
 (setq comint-scroll-to-bottom-on-input t)
 (setq comint-scroll-to-bottom-on-output t)
-(setq comint-move-point-for-output t)
+(add-hook 'ess-mode-hook '(lambda () (setq comint-move-point-for-output t)))
+
 ;; Do not echo the evaluated commands into the transcript (R process window)
 ;; (the output is going to be displayed, however)
 (setq  ess-eval-visibly-p nil)
@@ -1846,6 +1883,8 @@ With argument, do this that many times."
 (fset 'prev-input-goto-paren
    [?\M-p ?\C-a ?\C-s ?\( ?\C-m left])
 ;;(global-set-key "\M-o" 'prev-input-goto-paren)
+(fset 'hive-grab-column-names
+   "\C-s\C-q\C-i\C-m\C-k\C-[[1;5D\C-[[1;5C,\C-[OB\C-[^ ")
 
 
 (setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d") 
