@@ -981,7 +981,7 @@ in dired mode without it."
 (define-key isearch-mode-map [f11] 'isearch-repeat-forward)
 (global-set-key [(shift f11)] 'isearch-backward)
 (define-key isearch-mode-map [(shift f11)] 'isearch-repeat-backward)
-;; (define-key view-mode-map (kbd "/") 'isearch-forward)
+;;(define-key view-mode-map (kbd "/") 'isearch-forward)
 (define-key dired-mode-map (kbd "/") 'isearch-forward)
 ; overrides default mark directories
 (define-key isearch-mode-map (kbd "<C-n>") 'isearch-repeat-forward)
@@ -1898,7 +1898,11 @@ With argument, do this that many times."
    "\C-s\C-q\C-i\C-m\C-k\C-[[1;5D\C-[[1;5C,\C-[OB\C-[^ ")
 
 
-
+(setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d") 
+			      ("Evince" "'evince' %o")))
+(if (eq system-type 'windows-nt)
+    (setq TeX-view-program-selection '((output-pdf "GSView") (output-dvi "yap")))
+  (setq TeX-view-program-selection '((output-pdf "Evince") (output-dvi "Evince"))))
 ;; TODO: figure out how to write this w/o all the copypasting
 (defvar TeX-output-view-style-commands)
 (if (eq system-type 'windows-nt)
@@ -1916,7 +1920,8 @@ With argument, do this that many times."
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
- '(TeX-output-view-style TeX-output-view-style-commands t)
+ '(TeX-output-view-style TeX-output-view-style-commands)
+ '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))))
  '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
@@ -1929,6 +1934,7 @@ With argument, do this that many times."
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
+ '(initial-scratch-message nil)
  '(matlab-fill-fudge-hard-maximum 89)
  '(mlint-programs (quote ("mlint" "win32/mlint" "C:\\Program Files\\MATLAB\\R2008b\\bin\\win32\\mlint.exe" "/opt/matlab/R2009a/bin/glnxa64/mlint")))
  '(org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
