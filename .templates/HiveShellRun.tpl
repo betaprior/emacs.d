@@ -9,26 +9,35 @@ YESTERDAY=$(${GEN_DATE_SCRIPT} $(date "+%Y%m%d") --subtract 2 --getlast --separa
 TODAY=$(date "+%Y-%m-%d")
 
 function build_sed_string() {
+    for i in "$@" ; do
+        case $i in 
+                -i) SEDOPT[0]='-i'
+                        shift ;;
+                --) shift ; break ;;
+        esac
+    done
     arr=( $(sed -e 's/ \+/\x0/g' <<< "$@" | perl -0e 'print sort {length $b <=> length $a} <>' | tr '\0' '\n') )
-    ss='sed -i'
+    ss="sed ${SEDOPT[@]}"
     for a in ${arr[@]}; do
-	ss=${ss}' -e "s/\'$a'/'$a'/g"'
+	ss=${ss}' -e "s#\'$a'#'$a'#g"'
     done
     echo "$ss"
 }
 
+
 QUERYFILE=$(mktemp)
-trap 'rm -rf "${QUERYFILE}"; exit' INT TERM EXIT
+QUERYFILE_SUB=$(mktemp)
+trap 'rm -rf "${QUERYFILE}" "${QUERYFILE_SUB}"; exit' INT TERM EXIT
 
 function run_query_with_vars() {
     if [ "$1" ]; then
 	QUERYVARS=$1
-	eval $(build_sed_string $QUERYVARS) $QUERYFILE
+	eval $(build_sed_string $QUERYVARS) $QUERYFILE >> $QUERYFILE_SUB
     fi
     if [ "$QUERYLOG" ]; then
-	cat $QUERYFILE >> $QUERYLOG
+	cat $QUERYFILE_SUB >> $QUERYLOG
     fi
-    hive -S -f $QUERYFILE
+    hive -S -f $QUERYFILE_SUB
 }
 
 # }}}
