@@ -47,6 +47,13 @@ the grep command in R"
 )
 (global-set-key "\C-cn" 'lva-show-buffer-name-and-put-on-kill-ring)
 
+(defun lva-hive-template-find-file () (interactive)
+  (require 'template)
+  (template-initialize)
+  (let ((file (read-file-name "New file (from HiveShelRun.tpl): "
+			       nil "")))
+      (template-new-file file "~/.emacs.d/.templates/HiveShellRun.tpl")
+))
 
 ;;}}}
 
@@ -168,7 +175,8 @@ the grep command in R"
 ;; re-builder extension that allows perl syntax:
 ;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
 (require 're-builder-x)
-
+;; shebang chmods files automatically if they are scripts:
+(require 'shebang)
 					; fix copy/paste in Linux?..
 (when (eq emacs-profile 'linux-1)
   (setq x-select-enable-clipboard t)
@@ -278,8 +286,9 @@ the grep command in R"
 ; keybindings for screen running inside shell, as per
 ; http://blog.nguyenvq.com/2010/07/11/using-r-ess-remote-with-screen-in-emacs/
 ;; used to send screen keybindings to shell in emacs
-(define-key shell-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
-(define-key inferior-ess-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
+;; for some reason shell-mode-map thing might have to be moved further in the file, while inferior-ess-mode map line made conditional on ess being present
+;(define-key shell-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
+;(define-key inferior-ess-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
 
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
