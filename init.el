@@ -173,7 +173,19 @@ the grep command in R"
 
 ;; re-builder extension that allows perl syntax:
 ;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
-(require 're-builder-x)
+(require 're-builder-x) ;; for perl stuff?
+;; Use re-builder regex as a source for query-replace-regex
+;; This removes the need to un-escape backslashes when pasting from lisp-style RE strings to interactive REs
+;; see http://www.emacswiki.org/emacs/ReBuilder for details
+(defun reb-query-replace (to-string)
+      "Replace current RE from point with `query-replace-regexp'."
+      (interactive
+       (progn (barf-if-buffer-read-only)
+              (list (query-replace-read-to (reb-target-binding reb-regexp)
+                                           "Query replace"  t))))
+      (with-current-buffer reb-target-buffer
+        (query-replace-regexp (reb-target-binding reb-regexp) to-string)))
+
 ;; shebang chmods files automatically if they are scripts:
 (require 'shebang)
 					; fix copy/paste in Linux?..
@@ -182,11 +194,28 @@ the grep command in R"
   (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
   )
 
-					; Switch between windows using shift-arrows
+;; Switch between windows using shift-arrows
 (windmove-default-keybindings)
 (global-set-key (kbd "C-S-p") 'windmove-up)
 (global-set-key (kbd "C-S-n") 'windmove-down)
+(global-set-key (kbd "C-S-k") 'windmove-up)
+(global-set-key (kbd "C-S-j") 'windmove-down)
+(global-set-key (kbd "C-S-h") 'windmove-left)
+(global-set-key (kbd "C-S-l") 'windmove-right)
 (global-set-key (kbd "C-<tab>") 'other-window)
+;;(global-set-key (kbd "C-M-j") 'other-window)
+
+;; Create a mode for global keybindings, as per http://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs
+(defvar my-keys-minor-mode-map (make-keymap) "my-keys-minor-mode keymap.")
+(define-key my-keys-minor-mode-map (kbd "C-M-j") 'other-window)
+(define-minor-mode my-keys-minor-mode
+  "A minor mode so that my key settings override annoying major modes."
+  t " my-keys" 'my-keys-minor-mode-map)
+(my-keys-minor-mode 1)
+(defun my-minibuffer-setup-hook ()
+  (my-keys-minor-mode 0))
+(add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
+
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
 
