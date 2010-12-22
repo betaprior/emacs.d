@@ -576,6 +576,7 @@ Subsequent calls expands the selection to larger semantic unit."
 
 ;; folding mode 
 (require 'folding)
+(setq folding-narrow-by-default nil)
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
