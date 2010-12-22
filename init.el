@@ -216,6 +216,8 @@ the grep command in R"
   (my-keys-minor-mode 0))
 (add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
 
+(when (require 'diminish nil 'noerror)
+  (diminish 'my-keys-minor-mode ""))
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
 
@@ -272,6 +274,7 @@ the grep command in R"
 (setq woman-use-own-frame nil)
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
 (setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
+
 
 ;;{{{ cua mode (used for its rectangle prowess)
 (add-hook 'cua-mode-hook
@@ -362,6 +365,7 @@ the grep command in R"
 (require 'color-theme)
 (when (not (eq (symbol-value 'window-system) nil)) ;(not nil)
   (color-theme-initialize)
+  ;; (color-theme-twilight))
   (color-theme-tango-2))
   ;; (color-theme-midnight))
 
@@ -605,6 +609,7 @@ Subsequent calls expands the selection to larger semantic unit."
 
 ;; folding mode 
 (require 'folding)
+(setq folding-narrow-by-default nil)
 (autoload 'folding-mode          "folding" "Folding mode" t)
 (autoload 'turn-off-folding-mode "folding" "Folding mode" t)
 (autoload 'turn-on-folding-mode  "folding" "Folding mode" t)
