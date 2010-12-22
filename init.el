@@ -173,7 +173,19 @@ the grep command in R"
 
 ;; re-builder extension that allows perl syntax:
 ;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
-(require 're-builder-x)
+(require 're-builder-x) ;; for perl stuff?
+;; Use re-builder regex as a source for query-replace-regex
+;; This removes the need to un-escape backslashes when pasting from lisp-style RE strings to interactive REs
+;; see http://www.emacswiki.org/emacs/ReBuilder for details
+(defun reb-query-replace (to-string)
+      "Replace current RE from point with `query-replace-regexp'."
+      (interactive
+       (progn (barf-if-buffer-read-only)
+              (list (query-replace-read-to (reb-target-binding reb-regexp)
+                                           "Query replace"  t))))
+      (with-current-buffer reb-target-buffer
+        (query-replace-regexp (reb-target-binding reb-regexp) to-string)))
+
 ;; shebang chmods files automatically if they are scripts:
 (require 'shebang)
 					; fix copy/paste in Linux?..
@@ -182,11 +194,30 @@ the grep command in R"
   (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
   )
 
-					; Switch between windows using shift-arrows
+;; Switch between windows using shift-arrows
 (windmove-default-keybindings)
 (global-set-key (kbd "C-S-p") 'windmove-up)
 (global-set-key (kbd "C-S-n") 'windmove-down)
+(global-set-key (kbd "C-S-k") 'windmove-up)
+(global-set-key (kbd "C-S-j") 'windmove-down)
+(global-set-key (kbd "C-S-h") 'windmove-left)
+(global-set-key (kbd "C-S-l") 'windmove-right)
 (global-set-key (kbd "C-<tab>") 'other-window)
+;;(global-set-key (kbd "C-M-j") 'other-window)
+
+;; Create a mode for global keybindings, as per http://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs
+(defvar my-keys-minor-mode-map (make-keymap) "my-keys-minor-mode keymap.")
+(define-key my-keys-minor-mode-map (kbd "C-M-j") 'other-window)
+(define-minor-mode my-keys-minor-mode
+  "A minor mode so that my key settings override annoying major modes."
+  t " my-keys" 'my-keys-minor-mode-map)
+(my-keys-minor-mode 1)
+(defun my-minibuffer-setup-hook ()
+  (my-keys-minor-mode 0))
+(add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
+
+(when (require 'diminish nil 'noerror)
+  (diminish 'my-keys-minor-mode ""))
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
 
@@ -243,6 +274,7 @@ the grep command in R"
 (setq woman-use-own-frame nil)
 (setq vc-follow-symlinks t)  ;; prevent version control from asking whether to follow links
 (setq isearch-allow-scroll t) ;; allows minimal scrolling, as long as curr. match is visible
+
 
 ;;{{{ cua mode (used for its rectangle prowess)
 (add-hook 'cua-mode-hook
@@ -333,6 +365,7 @@ the grep command in R"
 (require 'color-theme)
 (when (not (eq (symbol-value 'window-system) nil)) ;(not nil)
   (color-theme-initialize)
+  ;; (color-theme-twilight))
   (color-theme-tango-2))
   ;; (color-theme-midnight))
 
@@ -597,6 +630,7 @@ Subsequent calls expands the selection to larger semantic unit."
 
 
 (require 'fold-dwim)
+(require 'fold-dwim-org)
 (global-set-key (kbd "<f7>")      'fold-dwim-toggle)
 (global-set-key (kbd "<M-f7>")    'fold-dwim-hide-all)
 (global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
@@ -631,18 +665,21 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'folding-mode-hook
 	  '(lambda ()
-	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
-	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+	     (fold-dwim-org/minor-mode)))
+	     ;; (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+	     ;; (define-key folding-mode-map [(tab)]'toggle-fold-or-indent)))
+
+(add-hook 'outline-minor-mode-hook 	
+	  '(lambda ()
+	     (fold-dwim-org/minor-mode)))
+	     ;; (require 'outline-magic)
+	     ;; (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     ;; (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 ;; (add-hook 'outline-minor-mode-hook 	
 ;; 	  '(lambda ()
 ;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
 ;; 	     (define-key outline-minor-mode-map [(tab)]
-;; 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
-(add-hook 'outline-minor-mode-hook 	
-	  '(lambda ()
-	     (require 'outline-magic)
-	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
-	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
+;; 	       'toggle-fold-or-indent)))
 
 
 (defadvice hs-org/hideshow (around hs-org-check-line activate)
@@ -668,6 +705,37 @@ block -- if there are folding markups or if it matches outline regex"
 (add-hook 'c++-mode-hook 'hs-minor-mode)
 (add-hook 'perl-mode-hook 'hs-minor-mode)
 (add-hook 'ess-mode-hook 'hs-minor-mode)
+
+
+;; 
+(require 'outline)
+
+;; Tassilo Horn's outline-minor-mode enhancement: derive regex from comment syntax
+(defvar th-outline-minor-mode-font-lock-keywords
+ '((eval . (list (concat "^\\(?:" outline-regexp "\\).*")
+                 0 '(outline-font-lock-face) t t)))
+ "Additional expressions to highlight in Orgstruct Mode and Outline minor mode.
+The difference to `outline-font-lock-keywords' is that this will
+overwrite other highlighting.")
+
+(defun th-outline-regexp ()
+ "Calculate the outline regexp for the current mode."
+ (let ((comment-starter (replace-regexp-in-string
+                         "[[:space:]]+" "" comment-start)))
+   (when (string= comment-starter ";")
+     (setq comment-starter ";;"))
+   (concat comment-starter " [*]+ ")))
+
+(defun th-outline-minor-mode-init ()
+ (interactive)
+ (unless (eq major-mode 'latex-mode)
+   (setq outline-regexp (th-outline-regexp))
+   (font-lock-add-keywords
+    nil
+    th-outline-minor-mode-font-lock-keywords)))
+
+(add-hook 'outline-minor-mode-hook
+         'th-outline-minor-mode-init)
 
 ;; (global-unset-key [f1])
 ;; (global-set-key [f1] 'hs-toggle-hiding)
