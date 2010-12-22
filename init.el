@@ -630,6 +630,7 @@ Subsequent calls expands the selection to larger semantic unit."
 
 
 (require 'fold-dwim)
+(require 'fold-dwim-org)
 (global-set-key (kbd "<f7>")      'fold-dwim-toggle)
 (global-set-key (kbd "<M-f7>")    'fold-dwim-hide-all)
 (global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
@@ -664,18 +665,21 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'folding-mode-hook
 	  '(lambda ()
-	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
-	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
+	     (fold-dwim-org/minor-mode)))
+	     ;; (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+	     ;; (define-key folding-mode-map [(tab)]'toggle-fold-or-indent)))
+
+(add-hook 'outline-minor-mode-hook 	
+	  '(lambda ()
+	     (fold-dwim-org/minor-mode)))
+	     ;; (require 'outline-magic)
+	     ;; (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     ;; (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 ;; (add-hook 'outline-minor-mode-hook 	
 ;; 	  '(lambda ()
 ;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
 ;; 	     (define-key outline-minor-mode-map [(tab)]
-;; 	       'toggle-fold-or-indent))) ;'indent-or-toggle-fold)))
-(add-hook 'outline-minor-mode-hook 	
-	  '(lambda ()
-	     (require 'outline-magic)
-	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
-	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
+;; 	       'toggle-fold-or-indent)))
 
 
 (defadvice hs-org/hideshow (around hs-org-check-line activate)
@@ -701,6 +705,37 @@ block -- if there are folding markups or if it matches outline regex"
 (add-hook 'c++-mode-hook 'hs-minor-mode)
 (add-hook 'perl-mode-hook 'hs-minor-mode)
 (add-hook 'ess-mode-hook 'hs-minor-mode)
+
+
+;; 
+(require 'outline)
+
+;; Tassilo Horn's outline-minor-mode enhancement: derive regex from comment syntax
+(defvar th-outline-minor-mode-font-lock-keywords
+ '((eval . (list (concat "^\\(?:" outline-regexp "\\).*")
+                 0 '(outline-font-lock-face) t t)))
+ "Additional expressions to highlight in Orgstruct Mode and Outline minor mode.
+The difference to `outline-font-lock-keywords' is that this will
+overwrite other highlighting.")
+
+(defun th-outline-regexp ()
+ "Calculate the outline regexp for the current mode."
+ (let ((comment-starter (replace-regexp-in-string
+                         "[[:space:]]+" "" comment-start)))
+   (when (string= comment-starter ";")
+     (setq comment-starter ";;"))
+   (concat comment-starter " [*]+ ")))
+
+(defun th-outline-minor-mode-init ()
+ (interactive)
+ (unless (eq major-mode 'latex-mode)
+   (setq outline-regexp (th-outline-regexp))
+   (font-lock-add-keywords
+    nil
+    th-outline-minor-mode-font-lock-keywords)))
+
+(add-hook 'outline-minor-mode-hook
+         'th-outline-minor-mode-init)
 
 ;; (global-unset-key [f1])
 ;; (global-set-key [f1] 'hs-toggle-hiding)
