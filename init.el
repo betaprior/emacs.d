@@ -671,10 +671,10 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
-	     (fold-dwim-org/minor-mode)))
-	     ;; (require 'outline-magic)
-	     ;; (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
-	     ;; (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
+	     (fold-dwim-org/minor-mode)
+	     (require 'outline-magic)
+	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 ;; (add-hook 'outline-minor-mode-hook 	
 ;; 	  '(lambda ()
 ;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)

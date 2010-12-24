@@ -79,8 +79,8 @@
 
 
 (require 'fold-dwim)
-(setq fold-dwim-org/trigger-keys-block nil)
-(defvar fold-dwim-org/trigger-keys-block nil;(list (kbd "TAB"))
+;;(setq fold-dwim-org/trigger-keys-block nil)
+(defvar fold-dwim-org/trigger-keys-block (list (kbd "TAB") [(tab)])
   "The keys to bind to toggle block visibility.")
 
 (defvar fold-dwim-org/trigger-keys-all (list [S-tab] [S-iso-lefttab] [(shift tab)] [backtab])
