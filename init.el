@@ -671,10 +671,14 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
-	     (fold-dwim-org/minor-mode)
-	     (require 'outline-magic)
-	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
-	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
+	     ;; (fold-dwim-org/minor-mode)
+	     (define-key outline-minor-mode-map (kbd "TAB") 'org-cycle)
+	     (define-key outline-minor-mode-map [(tab)] 'org-cycle)
+	     (define-key outline-minor-mode-map [(shift tab)] 'org-global-cycle)
+	     (define-key outline-minor-mode-map [backtab] 'org-global-cycle)))
+	     ;; (require 'outline-magic)
+	     ;; (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     ;; (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 ;; (add-hook 'outline-minor-mode-hook 	
 ;; 	  '(lambda ()
 ;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
@@ -732,7 +736,8 @@ overwrite other highlighting.")
    (setq outline-regexp (th-outline-regexp))
    (font-lock-add-keywords
     nil
-    th-outline-minor-mode-font-lock-keywords)))
+    th-outline-minor-mode-font-lock-keywords)
+    (font-lock-fontify-buffer)))
 
 (add-hook 'outline-minor-mode-hook
          'th-outline-minor-mode-init)
