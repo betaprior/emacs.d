@@ -61,6 +61,12 @@ the grep command in R"
 (defvar lva-quick-file-2 "cnotes\\.org\\'")
 (defvar lva-quick-file-3 "imageshack\\.org\\'")
 
+(defvar lva-quick-files-list 
+  '("memos\\.txt\\'"           ;1	
+    "cnotes\\.org\\'"          ;2 
+    "imageshack\\.org\\'"      ;3
+))
+
 
 
 ;; filter recentf-list to get full path by doing regex matching;
@@ -665,9 +671,9 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'folding-mode-hook
 	  '(lambda ()
-	     (fold-dwim-org/minor-mode)))
-	     ;; (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
-	     ;; (define-key folding-mode-map [(tab)]'toggle-fold-or-indent)))
+	     ;; (fold-dwim-org/minor-mode)))
+	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent)))
 
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
@@ -777,7 +783,7 @@ overwrite other highlighting.")
 			  ([(control shift right)] . [(meta shift +)])
 			  ([(control shift left)] . [(meta shift -)])))
 (setq org-replace-disputed-keys t)
-
+(setq org-outline-path-complete-in-steps nil)
 (setq load-path (cons "~/.emacs.d/elisp/org-mode.git/lisp" load-path))
 ;(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
 (require 'org-install)
@@ -1554,15 +1560,55 @@ in dired mode without it."
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
 
-(defvar lva-quick-file-1-fname 
-  (lva-get-first-matching-string lva-quick-file-1 recentf-list))
-(defvar lva-quick-file-2-fname 
-  (lva-get-first-matching-string lva-quick-file-2 recentf-list)) 
-(defvar lva-quick-file-3-fname 
-  (lva-get-first-matching-string lva-quick-file-3 recentf-list))  
-(global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
-(global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
-(global-set-key "\C-c3" '(lambda () (interactive) (find-file lva-quick-file-3-fname)))
+;; (defvar lva-quick-file-1-fname 
+;;   (lva-get-first-matching-string lva-quick-file-1 recentf-list))
+;; (defvar lva-quick-file-2-fname 
+;;   (lva-get-first-matching-string lva-quick-file-2 recentf-list)) 
+;; (defvar lva-quick-file-3-fname 
+;;   (lva-get-first-matching-string lva-quick-file-3 recentf-list))
+;; (global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
+;; (global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
+;; (global-set-key "\C-c3" '(lambda () (interactive) (find-file lva-quick-file-3-fname)))
+;; if not lambda interactive, it complains that it's not commandp
+
+
+(defvar lva-quick-files-paths ())
+(defun lva-quick-files-paths-generate ()
+  (setq lva-quick-files-paths (mapcar (lambda (x) (lva-get-first-matching-string x recentf-list)) lva-quick-files-list)))
+(defun lva-quick-files-find-nth-file (n)
+  (interactive "n")  
+  (let ((filepath (elt lva-quick-files-paths (1- n))))
+    (if (not filepath)
+      (progn 
+	(lva-quick-files-paths-generate)
+	(message "Generating quick-file-paths; rerun the command"))
+      (find-file filepath))))
+(defun lva-quick-files-bind-keys ()
+  (require 'cl)
+  (lva-quick-files-paths-generate)
+  (let ((n))
+    (loop 
+     for n from 1 to (length lva-quick-files-paths)
+     do (global-set-key (concat "\C-c" (number-to-string n)) `(lambda () (interactive) (lva-quick-files-find-nth-file ,n))))))
+(lva-quick-files-bind-keys)
+
+;; (let ((idx))
+;;   (loop for idx across 'lva-quick-files-paths
+;; 	do (push (concat "\C-c" (number-to-string idx)) mynewlist)))
+;; for n in 1:length(files):
+;;   (global-set-key (concat "\C-c" (number-to-string n)) (find-file flie_paths[n]))
+
+
+;; (defmacro lva-quick-file-X-fname (X)
+;;   `(lva-get-first-matching-string ,(intern (concat "lva-quick-file-" (number-to-string X))) recentf-list))
+;; (defmacro lva-quick-file-X-fname-setq (X)
+;;   `(setq ,(intern (concat "lva-quick-file-" (number-to-string X) "-fname")) (lva-quick-file-X-fname ,X)))
+;; (defmacro lva-quick-file-X-find-file (X)
+;;   `(progn
+;;      (unless (boundp (quote ,(intern (concat "lva-quick-file-" (number-to-string X) "-fname"))))
+;;        (lva-quick-file-X-fname-setq ,X))
+;;      (find-file ,(intern (concat "lva-quick-file-" (number-to-string X) "-fname")))))
+;; (global-set-key "\C-c9" '(lambda () (interactive) (lva-quick-file-X-find-file 3)))
 
 ;; uniquify settings
 (require 'uniquify)
