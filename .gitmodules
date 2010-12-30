@@ -9,7 +9,7 @@
 	url = git://github.com/ZungBang/emacs-grep-a-lot.git
 [submodule "elisp/org-mode.git"]
 	path = elisp/org-mode.git
-	url = git://repo.or.cz/org-mode.git
+	url = http://dnquark.xen.prgmr.com/vc/forks/org-mode.git
 [submodule "elisp/color-theme-twilight-emacs.git"]
 	path = elisp/color-theme-twilight-emacs.git
 	url = https://github.com/crafterm/twilight-emacs.git
