@@ -1,12 +1,13 @@
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
-
 ;; Customize according to the machine
 (defvar hostname (downcase (system-name))) 
 (defvar emacs-profile 
   (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
+	((string= hostname "leo-fujitsu2-w7") 'windows-2)
 	((string= hostname "matroskin") 'linux-1)
 	((string= hostname "leo-gateway") 'linux-gateway)
 	(t 'linux-default)))
+(defvar turn-off-miktex t)
 (defvar master-session (getenv "EMACS_MASTER"))
 (setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
 
@@ -46,6 +47,25 @@ the grep command in R"
 )
 (global-set-key "\C-cn" 'lva-show-buffer-name-and-put-on-kill-ring)
 
+(defun lva-get-time-from-epoch-and-put-on-kill-ring ()
+  (interactive)
+  (let ((time-as-string)
+        (minibuffer-message-timeout 5))
+  (require 'thingatpt)
+  (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (string-to-number (thing-at-point 'word)))))
+  (kill-new time-as-string)
+  (minibuffer-message (concat "Readable time [copied]:" time-as-string))))
+(global-set-key "\C-ct" 'lva-get-time-from-epoch-and-put-on-kill-ring)
+(global-set-key "\C-c\C-t" 'lva-get-time-from-epoch-and-put-on-kill-ring)
+
+(defun clear-shell ()
+   (interactive)
+   (let ((old-max comint-buffer-maximum-size))
+     (setq comint-buffer-maximum-size 0)
+     (comint-truncate-buffer)
+     (setq comint-buffer-maximum-size old-max)))
+
+
 (defun lva-hive-template-find-file () (interactive)
   (require 'template)
   (template-initialize)
@@ -57,16 +77,25 @@ the grep command in R"
 ;;}}}
 
 ;; bind cnotes and memos to keys:
-(defvar lva-quick-file-1 "memos\\.txt\\'")
-(defvar lva-quick-file-2 "cnotes\\.org\\'")
-(defvar lva-quick-file-3 "imageshack\\.org\\'")
-
 (defvar lva-quick-files-list 
   '("memos\\.txt\\'"           ;1	
     "cnotes\\.org\\'"          ;2 
     "imageshack\\.org\\'"      ;3
 ))
 
+(if (eq emacs-profile 'windows-2)
+    ;; for 32-bit R 
+    (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\i386\\Rterm.exe"))
+;  ;; for 64-bit R 
+;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
+
+(defun lva-org-translate-ssh-to-plink (type path)
+  (if (string= type "file")
+      (if (string-match "^/ssh" path)
+	  (setq path (replace-match "/plink" t t path))))
+  (cons type path))
+(if (eq emacs-profile 'windows-2)
+    (setq org-link-translation-function 'lva-org-translate-ssh-to-plink))
 
 
 ;; filter recentf-list to get full path by doing regex matching;
@@ -160,7 +189,7 @@ the grep command in R"
 					;(set-default-font "Consolas-11")
 (if (eq emacs-profile 'linux-1)
     (set-default-font "DejaVu Sans Mono-11")
-  (set-default-font "DejaVu Sans Mono-10")
+  (set-default-font "DejaVu Sans Mono-10") 
   )
 (setq inhibit-startup-message t)
 (tool-bar-mode -1)
@@ -363,8 +392,18 @@ the grep command in R"
 ;(setq scroll-step 1)
 ;; this seemed to sucks; let's try this smooth-scrolling package
 ;(setq scroll-step 1)
-(require 'smooth-scrolling)
-;; to change where the scrolling starts, customize-variable smooth-scroll-margin
+
+
+(if (eq emacs-profile 'windows-2)
+    (setq redisplay-dont-pause t
+	  scroll-margin 1
+	  scroll-step 1
+	  scroll-conservatively 10 ;10000
+	  scroll-preserve-screen-position 1)
+  (require 'smooth-scrolling)
+  ;; to change where the scrolling starts, customize-variable smooth-scroll-margin
+)
+
 
 ;; Color-theme:
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
@@ -384,7 +423,8 @@ the grep command in R"
 (global-set-key (kbd "M-/") 'hippie-expand)
 (setq hippie-expand-try-functions-list '(try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-complete-lisp-symbol-partially try-complete-lisp-symbol))
 
-;; autopair
+;;{{{ autopair
+;; see http://code.google.com/p/autopair/
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 (setq autopair-autowrap t)
@@ -406,7 +446,14 @@ when pressing $:
 (add-hook 'TeX-mode-hook
           #'(lambda ()
               (setq autopair-handle-action-fns
-                    (list #'autopair-skip-dollar-action))))
+                    (list #'autopair-LaTeX-mode-paired-delimiter-action))))
+(add-hook 'python-mode-hook
+           #'(lambda ()
+               (setq autopair-handle-action-fns
+                     (list #'autopair-default-handle-action
+                           #'autopair-python-triple-quote-action))))
+
+;;}}}
 
 ;; Grep enhancements:
 (add-to-list 'load-path "~/.emacs.d/elisp/grep-a-lot.git")
@@ -760,6 +807,7 @@ overwrite other highlighting.")
 (global-set-key (kbd "C-S-s") 'sr-speedbar-toggle)
 
 ;; docview
+(require 'doc-view)
 ;; (load-file (expand-file-name "~/.emacs/doc-view.el"))
 ;; ("\\.pdf$" . open-in-doc-view)
 ;; ("\\.dvi$" . open-in-doc-view)
@@ -992,8 +1040,8 @@ in dired mode without it."
 
 ;;{{{ dired enhancements:
 
-(require 'dired-details)
-;; (dired-details-install)  ;;;; this seems to break dired, TODO: fix
+(require 'dired-details+)
+(setq dired-details-hidden-string "")
 (require 'dired+)
 (toggle-dired-find-file-reuse-dir 1)	; show subdirs in same buffer
 
@@ -1125,9 +1173,13 @@ in dired mode without it."
 ;; tramp
 (require 'tramp)
 (setq tramp-verbose 2)
-(setq tramp-default-method "ssh")
 (setq tramp-debug-buffer nil)
+(setq tramp-default-method "ssh")
 (setq tramp-password-end-of-line "\r\n")
+(if (eq emacs-profile 'windows-2)
+    (progn (prefer-coding-system 'utf-8)
+	   (setq tramp-verbose 10)
+	   (setq tramp-debug-buffer nil)))
 
 (defun sudo-edit (&optional arg)
   (interactive "p")
@@ -1226,6 +1278,10 @@ in dired mode without it."
   (add-to-list 'auto-mode-alist '("\\.ahk$" . ahk-mode))
   (autoload 'ahk-mode "ahk-mode"))
 
+(autoload 'xahk-mode "xahk-mode" "Load xahk-mode for editing AutoHotkey scripts." t)
+(add-to-list 'auto-mode-alist '("\\.ahk\\'" . xahk-mode))
+(defalias 'ahk-mode 'xahk-mode) ; make it easier to remember.
+
 
 ;; mathematica mode -- there are two files: mathematica.el and mma.el
 ;; one provides support for interactive evaluation (mathematica), the other provides
@@ -1316,10 +1372,11 @@ in dired mode without it."
 ;;{{{ LaTex/AucTeX settings
 
 (if (not (eq emacs-profile 'linux-default))
-(require 'tex-site)
-(when (eq system-type 'windows-nt)
-     (require 'tex-mik))
-)
+    ;; (unless (eq emacs-profile 'windows-2) (require 'tex-site))
+    (require 'tex-site)
+  (when (eq system-type 'windows-nt)
+    (unless turn-off-miktex (require 'tex-mik)))
+  )
 
 ;;Anrei says forcing latex mode for tex files explicitly is better in some way
 (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
@@ -1584,6 +1641,7 @@ in dired mode without it."
 	(message "Generating quick-file-paths; rerun the command"))
       (find-file filepath))))
 (defun lva-quick-files-bind-keys ()
+  (interactive)
   (require 'cl)
   (lva-quick-files-paths-generate)
   (let ((n))
@@ -2041,16 +2099,18 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
- '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))))
+ '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))) t)
  '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
  '(cua-remap-control-v nil)
  '(cua-remap-control-z nil)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
+ '(doc-view-ghostscript-program "c:/cygwin/bin/gs.exe")
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
+ '(font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
