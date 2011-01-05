@@ -254,6 +254,44 @@ the grep command in R"
 (when (require 'diminish nil 'noerror)
   (diminish 'my-keys-minor-mode ""))
 
+(defun fc-eval-and-replace ()
+  "Replace the preceding sexp with its value."
+  (interactive)
+  (backward-kill-sexp)
+  (condition-case nil
+      (prin1 (eval (read (current-kill 0)))
+             (current-buffer))
+    (error (message "Invalid expression")
+           (insert (current-kill 0)))))
+(global-set-key (kbd "C-ce") 'fc-eval-and-replace)
+
+;; http://www.emacswiki.org/emacs/ShellMode#toc3
+;; Note also that you'll want to customize same-window-regexps 
+;; to include "\\*shell.*\\*\\(\\|<[0-9]+>\\)"
+(defun shell-dwim (&optional create)
+   "Start or switch to an inferior shell process, in a smart way.
+ If a buffer with a running shell process exists, simply switch to
+ that buffer.
+ If a shell buffer exists, but the shell process is not running,
+ restart the shell.
+ If already in an active shell buffer, switch to the next one, if
+ any.
+ With prefix argument CREATE always start a new shell."
+   (interactive "P")
+   (let* ((next-shell-buffer
+           (catch 'found
+             (dolist (buffer (reverse (buffer-list)))
+               (when (and (string-match "^\\*shell\\*" (buffer-name buffer))
+			  (not (string= (buffer-name) 
+					(buffer-name buffer))))
+                 (throw 'found buffer)))))
+          (buffer (if create
+                      (generate-new-buffer-name "*shell*")
+                    next-shell-buffer)))
+     (shell buffer)))
+(global-set-key (kbd "M-<f8>") 'shell-dwim)
+
+
 ;;{{{ Customize comment-style (and other newcomment.el options)
 
 (setq comment-style 'indent)
@@ -394,6 +432,7 @@ the grep command in R"
 ;(setq scroll-step 1)
 
 
+;; fix scrolling in Windows 7 x64
 (if (eq emacs-profile 'windows-2)
     (setq redisplay-dont-pause t
 	  scroll-margin 1
@@ -1056,6 +1095,13 @@ in dired mode without it."
    (dired-toggle-marks)
    (dired-do-kill-lines))
 (define-key dired-mode-map [?%?h] 'dired-show-only) 
+
+;; When in dired mode, quit isearch + visit file with:
+(add-hook 'isearch-mode-end-hook 
+  (lambda ()
+    (when (and (eq major-mode 'dired-mode)
+           (not isearch-mode-end-hook-quit))
+      (dired-find-file))))
 
 ;; rename the dired buffer; take care of possible buffer name collisions
 (defun buffer-exists (bufname) (not (eq nil (get-buffer bufname)))) 
@@ -2110,7 +2156,7 @@ With argument, do this that many times."
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
- '(font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
+ '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
@@ -2125,6 +2171,7 @@ With argument, do this that many times."
  '(preview-transparent-color nil)
  '(quack-programs (quote ("C:/Program Files/MzScheme/mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
  '(safe-local-variable-values (quote ((TeX-auto-save . t) (TeX-parse-self . t) (folded-file . t))))
+ '(same-window-regexps (quote ("\\*rsh-[^-]*\\*\\(\\|<[0-9]*>\\)" "\\*telnet-.*\\*\\(\\|<[0-9]+>\\)" "^\\*rlogin-.*\\*\\(\\|<[0-9]+>\\)" "\\*info\\*\\(\\|<[0-9]+>\\)" "\\*gud-.*\\*\\(\\|<[0-9]+>\\)" "\\`\\*Customiz.*\\*\\'" "\\*shell.*\\*\\(\\|<[0-9]+>\\)")))
  '(scroll-preserve-screen-position 1)
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
