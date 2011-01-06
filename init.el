@@ -235,6 +235,82 @@ the grep command in R"
 
 ;;}}}
 
+;;{{{ -- Buffer listing/cycling enhancements; ibuffer
+
+(setq buffer-stack-show-position 'buffer-stack-show-position-buffers)
+
+(autoload 'buffer-stack-down "buffer-stack"  nil t)
+(autoload 'buffer-stack-up "buffer-stack"  nil t)
+(autoload 'buffer-stack-bury-and-kill "buffer-stack"  nil t)
+(autoload 'buffer-stack-bury "buffer-stack"  nil t)
+(eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
+
+;; here are the possible keybindings.  Define/customize them in the my-keys map 
+;; (global-set-key [(f9)] 'buffer-stack-down)
+;; (global-set-key [(shift f9)] 'buffer-stack-down-thru-all)
+;; (global-set-key [(f10)] 'buffer-stack-bury)
+;; (global-set-key [(control f10)] 'buffer-stack-bury-and-kill)
+;; (global-set-key [(control f11)] 'buffer-stack-up)
+;; (global-set-key [(shift f10)] 'buffer-stack-bury-thru-all)
+;; (global-set-key [(shift f11)] 'buffer-stack-up-thru-all)
+
+(require 'ibuffer)
+;; credit for options goes to http://martinowen.net/blog/2010/02/tips-for-emacs-ibuffer.html
+(setq ibuffer-saved-filter-groups
+      '(("home"
+	 ("emacs" (or (filename . ".emacs.d")
+			     (filename . "emacs-config")
+                             (name . "^\\*scratch")
+                             (name . "^\\*Messages\\*$")))
+	 ("Org" (or (mode . org-mode)
+		    (filename . "OrgMode")))
+	 ("Shell" (or (mode . shell-mode)))
+	 ("ESS" (or (mode . ess-mode)
+		    (mode . inferior-ess-mode)))
+	 ("Math" (or (mode . mathematica-mode)
+		     (mode . matlab-mode)
+		     (mode . mma-mode)))
+	 ("LaTeX" ;; all LaTeX-related buffers
+                (or (mode . latex-mode)))
+         ("Code" (or (filename . "code")
+		     (mode . c-mode)
+		     (mode . c++-mode)
+		     (mode . java-mode)
+		     (mode . perl-mode)
+		     (mode . python-mode)
+		     (mode . emacs-lisp-mode)))
+	 ("Dired" (mode . dired-mode))
+	 ("Web Dev" (or (mode . html-mode)
+			(mode . css-mode)))
+	 ("Subversion" (name . "\*svn"))
+	 ("Magit" (name . "\*magit"))
+	 ("IRC" (or (mode . erc-mode)
+		    (mode . rcirc-mode)))
+	 ("Help" (or (name . "\*Help\*")
+		     (name . "\*Apropos\*")
+		     (name . "\*info\*"))))))
+(require 'ibuf-ext)
+(add-to-list 'ibuffer-never-show-predicates "^\\*ESS")
+(add-to-list 'ibuffer-never-show-predicates "^\\*WoMan-Log\\*$")
+;; Enable ibuffer-filter-by-filename to filter on directory names too.
+(eval-after-load "ibuf-ext"
+  '(define-ibuffer-filter filename
+     "Toggle current view to buffers with file or directory name matching QUALIFIER."
+     (:description "filename"
+		   :reader (read-from-minibuffer "Filter by file/directory name (regexp): "))
+     (ibuffer-awhen (or (buffer-local-value 'buffer-file-name buf)
+			(buffer-local-value 'dired-directory buf))
+		    (string-match qualifier it))))
+(add-hook 'ibuffer-mode-hook 
+	  '(lambda ()
+	     (ibuffer-auto-mode 1)
+	     (ibuffer-switch-to-saved-filter-groups "home")))
+(global-set-key (kbd "C-x C-b") 'ibuffer) ;; Use Ibuffer for Buffer List
+(setq ibuffer-expert t)
+(setq ibuffer-show-empty-filter-groups nil)
+(setq ibuffer-display-summary nil)
+
+;;}}}
 
 ;; re-builder extension that allows perl syntax:
 ;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
@@ -289,7 +365,7 @@ the grep command in R"
 ;; ----- Built-in commands/accelerator gateway (may be used for UDFs):
 ;; ----- C-c c
 (define-key my-keys-minor-mode-map (kbd "C-c c i") 'imenu)
-(define-key my-keys-minor-mode-map (kbd "C-c c S-i") 'indent-region)
+(define-key my-keys-minor-mode-map (kbd "C-c c I") 'indent-region)
 (define-key my-keys-minor-mode-map (kbd "C-c c o") 'occur)
 (define-key my-keys-minor-mode-map (kbd "C-c c d") 'emx-duplicate-current-line) ; or dup + comment:
 (define-key my-keys-minor-mode-map (kbd "C-c c n") 'lva-show-buffer-name-and-put-on-kill-ring)
@@ -305,7 +381,6 @@ the grep command in R"
 (define-key my-keys-minor-mode-map (kbd "C-c u h c") 'lva-hive-copy-column-list)
 (define-key my-keys-minor-mode-map (kbd "C-c u c s") 'clear-shell)
 
-
 ;; ----- Macro gateway:
 ;; ----- C-c m
 (define-key my-keys-minor-mode-map (kbd "C-c m f") 'autopair-paren-fwd-1)
@@ -315,7 +390,6 @@ the grep command in R"
 
 ;; ----- Org-gateway:
 ;; ----- C-c o
-
 (define-key my-keys-minor-mode-map (kbd "C-c o l") 'org-store-link)
 (define-key my-keys-minor-mode-map (kbd "C-c o a") 'org-agenda)
 (define-key my-keys-minor-mode-map (kbd "C-c o q") 'org-iswitchb)
@@ -327,13 +401,14 @@ the grep command in R"
 ;; ----- Top-level aliases:
 (define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)
 (define-key my-keys-minor-mode-map (kbd "C-c i") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-c I") 'indent-region)
 (define-key my-keys-minor-mode-map (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-c D") 'djcb-duplicate-line-cmt)
 (define-key my-keys-minor-mode-map (kbd "C-c n") 'lva-show-buffer-name-and-put-on-kill-ring)
 (define-key my-keys-minor-mode-map (kbd "C-c e") 'fc-eval-and-replace)
 (define-key my-keys-minor-mode-map [(control c) tab]  'indent-according-to-mode)
 
 ;; ----- Nonstandard aliases:
-(define-key my-keys-minor-mode-map (kbd "C-c S-i") 'indent-region)
 (define-key my-keys-minor-mode-map (kbd "C-c C-d") 'djcb-duplicate-line-cmt)
 (define-key my-keys-minor-mode-map (kbd "C-c M-d") 'djcb-duplicate-line-cmt)
 ;; -----     M-{*&8}
@@ -346,6 +421,12 @@ the grep command in R"
 (define-key my-keys-minor-mode-map (kbd "<S-M-f7>")  'fold-dwim-show-all)
 (define-key my-keys-minor-mode-map (kbd "<f8>") 'shell-dwim)
 (define-key my-keys-minor-mode-map [(meta f3)] 'highlight-symbol-at-point)
+(define-key my-keys-minor-mode-map [f10] 'compile)
+(define-key my-keys-minor-mode-map [f11] 'recompile)
+(define-key my-keys-minor-mode-map [(f9)] 'buffer-stack-down) ; most recent; this cycles thru same mode
+(define-key my-keys-minor-mode-map [(shift f9)] 'buffer-stack-up)
+(define-key my-keys-minor-mode-map [(control f9)] 'buffer-stack-down-thru-all) ; looks same as C-x <right>
+(define-key my-keys-minor-mode-map [(control shift f9)] 'buffer-stack-up-thru-all) ; C-x <left>
 
 ;(define-key my-keys-minor-mode-map (kbd "") ...)
 
@@ -2070,8 +2151,6 @@ With argument, do this that many times."
    (window-configuration-to-register ?w)
    (recompile))
   )
-(global-set-key [f9] 'recompile)
-(global-set-key [f10] 'compile)
 
 
 ;; ;; Helper for compilation. Close the compilation window if
