@@ -1,12 +1,13 @@
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
-
 ;; Customize according to the machine
 (defvar hostname (downcase (system-name))) 
 (defvar emacs-profile 
   (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
+	((string= hostname "leo-fujitsu2-w7") 'windows-2)
 	((string= hostname "matroskin") 'linux-1)
 	((string= hostname "leo-gateway") 'linux-gateway)
 	(t 'linux-default)))
+(defvar turn-off-miktex t)
 (defvar master-session (getenv "EMACS_MASTER"))
 (setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
 
@@ -44,7 +45,23 @@ the grep command in R"
   (kill-new buffer-file-name)
   (minibuffer-message (concat "Filename [copied]:" buffer-file-name))
 )
-(global-set-key "\C-cn" 'lva-show-buffer-name-and-put-on-kill-ring)
+
+(defun lva-get-time-from-epoch-and-put-on-kill-ring ()
+  (interactive)
+  (let ((time-as-string)
+        (minibuffer-message-timeout 5))
+  (require 'thingatpt)
+  (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (string-to-number (thing-at-point 'word)))))
+  (kill-new time-as-string)
+  (minibuffer-message (concat "Readable time [copied]:" time-as-string))))
+
+(defun clear-shell ()
+   (interactive)
+   (let ((old-max comint-buffer-maximum-size))
+     (setq comint-buffer-maximum-size 0)
+     (comint-truncate-buffer)
+     (setq comint-buffer-maximum-size old-max)))
+
 
 (defun lva-hive-template-find-file () (interactive)
   (require 'template)
@@ -54,13 +71,62 @@ the grep command in R"
       (template-new-file file "~/.emacs.d/.templates/HiveShellRun.tpl")
 ))
 
+(defun lva-hive-copy-column-list (start end)
+  (interactive "r")
+  (unless mark-active
+    (error "Mark inactive"))
+  (let ((buffer (current-buffer)) (words '()) (s))
+    (with-temp-buffer
+      (insert-buffer-substring-no-properties buffer start end)
+      (goto-char (point-min))
+      ;; Wnat to stop at the line that starts w/
+      ;; "Time taken:"
+      ;; Use the fact that search-forward moves point
+      (if (search-forward "Time taken:" nil t)
+	  (progn
+	    (beginning-of-line)
+	    (delete-region (point) (line-end-position))))
+      (goto-char (point-min))
+	(while (re-search-forward "^\\([[:word:]_-]+?\\)[ 	]+\\w+" nil t)
+	  (push (match-string 1) words)))
+    (deactivate-mark)
+    (setq s (mapconcat 'identity (nreverse words) ", "))
+    (message s)
+    (kill-new s)))
+(defun lva-quote-words-in-region (start end)
+  (interactive "r")
+  (unless mark-active
+    (error "Mark inactive"))
+  (save-excursion
+    (save-restriction
+      (narrow-to-region start end)
+      (goto-char start)
+      (while (re-search-forward "[[:word:]_-]+" nil t)
+	(replace-match "\"\\&\""))))
+  (deactivate-mark))
+
 ;;}}}
 
 ;; bind cnotes and memos to keys:
-(defvar lva-quick-file-1 "memos\\.txt\\'")
-(defvar lva-quick-file-2 "cnotes\\.org\\'")
-(defvar lva-quick-file-3 "imageshack\\.org\\'")
+(defvar lva-quick-files-list 
+  '("memos\\.txt\\'"           ;1	
+    "cnotes\\.org\\'"          ;2 
+    "imageshack\\.org\\'"      ;3
+))
 
+(if (eq emacs-profile 'windows-2)
+    ;; for 32-bit R 
+    (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\i386\\Rterm.exe"))
+;  ;; for 64-bit R 
+;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
+
+(defun lva-org-translate-ssh-to-plink (type path)
+  (if (string= type "file")
+      (if (string-match "^/ssh" path)
+	  (setq path (replace-match "/plink" t t path))))
+  (cons type path))
+(if (eq emacs-profile 'windows-2)
+    (setq org-link-translation-function 'lva-org-translate-ssh-to-plink))
 
 
 ;; filter recentf-list to get full path by doing regex matching;
@@ -108,8 +174,7 @@ the grep command in R"
 
 ;;}}}
 ;; enable winner mode for swiching windows configurations
-(when (fboundp 'winner-mode)
-  (winner-mode 1))
+(when (fboundp 'winner-mode) (winner-mode 1))
 
 ;;{{{ -- anything.el and anything-config
 
@@ -154,7 +219,7 @@ the grep command in R"
 					;(set-default-font "Consolas-11")
 (if (eq emacs-profile 'linux-1)
     (set-default-font "DejaVu Sans Mono-11")
-  (set-default-font "DejaVu Sans Mono-10")
+  (set-default-font "DejaVu Sans Mono-10") 
   )
 (setq inhibit-startup-message t)
 (tool-bar-mode -1)
@@ -170,6 +235,82 @@ the grep command in R"
 
 ;;}}}
 
+;;{{{ -- Buffer listing/cycling enhancements; ibuffer
+
+(setq buffer-stack-show-position 'buffer-stack-show-position-buffers)
+
+(autoload 'buffer-stack-down "buffer-stack"  nil t)
+(autoload 'buffer-stack-up "buffer-stack"  nil t)
+(autoload 'buffer-stack-bury-and-kill "buffer-stack"  nil t)
+(autoload 'buffer-stack-bury "buffer-stack"  nil t)
+(eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
+
+;; here are the possible keybindings.  Define/customize them in the my-keys map 
+;; (global-set-key [(f9)] 'buffer-stack-down)
+;; (global-set-key [(shift f9)] 'buffer-stack-down-thru-all)
+;; (global-set-key [(f10)] 'buffer-stack-bury)
+;; (global-set-key [(control f10)] 'buffer-stack-bury-and-kill)
+;; (global-set-key [(control f11)] 'buffer-stack-up)
+;; (global-set-key [(shift f10)] 'buffer-stack-bury-thru-all)
+;; (global-set-key [(shift f11)] 'buffer-stack-up-thru-all)
+
+(require 'ibuffer)
+;; credit for options goes to http://martinowen.net/blog/2010/02/tips-for-emacs-ibuffer.html
+(setq ibuffer-saved-filter-groups
+      '(("home"
+	 ("emacs" (or (filename . ".emacs.d")
+			     (filename . "emacs-config")
+                             (name . "^\\*scratch")
+                             (name . "^\\*Messages\\*$")))
+	 ("Org" (or (mode . org-mode)
+		    (filename . "OrgMode")))
+	 ("Shell" (or (mode . shell-mode)))
+	 ("ESS" (or (mode . ess-mode)
+		    (mode . inferior-ess-mode)))
+	 ("Math" (or (mode . mathematica-mode)
+		     (mode . matlab-mode)
+		     (mode . mma-mode)))
+	 ("LaTeX" ;; all LaTeX-related buffers
+                (or (mode . latex-mode)))
+         ("Code" (or (filename . "code")
+		     (mode . c-mode)
+		     (mode . c++-mode)
+		     (mode . java-mode)
+		     (mode . perl-mode)
+		     (mode . python-mode)
+		     (mode . emacs-lisp-mode)))
+	 ("Dired" (mode . dired-mode))
+	 ("Web Dev" (or (mode . html-mode)
+			(mode . css-mode)))
+	 ("Subversion" (name . "\*svn"))
+	 ("Magit" (name . "\*magit"))
+	 ("IRC" (or (mode . erc-mode)
+		    (mode . rcirc-mode)))
+	 ("Help" (or (name . "\*Help\*")
+		     (name . "\*Apropos\*")
+		     (name . "\*info\*"))))))
+(require 'ibuf-ext)
+(add-to-list 'ibuffer-never-show-predicates "^\\*ESS")
+(add-to-list 'ibuffer-never-show-predicates "^\\*WoMan-Log\\*$")
+;; Enable ibuffer-filter-by-filename to filter on directory names too.
+(eval-after-load "ibuf-ext"
+  '(define-ibuffer-filter filename
+     "Toggle current view to buffers with file or directory name matching QUALIFIER."
+     (:description "filename"
+		   :reader (read-from-minibuffer "Filter by file/directory name (regexp): "))
+     (ibuffer-awhen (or (buffer-local-value 'buffer-file-name buf)
+			(buffer-local-value 'dired-directory buf))
+		    (string-match qualifier it))))
+(add-hook 'ibuffer-mode-hook 
+	  '(lambda ()
+	     (ibuffer-auto-mode 1)
+	     (ibuffer-switch-to-saved-filter-groups "home")))
+(global-set-key (kbd "C-x C-b") 'ibuffer) ;; Use Ibuffer for Buffer List
+(setq ibuffer-expert t)
+(setq ibuffer-show-empty-filter-groups nil)
+(setq ibuffer-display-summary nil)
+
+;;}}}
 
 ;; re-builder extension that allows perl syntax:
 ;(add-to-list 'load-path (expand-file-name "~/.emacs.d/elisp"))
@@ -206,8 +347,90 @@ the grep command in R"
 ;;(global-set-key (kbd "C-M-j") 'other-window)
 
 ;; Create a mode for global keybindings, as per http://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs
+;;{{{ my-keys minor mode definition and keybindings
 (defvar my-keys-minor-mode-map (make-keymap) "my-keys-minor-mode keymap.")
+;; ----- Windmove keybidings:  -----
 (define-key my-keys-minor-mode-map (kbd "C-M-j") 'other-window)
+;; ----- "Gateway" keybidings:  -----
+;; C-c b, C-c c, C-c u, C-c m, C-c o, C-c <f10>
+;; ----- Bookmark gateway:
+;; ----- C-c b; <f2>
+(define-key my-keys-minor-mode-map [(control f2)]  'af-bookmark-toggle )
+(define-key my-keys-minor-mode-map [f2]  'af-bookmark-cycle-forward )
+(define-key my-keys-minor-mode-map [(shift f2)]  'af-bookmark-cycle-reverse )
+(define-key my-keys-minor-mode-map [(control shift f2)]  'af-bookmark-clear-all )
+(define-key my-keys-minor-mode-map (kbd "C-c b b")  'af-bookmark-toggle )
+(define-key my-keys-minor-mode-map (kbd "C-c b c")  'af-bookmark-clear-all )
+
+;; ----- Built-in commands/accelerator gateway (may be used for UDFs):
+;; ----- C-c c
+(define-key my-keys-minor-mode-map (kbd "C-c c i") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-c c I") 'indent-region)
+(define-key my-keys-minor-mode-map (kbd "C-c c o") 'occur)
+(define-key my-keys-minor-mode-map (kbd "C-c c d") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-c c n") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c c e") 'fc-eval-and-replace)
+
+;; ----- UDF gateway:
+;; ----- C-c u
+(define-key my-keys-minor-mode-map (kbd "C-c u n") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c u t") 'lva-get-time-from-epoch-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c u q") 'lva-quote-words-in-region)
+(define-key my-keys-minor-mode-map (kbd "C-c u e") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map (kbd "C-c u h t") 'lva-hive-template-find-file)
+(define-key my-keys-minor-mode-map (kbd "C-c u h c") 'lva-hive-copy-column-list)
+(define-key my-keys-minor-mode-map (kbd "C-c u c s") 'clear-shell)
+
+;; ----- Macro gateway:
+;; ----- C-c m
+(define-key my-keys-minor-mode-map (kbd "C-c m f") 'autopair-paren-fwd-1)
+(define-key my-keys-minor-mode-map (kbd "C-c m p b") 'paste-BOL)
+(define-key my-keys-minor-mode-map (kbd "C-c m p e") 'paste-EOL)
+(define-key my-keys-minor-mode-map (kbd "C-c m q") 'quote-list)
+
+;; ----- Org-gateway:
+;; ----- C-c o
+(define-key my-keys-minor-mode-map (kbd "C-c o l") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-c o a") 'org-agenda)
+(define-key my-keys-minor-mode-map (kbd "C-c o q") 'org-iswitchb)
+
+;; ----- Kitchen sink gateway:
+;; ----- C-c <f10>
+(define-key my-keys-minor-mode-map (kbd "C-c <f10> y") 'bring-up-yank-menu)
+
+;; ----- Top-level aliases:
+(define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-c i") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-c I") 'indent-region)
+(define-key my-keys-minor-mode-map (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-c D") 'djcb-duplicate-line-cmt)
+(define-key my-keys-minor-mode-map (kbd "C-c n") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c e") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map [(control c) tab]  'indent-according-to-mode)
+
+;; ----- Nonstandard aliases:
+(define-key my-keys-minor-mode-map (kbd "C-c C-d") 'djcb-duplicate-line-cmt)
+(define-key my-keys-minor-mode-map (kbd "C-c M-d") 'djcb-duplicate-line-cmt)
+;; -----     M-{*&8}
+(define-key my-keys-minor-mode-map (kbd "M-*") 'select-text-in-quote-balanced)
+(define-key my-keys-minor-mode-map (kbd "M-8") 'extend-selection)
+(define-key my-keys-minor-mode-map (kbd "M-&") 'add-before-after-region)
+;; -----     F-keys
+(define-key my-keys-minor-mode-map (kbd "<f7>")      'fold-dwim-toggle)
+(define-key my-keys-minor-mode-map [(shift f7)]      'fold-dwim-toggle-all)
+(define-key my-keys-minor-mode-map (kbd "<M-f7>")    'fold-dwim-hide-all)
+(define-key my-keys-minor-mode-map (kbd "<S-M-f7>")  'fold-dwim-show-all)
+(define-key my-keys-minor-mode-map (kbd "<f8>") 'shell-dwim)
+(define-key my-keys-minor-mode-map [(meta f3)] 'highlight-symbol-at-point)
+(define-key my-keys-minor-mode-map [f10] 'compile)
+(define-key my-keys-minor-mode-map [f11] 'recompile)
+(define-key my-keys-minor-mode-map [(f9)] 'buffer-stack-down) ; most recent; this cycles thru same mode
+(define-key my-keys-minor-mode-map [(shift f9)] 'buffer-stack-up)
+(define-key my-keys-minor-mode-map [(control f9)] 'buffer-stack-down-thru-all) ; looks same as C-x <right>
+(define-key my-keys-minor-mode-map [(control shift f9)] 'buffer-stack-up-thru-all) ; C-x <left>
+
+;(define-key my-keys-minor-mode-map (kbd "") ...)
+
 (define-minor-mode my-keys-minor-mode
   "A minor mode so that my key settings override annoying major modes."
   t " my-keys" 'my-keys-minor-mode-map)
@@ -215,9 +438,47 @@ the grep command in R"
 (defun my-minibuffer-setup-hook ()
   (my-keys-minor-mode 0))
 (add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
+;;}}}
 
 (when (require 'diminish nil 'noerror)
   (diminish 'my-keys-minor-mode ""))
+
+(defun fc-eval-and-replace ()
+  "Replace the preceding sexp with its value."
+  (interactive)
+  (backward-kill-sexp)
+  (condition-case nil
+      (prin1 (eval (read (current-kill 0)))
+             (current-buffer))
+    (error (message "Invalid expression")
+           (insert (current-kill 0)))))
+
+
+;; http://www.emacswiki.org/emacs/ShellMode#toc3
+;; Note also that you'll want to customize same-window-regexps 
+;; to include "\\*shell.*\\*\\(\\|<[0-9]+>\\)"
+(defun shell-dwim (&optional create)
+   "Start or switch to an inferior shell process, in a smart way.
+ If a buffer with a running shell process exists, simply switch to
+ that buffer.
+ If a shell buffer exists, but the shell process is not running,
+ restart the shell.
+ If already in an active shell buffer, switch to the next one, if
+ any.
+ With prefix argument CREATE always start a new shell."
+   (interactive "P")
+   (let* ((next-shell-buffer
+           (catch 'found
+             (dolist (buffer (reverse (buffer-list)))
+               (when (and (string-match "^\\*shell\\*" (buffer-name buffer))
+			  (not (string= (buffer-name) 
+					(buffer-name buffer))))
+                 (throw 'found buffer)))))
+          (buffer (if create
+                      (generate-new-buffer-name "*shell*")
+                    next-shell-buffer)))
+     (shell buffer)))
+
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
 
@@ -302,14 +563,6 @@ the grep command in R"
 ;;(setq browse-url-browser-function 'browse-url-firefox)
 
 ;; Misc. keybindings
-(global-set-key "\C-c\S-i" 'indent-region)
-(global-set-key "\C-ci" 'imenu)
-(global-set-key "\C-co" 'occur)
-(global-set-key [(control c) (control o)] 'occur)
-(global-set-key [(control f3)] 'explorer-here)
-(global-set-key [(control super f3)] 'explorer-here)
-(global-set-key [(control f4)] 'terminal-here)
-(global-set-key [(control super f4)] 'terminal-here)
 ; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
 (global-set-key [(control c) (control \\)] 'toggle-input-method)
 (global-unset-key [\C-down-mouse-3])
@@ -357,8 +610,19 @@ the grep command in R"
 ;(setq scroll-step 1)
 ;; this seemed to sucks; let's try this smooth-scrolling package
 ;(setq scroll-step 1)
-(require 'smooth-scrolling)
-;; to change where the scrolling starts, customize-variable smooth-scroll-margin
+
+
+;; fix scrolling in Windows 7 x64
+(if (eq emacs-profile 'windows-2)
+    (setq redisplay-dont-pause t
+	  scroll-margin 1
+	  scroll-step 1
+	  scroll-conservatively 10 ;10000
+	  scroll-preserve-screen-position 1)
+  (require 'smooth-scrolling)
+  ;; to change where the scrolling starts, customize-variable smooth-scroll-margin
+)
+
 
 ;; Color-theme:
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
@@ -378,14 +642,12 @@ the grep command in R"
 (global-set-key (kbd "M-/") 'hippie-expand)
 (setq hippie-expand-try-functions-list '(try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-complete-lisp-symbol-partially try-complete-lisp-symbol))
 
-;; autopair
+;;{{{ autopair
+;; see http://code.google.com/p/autopair/
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 (setq autopair-autowrap t)
-;; stuff to deal with foo()bar-type situations
-(fset 'autopair-paren-fwd-1
-   [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
-(global-set-key (kbd "\C-cf") 'autopair-paren-fwd-1)
+
 (defun autopair-skip-dollar-action (action pair pos-before)
   "Let |.| define the position of the cursor.  Want the following behavior
 when pressing $: 
@@ -400,7 +662,14 @@ when pressing $:
 (add-hook 'TeX-mode-hook
           #'(lambda ()
               (setq autopair-handle-action-fns
-                    (list #'autopair-skip-dollar-action))))
+                    (list #'autopair-LaTeX-mode-paired-delimiter-action))))
+(add-hook 'python-mode-hook
+           #'(lambda ()
+               (setq autopair-handle-action-fns
+                     (list #'autopair-default-handle-action
+                           #'autopair-python-triple-quote-action))))
+
+;;}}}
 
 ;; Grep enhancements:
 (add-to-list 'load-path "~/.emacs.d/elisp/grep-a-lot.git")
@@ -482,9 +751,6 @@ Delimiters are paired characters: ()[]$$<>«»“”‘’「」, including \"\"
      (select-text-in-quote-balanced-base)
      ))
 
-(global-set-key (kbd "M-*") 'select-text-in-quote-balanced)
-
-
 (defun select-text-in-quote ()
 "Select text between the nearest left and right delimiters.
 Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
@@ -532,7 +798,6 @@ Subsequent calls expands the selection to larger semantic unit."
           (forward-sexp)))
       (mark-sexp -1))))
 
-(global-set-key (kbd "M-8") 'extend-selection)
 
 (defun matched-delims-p (chstr1 chstr2)
   "Returns t if the two arguments are 1-char strings corr to ordered matched delimiters."
@@ -581,14 +846,12 @@ Subsequent calls expands the selection to larger semantic unit."
     )
   )
 
-(global-set-key (kbd "M-&") 'add-before-after-region)
 
 ;;}}}
 
 ;; highlight symbol
 ;; (add-to-list 'load-path "~/.emacs.d/elisp/highlight-symbol")
 (require 'highlight-symbol)
-(global-set-key [(meta f3)] 'highlight-symbol-at-point)
 
 ;; From Xah Lee's page:
 ;; temporarily set fill-column to a huge number (point-max); 
@@ -630,10 +893,15 @@ Subsequent calls expands the selection to larger semantic unit."
 
 
 (require 'fold-dwim)
-(require 'fold-dwim-org)
-(global-set-key (kbd "<f7>")      'fold-dwim-toggle)
-(global-set-key (kbd "<M-f7>")    'fold-dwim-hide-all)
-(global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
+;; (require 'fold-dwim-org)
+(defvar fold-dwim-hide-show-all-next nil  "Keeps the state of how the buffer was last toggled.")
+(make-variable-buffer-local 'fold-dwim-hide-show-all-next)
+(defun fold-dwim-toggle-all ()
+  (interactive)
+  (if fold-dwim-hide-show-all-next
+      (fold-dwim-show-all)
+    (fold-dwim-hide-all))
+  (setq fold-dwim-hide-show-all-next (not fold-dwim-hide-show-all-next)))
 
 ;; useful to check: (check-folding-line (thing-at-point 'line))
 (defun check-folding-line (line)
@@ -665,16 +933,20 @@ block -- if there are folding markups or if it matches outline regex"
 
 (add-hook 'folding-mode-hook
 	  '(lambda ()
-	     (fold-dwim-org/minor-mode)))
-	     ;; (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
-	     ;; (define-key folding-mode-map [(tab)]'toggle-fold-or-indent)))
+	     ;; (fold-dwim-org/minor-mode)))
+	     (define-key folding-mode-map (kbd "TAB") 'toggle-fold-or-indent)
+	     (define-key folding-mode-map [(tab)]'toggle-fold-or-indent)))
 
 (add-hook 'outline-minor-mode-hook 	
 	  '(lambda ()
-	     (fold-dwim-org/minor-mode)
-	     (require 'outline-magic)
-	     (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
-	     (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
+	     ;; (fold-dwim-org/minor-mode)
+	     (define-key outline-minor-mode-map (kbd "TAB") 'org-cycle)
+	     (define-key outline-minor-mode-map [(tab)] 'org-cycle)
+	     (define-key outline-minor-mode-map [(shift tab)] 'org-global-cycle)
+	     (define-key outline-minor-mode-map [backtab] 'org-global-cycle)))
+	     ;; (require 'outline-magic)
+	     ;; (define-key outline-minor-mode-map (kbd "TAB") 'outline-cycle)
+	     ;; (define-key outline-minor-mode-map [(tab)] 'outline-cycle)))
 ;; (add-hook 'outline-minor-mode-hook 	
 ;; 	  '(lambda ()
 ;; 	     (define-key outline-minor-mode-map (kbd "TAB") 'toggle-fold-or-indent)
@@ -689,8 +961,6 @@ block -- if there are folding markups or if it matches outline regex"
 	  ad-do-it)
       (indent-according-to-mode)))
 
-
-(global-set-key [(control c) tab]  'indent-according-to-mode)
 
 ;; HideShow stuff:
 (require 'hideshow-org)
@@ -724,6 +994,8 @@ overwrite other highlighting.")
                          "[[:space:]]+" "" comment-start)))
    (when (string= comment-starter ";")
      (setq comment-starter ";;"))
+   (when (string= comment-starter "#")
+     (setq comment-starter "##"))
    (concat comment-starter " [*]+ ")))
 
 (defun th-outline-minor-mode-init ()
@@ -732,7 +1004,8 @@ overwrite other highlighting.")
    (setq outline-regexp (th-outline-regexp))
    (font-lock-add-keywords
     nil
-    th-outline-minor-mode-font-lock-keywords)))
+    th-outline-minor-mode-font-lock-keywords)
+    (font-lock-fontify-buffer)))
 
 (add-hook 'outline-minor-mode-hook
          'th-outline-minor-mode-init)
@@ -749,6 +1022,7 @@ overwrite other highlighting.")
 (global-set-key (kbd "C-S-s") 'sr-speedbar-toggle)
 
 ;; docview
+(require 'doc-view)
 ;; (load-file (expand-file-name "~/.emacs/doc-view.el"))
 ;; ("\\.pdf$" . open-in-doc-view)
 ;; ("\\.dvi$" . open-in-doc-view)
@@ -772,16 +1046,13 @@ overwrite other highlighting.")
 			  ([(control shift right)] . [(meta shift +)])
 			  ([(control shift left)] . [(meta shift -)])))
 (setq org-replace-disputed-keys t)
-
+(setq org-outline-path-complete-in-steps nil)
 (setq load-path (cons "~/.emacs.d/elisp/org-mode.git/lisp" load-path))
 ;(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
 (require 'org-install)
 (setq org-startup-indented t)
 ;; The following lines are always needed.  Choose your own keys.
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cq" 'org-iswitchb)
 (setq org-todo-keywords
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
 (add-hook 'org-mode-hook 
@@ -981,8 +1252,8 @@ in dired mode without it."
 
 ;;{{{ dired enhancements:
 
-(require 'dired-details)
-;; (dired-details-install)  ;;;; this seems to break dired, TODO: fix
+(require 'dired-details+)
+(setq dired-details-hidden-string "")
 (require 'dired+)
 (toggle-dired-find-file-reuse-dir 1)	; show subdirs in same buffer
 
@@ -997,6 +1268,13 @@ in dired mode without it."
    (dired-toggle-marks)
    (dired-do-kill-lines))
 (define-key dired-mode-map [?%?h] 'dired-show-only) 
+
+;; When in dired mode, quit isearch + visit file with:
+(add-hook 'isearch-mode-end-hook 
+  (lambda ()
+    (when (and (eq major-mode 'dired-mode)
+           (not isearch-mode-end-hook-quit))
+      (dired-find-file))))
 
 ;; rename the dired buffer; take care of possible buffer name collisions
 (defun buffer-exists (bufname) (not (eq nil (get-buffer bufname)))) 
@@ -1114,9 +1392,13 @@ in dired mode without it."
 ;; tramp
 (require 'tramp)
 (setq tramp-verbose 2)
-(setq tramp-default-method "ssh")
 (setq tramp-debug-buffer nil)
+(setq tramp-default-method "ssh")
 (setq tramp-password-end-of-line "\r\n")
+(if (eq emacs-profile 'windows-2)
+    (progn (prefer-coding-system 'utf-8)
+	   (setq tramp-verbose 10)
+	   (setq tramp-debug-buffer nil)))
 
 (defun sudo-edit (&optional arg)
   (interactive "p")
@@ -1215,6 +1497,10 @@ in dired mode without it."
   (add-to-list 'auto-mode-alist '("\\.ahk$" . ahk-mode))
   (autoload 'ahk-mode "ahk-mode"))
 
+(autoload 'xahk-mode "xahk-mode" "Load xahk-mode for editing AutoHotkey scripts." t)
+(add-to-list 'auto-mode-alist '("\\.ahk\\'" . xahk-mode))
+(defalias 'ahk-mode 'xahk-mode) ; make it easier to remember.
+
 
 ;; mathematica mode -- there are two files: mathematica.el and mma.el
 ;; one provides support for interactive evaluation (mathematica), the other provides
@@ -1305,10 +1591,11 @@ in dired mode without it."
 ;;{{{ LaTex/AucTeX settings
 
 (if (not (eq emacs-profile 'linux-default))
-(require 'tex-site)
-(when (eq system-type 'windows-nt)
-     (require 'tex-mik))
-)
+    ;; (unless (eq emacs-profile 'windows-2) (require 'tex-site))
+    (require 'tex-site)
+  (when (eq system-type 'windows-nt)
+    (unless turn-off-miktex (require 'tex-mik)))
+  )
 
 ;;Anrei says forcing latex mode for tex files explicitly is better in some way
 (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
@@ -1549,15 +1836,28 @@ in dired mode without it."
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
 
-(defvar lva-quick-file-1-fname 
-  (lva-get-first-matching-string lva-quick-file-1 recentf-list))
-(defvar lva-quick-file-2-fname 
-  (lva-get-first-matching-string lva-quick-file-2 recentf-list)) 
-(defvar lva-quick-file-3-fname 
-  (lva-get-first-matching-string lva-quick-file-3 recentf-list))  
-(global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
-(global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
-(global-set-key "\C-c3" '(lambda () (interactive) (find-file lva-quick-file-3-fname)))
+
+(defvar lva-quick-files-paths ())
+(defun lva-quick-files-paths-generate ()
+  (setq lva-quick-files-paths (mapcar (lambda (x) (lva-get-first-matching-string x recentf-list)) lva-quick-files-list)))
+(defun lva-quick-files-find-nth-file (n)
+  (interactive "n")  
+  (let ((filepath (elt lva-quick-files-paths (1- n))))
+    (if (not filepath)
+      (progn 
+	(lva-quick-files-paths-generate)
+	(message "Generating quick-file-paths; rerun the command"))
+      (find-file filepath))))
+(defun lva-quick-files-bind-keys ()
+  (interactive)
+  (require 'cl)
+  (lva-quick-files-paths-generate)
+  (let ((n))
+    (loop 
+     for n from 1 to (length lva-quick-files-paths)
+     do (global-set-key (concat "\C-c" (number-to-string n)) `(lambda () (interactive) (lva-quick-files-find-nth-file ,n))))))
+(lva-quick-files-bind-keys)
+
 
 ;; uniquify settings
 (require 'uniquify)
@@ -1718,48 +2018,6 @@ in dired mode without it."
 
 ;; --- Quick bookmarks -----------------------------------------------------
 (require 'af-bookmarks)
-(global-set-key [(control f2)]  'af-bookmark-toggle )
-(global-set-key "\C-cb"  'af-bookmark-toggle )
-(global-set-key [f2]  'af-bookmark-cycle-forward )
-(global-set-key [(shift f2)]  'af-bookmark-cycle-reverse )
-(global-set-key [(control shift f2)]  'af-bookmark-clear-all )
-(global-set-key "\C-c\C-b"  'af-bookmark-clear-all )
-(global-set-key "\C-ccb"  'af-bookmark-clear-all )
-
-
-
-;;{{{ --- Breadcrumb settings ---------------------------------------------------
-
-;(require 'breadcrumb)
-;; (autoload 'bc-set "breadcrumb" "Set bookmark in current point." t)
-;; (autoload 'bc-previous "breadcrumb" "Go to previous bookmark." t)
-;; (autoload 'bc-next "breadcrumb" "Go to next bookmark." t)
-;; (autoload 'bc-local-previous "breadcrumb" "Go to previous local bookmark." t)
-;; (autoload 'bc-local-next "breadcrumb" "Go to next local bookmark." t)
-;; (autoload 'bc-goto-current "breadcrumb" "Go to the current bookmark." t)
-;; (autoload 'bc-list "breadcrumb" "List all bookmarks in menu mode." t)
-;; (autoload 'bc-clear "breadcrumb" "Clear all bookmarks." t) 
-;;   ; breadcrumb keys:
-;; ; (global-set-key (kbd "S-SPC")         'bc-set)  ;; used to be S-M-SPC
-;; (global-set-key (kbd "C-S-SPC") 'bc-set)
-;; (global-set-key (kbd "C-S-<left>") 'bc-previous)
-;; (global-set-key (kbd "C-S-<right>") 'bc-next)
-;; (global-set-key (kbd "C-S-<down>") 'bc-local-previous)
-;; (global-set-key (kbd "C-S-<up>") 'bc-local-next)
-;; (global-set-key (kbd "C-S-<return>") 'bc-goto-current)
-;; (global-set-key (kbd "C-S-l") 'bc-list)
-;; (global-set-key (kbd "C-S-c") 'bc-clear)
-
-;;(global-set-key [f2]         'bc-set) 
-;; Shift-SPACE for set bookmark
-;; (global-set-key [(meta j)]              'bc-previous)       ;; M-j for jump to previous
-;; (global-set-key [(shift meta j)]        'bc-next)           ;; Shift-M-j for jump to next
-;; (global-set-key [(meta up)]             'bc-local-previous) ;; M-up-arrow for local previous
-;; (global-set-key [(meta down)]           'bc-local-next)     ;; M-down-arrow for local next
-;; (global-set-key [(control c)(j)]        'bc-goto-current)   ;; C-c j for jump to current bookmark
-;; (global-set-key [(control x)(meta j)]   'bc-list)           ;; C-x M-j for the bookmark menu list
-
-;;}}}~end Breadcrumb settings ---------------------------------------------------
 
 ;; Add color to a shell running in emacs 'M-x shell'
 (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
@@ -1827,9 +2085,9 @@ in dired mode without it."
 (when (require 'browse-kill-ring nil 'noerror)
   (browse-kill-ring-default-keybindings))
 
-(global-set-key "\C-cy" '(lambda ()
+(defun bring-up-yank-menu ()
    (interactive)
-   (popup-menu 'yank-menu)))
+   (popup-menu 'yank-menu))
 
 ;; enable killing/copying lines w/o having them marked
 ;; cf http://www.emacswiki.org/emacs/SlickCopy
@@ -1878,6 +2136,7 @@ With argument, do this that many times."
     (insert-string
       (concat (if (= 0 (forward-line 1)) "" "\n") str "\n"))
     (forward-line -1)))
+(defun djcb-duplicate-line-cmt () (interactive) (djcb-duplicate-line t))
 
 
 
@@ -1887,8 +2146,6 @@ With argument, do this that many times."
   (yank)
   (back-to-indentation))
 
-(global-set-key (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
-(global-set-key (kbd "C-c C-d") (lambda()(interactive)(djcb-duplicate-line t)))
 ;; (global-set-key "\C-cd" 'emx-duplicate-current-line)
 (global-set-key (kbd "s-w") 'duplicate-current-line)
 (global-set-key (kbd "s-k") 'kill-ring-save)
@@ -1903,8 +2160,6 @@ With argument, do this that many times."
    (window-configuration-to-register ?w)
    (recompile))
   )
-(global-set-key [f9] 'recompile)
-(global-set-key [f10] 'compile)
 
 
 ;; ;; Helper for compilation. Close the compilation window if
@@ -1950,21 +2205,20 @@ With argument, do this that many times."
 ;; Macros:
 (fset 'paste-BOL
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
-(global-set-key "\C-c\C-p" 'paste-BOL)
-(global-set-key "\C-cpb" 'paste-BOL)
 (fset 'paste-EOL
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
-(global-set-key "\C-cpe" 'paste-EOL)
 (fset 'square-parens-and-sincos
    [?\M-% ?\[ return ?\( return ?! up up up up up up up ?\M-< ?\M-% ?\] return ?\) return ?! ?\M-< ?\M-% ?C ?o ?s return ?c ?o ?s return ?! ?\M-< ?\M-% ?S ?i ?n return ?s ?i ?n return ?! ?\M-< ?\M-% ?G backspace])
 (fset 'quote-list
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([201326624 134217766 34 34 return C-right C-left] 0 "%d")) arg)))
-(global-set-key "\C-cmq" 'quote-list)
 (fset 'prev-input-goto-paren
    [?\M-p ?\C-a ?\C-s ?\( ?\C-m left])
 ;;(global-set-key "\M-o" 'prev-input-goto-paren)
 (fset 'hive-grab-column-names
    "\C-s\C-q\C-i\C-m\C-k\C-[[1;5D\C-[[1;5C,\C-[OB\C-[^ ")
+;; stuff to deal with foo()bar-type situations in autopair
+(fset 'autopair-paren-fwd-1
+   [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
 
 
 (setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d") 
@@ -1990,16 +2244,18 @@ With argument, do this that many times."
   ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
- '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))))
+ '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))) t)
  '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
  '(cua-remap-control-v nil)
  '(cua-remap-control-z nil)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
+ '(doc-view-ghostscript-program "c:/cygwin/bin/gs.exe")
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
+ '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
@@ -2014,6 +2270,7 @@ With argument, do this that many times."
  '(preview-transparent-color nil)
  '(quack-programs (quote ("C:/Program Files/MzScheme/mzscheme" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
  '(safe-local-variable-values (quote ((TeX-auto-save . t) (TeX-parse-self . t) (folded-file . t))))
+ '(same-window-regexps (quote ("\\*rsh-[^-]*\\*\\(\\|<[0-9]*>\\)" "\\*telnet-.*\\*\\(\\|<[0-9]+>\\)" "^\\*rlogin-.*\\*\\(\\|<[0-9]+>\\)" "\\*info\\*\\(\\|<[0-9]+>\\)" "\\*gud-.*\\*\\(\\|<[0-9]+>\\)" "\\`\\*Customiz.*\\*\\'" "\\*shell.*\\*\\(\\|<[0-9]+>\\)")))
  '(scroll-preserve-screen-position 1)
  '(set-mark-command-repeat-pop 1)
  '(smooth-scroll-margin 5)
