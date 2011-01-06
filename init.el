@@ -1,7 +1,7 @@
 ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
 ;; Customize according to the machine
-(defvar hostname (downcase (system-name))) 
-(defvar emacs-profile 
+(defvar hostname (downcase (system-name)))
+(defvar emacs-profile
   (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
 	((string= hostname "leo-fujitsu2-w7") 'windows-2)
 	((string= hostname "matroskin") 'linux-1)
@@ -12,7 +12,7 @@
 (setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
 
 ;; Because GNOME refuses to divulge environment variables without some voodoo
-;; set them up here 
+;; set them up here
 (setenv "R_PATH"
 	(if (eq system-type 'windows-nt)
 	    (concat
@@ -22,7 +22,7 @@
 	   (concat
 	    "/home/leo/code/R/addons/" ":"
 	    "/home/leo/code/R/addons/misc/" ":"
-	    (getenv "R_PATH")))) 
+	    (getenv "R_PATH"))))
 
 ;;{{{ utility elisp functions
 
@@ -108,16 +108,16 @@ the grep command in R"
 ;;}}}
 
 ;; bind cnotes and memos to keys:
-(defvar lva-quick-files-list 
-  '("memos\\.txt\\'"           ;1	
-    "cnotes\\.org\\'"          ;2 
+(defvar lva-quick-files-list
+  '("memos\\.txt\\'"           ;1
+    "cnotes\\.org\\'"          ;2
     "imageshack\\.org\\'"      ;3
 ))
 
 (if (eq emacs-profile 'windows-2)
-    ;; for 32-bit R 
+    ;; for 32-bit R
     (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\i386\\Rterm.exe"))
-;  ;; for 64-bit R 
+;  ;; for 64-bit R
 ;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
 
 (defun lva-org-translate-ssh-to-plink (type path)
@@ -136,7 +136,7 @@ the grep command in R"
 
 ;; Increase the memory reserved
 (setq gc-cons-threshold 80000000)
-(setq garbage-collection-messages t) 
+(setq garbage-collection-messages t)
 ;; Set the load path for the default elisp directory
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp"))
 			load-path))
@@ -245,7 +245,7 @@ the grep command in R"
 (autoload 'buffer-stack-bury "buffer-stack"  nil t)
 (eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
 
-;; here are the possible keybindings.  Define/customize them in the my-keys map 
+;; here are the possible keybindings.  Define/customize them in the my-keys map
 ;; (global-set-key [(f9)] 'buffer-stack-down)
 ;; (global-set-key [(shift f9)] 'buffer-stack-down-thru-all)
 ;; (global-set-key [(f10)] 'buffer-stack-bury)
@@ -301,7 +301,7 @@ the grep command in R"
      (ibuffer-awhen (or (buffer-local-value 'buffer-file-name buf)
 			(buffer-local-value 'dired-directory buf))
 		    (string-match qualifier it))))
-(add-hook 'ibuffer-mode-hook 
+(add-hook 'ibuffer-mode-hook
 	  '(lambda ()
 	     (ibuffer-auto-mode 1)
 	     (ibuffer-switch-to-saved-filter-groups "home")))
@@ -347,7 +347,33 @@ the grep command in R"
 ;;(global-set-key (kbd "C-M-j") 'other-window)
 
 ;; Create a mode for global keybindings, as per http://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs
-;;{{{ my-keys minor mode definition and keybindings
+;; Define sub-maps using sugarshark's nifty macro
+;; http://gist.github.com/767879
+;;{{{ my-keys minor mode definition and keybindings; mode-specific-keymap
+;;; Define a sub keymap and bind with key to mode-specific-map.
+;;; Note: mode-specific-map is bound to "C-c"
+(defun make-mode-specific-keymap (map key &optional doc bindings)
+  (let* ((effective-bindings (append bindings '(("?" "Help" describe-prefix-bindings))))
+         (map-doc (concat doc ": " (mapconcat #'(lambda (b)
+                                                  (concat (if (and (listp (car b))
+                                                                   (eq 'kbd (caar b)))
+							      (cadr (car b))
+                                                            (car b))
+                                                          ": " (cadr b)))
+                                              effective-bindings ", "))))
+    `(prog1
+         (progn
+           (makunbound ',map)
+           (defvar ,map (make-sparse-keymap ,map-doc) ,doc))
+       (define-key mode-specific-map [,key] ,map)
+       ,@(mapcar #'(lambda (b)
+                     (let ((keys (car b))
+                           (func (cadr (cdr b))))
+                       `(define-key ,map ,keys #',func)))
+                 effective-bindings))))
+
+(defmacro define-mode-specific-keymap (keymap key &optional doc bindings)
+  (make-mode-specific-keymap keymap key doc bindings))
 (defvar my-keys-minor-mode-map (make-keymap) "my-keys-minor-mode keymap.")
 ;; ----- Windmove keybidings:  -----
 (define-key my-keys-minor-mode-map (kbd "C-M-j") 'other-window)
@@ -364,39 +390,58 @@ the grep command in R"
 
 ;; ----- Built-in commands/accelerator gateway (may be used for UDFs):
 ;; ----- C-c c
-(define-key my-keys-minor-mode-map (kbd "C-c c i") 'imenu)
-(define-key my-keys-minor-mode-map (kbd "C-c c I") 'indent-region)
-(define-key my-keys-minor-mode-map (kbd "C-c c o") 'occur)
-(define-key my-keys-minor-mode-map (kbd "C-c c d") 'emx-duplicate-current-line) ; or dup + comment:
-(define-key my-keys-minor-mode-map (kbd "C-c c n") 'lva-show-buffer-name-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-c c e") 'fc-eval-and-replace)
+(define-mode-specific-keymap lva-submap-aliases ?c "Aliases"
+  (((kbd "i") "imenu"		 imenu)
+   ((kbd "I") "indent-region"	 indent-region)
+   ((kbd "o") "occur"		 occur)
+   ((kbd "d") "duplicate"	 emx-duplicate-current-line) ; or dup + comment:
+   ((kbd "D") "duplicate/cmt"	 djcb-duplicate-line-cmt)
+   ((kbd "n") "copy buff name"	 lva-show-buffer-name-and-put-on-kill-ring)
+   ((kbd "e") "eval & replace"	 fc-eval-and-replace)))
+(define-key my-keys-minor-mode-map (kbd "C-c c") lva-submap-aliases)
+
+;; (define-key my-keys-minor-mode-map (kbd "C-c c i") 'imenu)
+;; (define-key my-keys-minor-mode-map (kbd "C-c c I") 'indent-region)
+;; (define-key my-keys-minor-mode-map (kbd "C-c c o") 'occur)
+;; (define-key my-keys-minor-mode-map (kbd "C-c c d") 'emx-duplicate-current-line) ; or dup + comment:
+;; (define-key my-keys-minor-mode-map (kbd "C-c D") 'djcb-duplicate-line-cmt)
+;; (define-key my-keys-minor-mode-map (kbd "C-c c n") 'lva-show-buffer-name-and-put-on-kill-ring)
+;; (define-key my-keys-minor-mode-map (kbd "C-c c e") 'fc-eval-and-replace)
 
 ;; ----- UDF gateway:
 ;; ----- C-c u
-(define-key my-keys-minor-mode-map (kbd "C-c u n") 'lva-show-buffer-name-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-c u t") 'lva-get-time-from-epoch-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-c u q") 'lva-quote-words-in-region)
-(define-key my-keys-minor-mode-map (kbd "C-c u e") 'fc-eval-and-replace)
-(define-key my-keys-minor-mode-map (kbd "C-c u h t") 'lva-hive-template-find-file)
-(define-key my-keys-minor-mode-map (kbd "C-c u h c") 'lva-hive-copy-column-list)
-(define-key my-keys-minor-mode-map (kbd "C-c u c s") 'clear-shell)
+(define-mode-specific-keymap lva-submap-udf ?u "UDFs"
+  (((kbd "n") "show/copy buf name" lva-show-buffer-name-and-put-on-kill-ring)
+   ((kbd "t") "epoch->date; copy"  lva-get-time-from-epoch-and-put-on-kill-ring)
+   ((kbd "q") "quote words in reg" lva-quote-words-in-region)
+   ((kbd "e") "eval and replace"   fc-eval-and-replace)
+   ((kbd "h t") "hive template"    lva-hive-template-find-file)
+   ((kbd "h c") "hive copy cols"   lva-hive-copy-column-list)
+   ((kbd "c s") "clear shell"      clear-shell)))
+(define-key my-keys-minor-mode-map (kbd "C-c u") lva-submap-udf)
 
 ;; ----- Macro gateway:
 ;; ----- C-c m
-(define-key my-keys-minor-mode-map (kbd "C-c m f") 'autopair-paren-fwd-1)
-(define-key my-keys-minor-mode-map (kbd "C-c m p b") 'paste-BOL)
-(define-key my-keys-minor-mode-map (kbd "C-c m p e") 'paste-EOL)
-(define-key my-keys-minor-mode-map (kbd "C-c m q") 'quote-list)
+(define-mode-specific-keymap lva-submap-macros ?m "Macros"
+  (((kbd "f") "paren/fwd"   autopair-paren-fwd-1)
+   ((kbd "p b") "paste-BOL" paste-BOL)
+   ((kbd "p e") "paste-EOL" paste-EOL)
+   ((kbd "q") "quote-list"   quote-list)))
+(define-key my-keys-minor-mode-map (kbd "C-c m") lva-submap-macros)
 
 ;; ----- Org-gateway:
 ;; ----- C-c o
-(define-key my-keys-minor-mode-map (kbd "C-c o l") 'org-store-link)
-(define-key my-keys-minor-mode-map (kbd "C-c o a") 'org-agenda)
-(define-key my-keys-minor-mode-map (kbd "C-c o q") 'org-iswitchb)
+(define-mode-specific-keymap lva-submap-org ?o "Org"
+  (((kbd "l")   "org-store-link"   org-store-link)
+   ((kbd "a") "org-agenda"   org-agenda)
+   ((kbd "q") "org-iswitchb"   org-iswitchb)))
+(define-key my-keys-minor-mode-map (kbd "C-c o") lva-submap-org)
 
 ;; ----- Kitchen sink gateway:
 ;; ----- C-c <f10>
-(define-key my-keys-minor-mode-map (kbd "C-c <f10> y") 'bring-up-yank-menu)
+(define-mode-specific-keymap lva-submap-misc f10 "Misc"
+  (((kbd "y") "yank-menu" bring-up-yank-menu)))
+(define-key my-keys-minor-mode-map (kbd "C-c <f10>") lva-submap-misc)
 
 ;; ----- Top-level aliases:
 (define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)
@@ -438,6 +483,8 @@ the grep command in R"
 (defun my-minibuffer-setup-hook ()
   (my-keys-minor-mode 0))
 (add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
+
+
 ;;}}}
 
 (when (require 'diminish nil 'noerror)
@@ -455,7 +502,7 @@ the grep command in R"
 
 
 ;; http://www.emacswiki.org/emacs/ShellMode#toc3
-;; Note also that you'll want to customize same-window-regexps 
+;; Note also that you'll want to customize same-window-regexps
 ;; to include "\\*shell.*\\*\\(\\|<[0-9]+>\\)"
 (defun shell-dwim (&optional create)
    "Start or switch to an inferior shell process, in a smart way.
@@ -471,7 +518,7 @@ the grep command in R"
            (catch 'found
              (dolist (buffer (reverse (buffer-list)))
                (when (and (string-match "^\\*shell\\*" (buffer-name buffer))
-			  (not (string= (buffer-name) 
+			  (not (string= (buffer-name)
 					(buffer-name buffer))))
                  (throw 'found buffer)))))
           (buffer (if create
@@ -582,9 +629,9 @@ the grep command in R"
 
 
 ;  -- faster point movement:
-;; (global-set-key "\M-\C-p" 
+;; (global-set-key "\M-\C-p"
 ;;   '(lambda () (interactive) (previous-line 5)))
-;; (global-set-key "\M-\C-n" 
+;; (global-set-key "\M-\C-n"
 ;;   '(lambda () (interactive) (next-line 5)))
 
 
@@ -854,13 +901,13 @@ Subsequent calls expands the selection to larger semantic unit."
 (require 'highlight-symbol)
 
 ;; From Xah Lee's page:
-;; temporarily set fill-column to a huge number (point-max); 
+;; temporarily set fill-column to a huge number (point-max);
 ;; thus, effectively, replaces all new line chars by spaces in
 ;; current paragraph.
-(defun remove-line-breaks () 
+(defun remove-line-breaks ()
   "Remove line endings in a paragraph."
-  (interactive) 
-  (let ((fill-column (point-max))) 
+  (interactive)
+  (let ((fill-column (point-max)))
     (fill-paragraph nil)))
 
 ;; (require 'chop)
@@ -1371,7 +1418,7 @@ in dired mode without it."
 ;; ;; (if (string-match (buffer-name buffer) "*Help*")
 ;; ;;       (view-mode buffer)))
 
-;; (setq temp-buffer-show-hook 'temp-mode-view) 
+;; (setq temp-buffer-show-hook 'temp-mode-view)
 
 ;; (global-set-key (kbd "C-/") 'isearch-forward)  ; conflicts w/ undo?
 
@@ -1405,7 +1452,7 @@ in dired mode without it."
   (if arg
       (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
- 
+
 (defun sudo-edit-current-file ()
   (interactive)
   (let ((pos (point)))
@@ -1841,10 +1888,10 @@ in dired mode without it."
 (defun lva-quick-files-paths-generate ()
   (setq lva-quick-files-paths (mapcar (lambda (x) (lva-get-first-matching-string x recentf-list)) lva-quick-files-list)))
 (defun lva-quick-files-find-nth-file (n)
-  (interactive "n")  
+  (interactive "n")
   (let ((filepath (elt lva-quick-files-paths (1- n))))
     (if (not filepath)
-      (progn 
+      (progn
 	(lva-quick-files-paths-generate)
 	(message "Generating quick-file-paths; rerun the command"))
       (find-file filepath))))
@@ -1853,7 +1900,7 @@ in dired mode without it."
   (require 'cl)
   (lva-quick-files-paths-generate)
   (let ((n))
-    (loop 
+    (loop
      for n from 1 to (length lva-quick-files-paths)
      do (global-set-key (concat "\C-c" (number-to-string n)) `(lambda () (interactive) (lva-quick-files-find-nth-file ,n))))))
 (lva-quick-files-bind-keys)
@@ -1879,11 +1926,11 @@ in dired mode without it."
 
 ;; Change title bar to ~/file-directory if the current buffer is a
 ;; real file or buffer name if it is just a buffer.
-;; (setq frame-title-format 
-;;       '(:eval 
-;;         (if buffer-file-name 
-;;             (replace-regexp-in-string (getenv "HOME") "~" 
-;;                                       (file-name-directory buffer-file-name)) 
+;; (setq frame-title-format
+;;       '(:eval
+;;         (if buffer-file-name
+;;             (replace-regexp-in-string (getenv "HOME") "~"
+;;                                       (file-name-directory buffer-file-name))
 ;;           (buffer-name))))
 
 ;(setq frame-title-format (concat invocation-name "@" system-name ": %b %+%+ %f"))
@@ -1939,7 +1986,7 @@ in dired mode without it."
 ;; 		     (when (commandp s)
 ;; 		       (setq ido-execute-command-cache
 ;; 			     (cons (format "%S" s) ido-execute-command-cache)))))
-;; 	 (setq ido-execute-command-cache 
+;; 	 (setq ido-execute-command-cache
 ;; 	       (sort (sort ido-execute-command-cache 'string-lessp)
 ;; 		     (lambda (x y) (< (length x) (length y)))))
 ;; 	 )
@@ -2070,7 +2117,7 @@ in dired mode without it."
 
 
 
-;; make buffers focus when they are displayed in another frame 
+;; make buffers focus when they are displayed in another frame
 ;; (i.e. make the display-buffer and pop-to-buffer ical in functionality
 ;; (defadvice display-buffer (after display-buffer-focus activate compile)
 ;; "Focuses the buffer after switching to it, mimicking pop-to-buffer"
@@ -2221,7 +2268,7 @@ With argument, do this that many times."
    [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
 
 
-(setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d") 
+(setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d")
 			      ("Evince" "'evince' %o")))
 (if (eq system-type 'windows-nt)
     (setq TeX-view-program-selection '((output-pdf "GSView") (output-dvi "yap")))
@@ -2229,10 +2276,10 @@ With argument, do this that many times."
 ;; TODO: figure out how to write this w/o all the copypasting
 (defvar TeX-output-view-style-commands)
 (if (eq system-type 'windows-nt)
-    (setq TeX-output-view-style-commands 
+    (setq TeX-output-view-style-commands
 	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("^html?$" "." "start \"\" %o")))
 	  )
-    (setq TeX-output-view-style-commands 
+    (setq TeX-output-view-style-commands
 	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'evince' %o") ("^html?$" "." "start \"\" %o")))
 	  )
 )
