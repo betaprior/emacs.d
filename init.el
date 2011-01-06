@@ -74,6 +74,40 @@ the grep command in R"
       (template-new-file file "~/.emacs.d/.templates/HiveShellRun.tpl")
 ))
 
+(defun lva-hive-copy-column-list (start end)
+  (interactive "r")
+  (unless mark-active
+    (error "Mark inactive"))
+  (let ((buffer (current-buffer)) (words '()) (s))
+    (with-temp-buffer
+      (insert-buffer-substring-no-properties buffer start end)
+      (goto-char (point-min))
+      ;; Wnat to stop at the line that starts w/
+      ;; "Time taken:"
+      ;; Use the fact that search-forward moves point
+      (if (search-forward "Time taken:" nil t)
+	  (progn
+	    (beginning-of-line)
+	    (delete-region (point) (line-end-position))))
+      (goto-char (point-min))
+	(while (re-search-forward "^\\([[:word:]_-]+?\\)[ 	]+\\w+" nil t)
+	  (push (match-string 1) words)))
+    (deactivate-mark)
+    (setq s (mapconcat 'identity (nreverse words) ", "))
+    (message s)
+    (kill-new s)))
+(defun lva-quote-words-in-region (start end)
+  (interactive "r")
+  (unless mark-active
+    (error "Mark inactive"))
+  (save-excursion
+    (save-restriction
+      (narrow-to-region start end)
+      (goto-char start)
+      (while (re-search-forward "[[:word:]_-]+" nil t)
+	(replace-match "\"\\&\""))))
+  (deactivate-mark))
+
 ;;}}}
 
 ;; bind cnotes and memos to keys:
@@ -249,61 +283,61 @@ the grep command in R"
 ;; C-c b, C-c c, C-c u, C-c m, C-c o, C-c <f10>
 ;; ----- Bookmark gateway:
 ;; ----- C-c b; <f2>
-(define-key my-keys-minor-mode-map (kbd [(control f2)]  'af-bookmark-toggle )
-(define-key my-keys-minor-mode-map (kbd [f2]  'af-bookmark-cycle-forward )
-(define-key my-keys-minor-mode-map (kbd [(shift f2)]  'af-bookmark-cycle-reverse )
-(define-key my-keys-minor-mode-map (kbd [(control shift f2)]  'af-bookmark-clear-all )
-(define-key my-keys-minor-mode-map (kbd "C-cbb"  'af-bookmark-toggle )
-(define-key my-keys-minor-mode-map (kbd "C-cbc"  'af-bookmark-clear-all )
+(define-key my-keys-minor-mode-map [(control f2)]  'af-bookmark-toggle )
+(define-key my-keys-minor-mode-map [f2]  'af-bookmark-cycle-forward )
+(define-key my-keys-minor-mode-map [(shift f2)]  'af-bookmark-cycle-reverse )
+(define-key my-keys-minor-mode-map [(control shift f2)]  'af-bookmark-clear-all )
+(define-key my-keys-minor-mode-map (kbd "C-c b b")  'af-bookmark-toggle )
+(define-key my-keys-minor-mode-map (kbd "C-c b c")  'af-bookmark-clear-all )
 
 ;; ----- Built-in commands/accelerator gateway (may be used for UDFs):
 ;; ----- C-c c
-(define-key my-keys-minor-mode-map (kbd "C-cci") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-c c i") 'imenu)
 (define-key my-keys-minor-mode-map (kbd "C-c c S-i") 'indent-region)
-(define-key my-keys-minor-mode-map (kbd "C-cco") 'occur)
-(define-key my-keys-minor-mode-map (kbd "C-ccd") 'emx-duplicate-current-line) ; or dup + comment:
-(define-key my-keys-minor-mode-map (kbd "C-ccn") 'lva-show-buffer-name-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-cce") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map (kbd "C-c c o") 'occur)
+(define-key my-keys-minor-mode-map (kbd "C-c c d") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-c c n") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c c e") 'fc-eval-and-replace)
 
 ;; ----- UDF gateway:
 ;; ----- C-c u
-(define-key my-keys-minor-mode-map (kbd "C-cun") 'lva-show-buffer-name-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-cut") 'lva-get-time-from-epoch-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-cuq") 'lva-quote-selection)
-(define-key my-keys-minor-mode-map (kbd "C-cue") 'fc-eval-and-replace)
-(define-key my-keys-minor-mode-map (kbd "C-cuht") 'lva-hive-template-find-file)
-(define-key my-keys-minor-mode-map (kbd "C-cuhc") 'lva-hive-copy-column-names)
-(define-key my-keys-minor-mode-map (kbd "C-cucs") 'clear-shell)
+(define-key my-keys-minor-mode-map (kbd "C-c u n") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c u t") 'lva-get-time-from-epoch-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c u q") 'lva-quote-words-in-region)
+(define-key my-keys-minor-mode-map (kbd "C-c u e") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map (kbd "C-c u h t") 'lva-hive-template-find-file)
+(define-key my-keys-minor-mode-map (kbd "C-c u h c") 'lva-hive-copy-column-list)
+(define-key my-keys-minor-mode-map (kbd "C-c u c s") 'clear-shell)
 
 
 ;; ----- Macro gateway:
 ;; ----- C-c m
-(define-key my-keys-minor-mode-map (kbd "C-cmf") 'autopair-paren-fwd-1)
-(define-key my-keys-minor-mode-map (kbd "C-cmpb") 'paste-BOL)
-(define-key my-keys-minor-mode-map (kbd "C-cmpe") 'paste-EOL)
-(define-key my-keys-minor-mode-map (kbd "C-cmq") 'quote-list)
+(define-key my-keys-minor-mode-map (kbd "C-c m f") 'autopair-paren-fwd-1)
+(define-key my-keys-minor-mode-map (kbd "C-c m p b") 'paste-BOL)
+(define-key my-keys-minor-mode-map (kbd "C-c m p e") 'paste-EOL)
+(define-key my-keys-minor-mode-map (kbd "C-c m q") 'quote-list)
 
 ;; ----- Org-gateway:
 ;; ----- C-c o
 
-(define-key my-keys-minor-mode-map (kbd "C-col") 'org-store-link)
-(define-key my-keys-minor-mode-map (kbd "C-coa") 'org-agenda)
-(define-key my-keys-minor-mode-map (kbd "C-coq") 'org-iswitchb)
+(define-key my-keys-minor-mode-map (kbd "C-c o l") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-c o a") 'org-agenda)
+(define-key my-keys-minor-mode-map (kbd "C-c o q") 'org-iswitchb)
 
 ;; ----- Kitchen sink gateway:
 ;; ----- C-c <f10>
-(define-key my-keys-minor-mode-map (kbd "C-c<f10>y") 'bring-up-yank-menu)
+(define-key my-keys-minor-mode-map (kbd "C-c <f10> y") 'bring-up-yank-menu)
 
 ;; ----- Top-level aliases:
-(define-key my-keys-minor-mode-map (kbd "C-cl") 'org-store-link)
-(define-key my-keys-minor-mode-map (kbd "C-ci") 'imenu)
-(define-key my-keys-minor-mode-map (kbd "C-cd") 'emx-duplicate-current-line) ; or dup + comment:
-(define-key my-keys-minor-mode-map (kbd "C-cn") 'lva-show-buffer-name-and-put-on-kill-ring)
-(define-key my-keys-minor-mode-map (kbd "C-ce") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-c i") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-c n") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-c e") 'fc-eval-and-replace)
 (define-key my-keys-minor-mode-map [(control c) tab]  'indent-according-to-mode)
 
 ;; ----- Nonstandard aliases:
-(define-key my-keys-minor-mode-map (kbd "C-c S-i" 'indent-region)
+(define-key my-keys-minor-mode-map (kbd "C-c S-i") 'indent-region)
 (define-key my-keys-minor-mode-map (kbd "C-c C-d") 'djcb-duplicate-line-cmt)
 (define-key my-keys-minor-mode-map (kbd "C-c M-d") 'djcb-duplicate-line-cmt)
 ;; -----     M-{*&8}
@@ -315,7 +349,7 @@ the grep command in R"
 (define-key my-keys-minor-mode-map (kbd "<M-f7>")    'fold-dwim-hide-all)
 (define-key my-keys-minor-mode-map (kbd "<S-M-f7>")  'fold-dwim-show-all)
 (define-key my-keys-minor-mode-map (kbd "<f8>") 'shell-dwim)
-(global-set-key [(meta f3)] 'highlight-symbol-at-point)
+(define-key my-keys-minor-mode-map [(meta f3)] 'highlight-symbol-at-point)
 
 ;(define-key my-keys-minor-mode-map (kbd "") ...)
 
@@ -874,6 +908,8 @@ overwrite other highlighting.")
                          "[[:space:]]+" "" comment-start)))
    (when (string= comment-starter ";")
      (setq comment-starter ";;"))
+   (when (string= comment-starter "#")
+     (setq comment-starter "##"))
    (concat comment-starter " [*]+ ")))
 
 (defun th-outline-minor-mode-init ()
