@@ -241,8 +241,84 @@ the grep command in R"
 ;;(global-set-key (kbd "C-M-j") 'other-window)
 
 ;; Create a mode for global keybindings, as per http://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs
+;;{{{ my-keys minor mode definition and keybindings
 (defvar my-keys-minor-mode-map (make-keymap) "my-keys-minor-mode keymap.")
+;; ----- Windmove keybidings:  -----
 (define-key my-keys-minor-mode-map (kbd "C-M-j") 'other-window)
+;; ----- "Gateway" keybidings:  -----
+;; C-c b, C-c c, C-c u, C-c m, C-c o, C-c <f10>
+;; ----- Bookmark gateway:
+;; ----- C-c b; <f2>
+(define-key my-keys-minor-mode-map (kbd [(control f2)]  'af-bookmark-toggle )
+(define-key my-keys-minor-mode-map (kbd [f2]  'af-bookmark-cycle-forward )
+(define-key my-keys-minor-mode-map (kbd [(shift f2)]  'af-bookmark-cycle-reverse )
+(define-key my-keys-minor-mode-map (kbd [(control shift f2)]  'af-bookmark-clear-all )
+(define-key my-keys-minor-mode-map (kbd "C-cbb"  'af-bookmark-toggle )
+(define-key my-keys-minor-mode-map (kbd "C-cbc"  'af-bookmark-clear-all )
+
+;; ----- Built-in commands/accelerator gateway (may be used for UDFs):
+;; ----- C-c c
+(define-key my-keys-minor-mode-map (kbd "C-cci") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-c c S-i") 'indent-region)
+(define-key my-keys-minor-mode-map (kbd "C-cco") 'occur)
+(define-key my-keys-minor-mode-map (kbd "C-ccd") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-ccn") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-cce") 'fc-eval-and-replace)
+
+;; ----- UDF gateway:
+;; ----- C-c u
+(define-key my-keys-minor-mode-map (kbd "C-cun") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-cut") 'lva-get-time-from-epoch-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-cuq") 'lva-quote-selection)
+(define-key my-keys-minor-mode-map (kbd "C-cue") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map (kbd "C-cuht") 'lva-hive-template-find-file)
+(define-key my-keys-minor-mode-map (kbd "C-cuhc") 'lva-hive-copy-column-names)
+(define-key my-keys-minor-mode-map (kbd "C-cucs") 'clear-shell)
+
+
+;; ----- Macro gateway:
+;; ----- C-c m
+(define-key my-keys-minor-mode-map (kbd "C-cmf") 'autopair-paren-fwd-1)
+(define-key my-keys-minor-mode-map (kbd "C-cmpb") 'paste-BOL)
+(define-key my-keys-minor-mode-map (kbd "C-cmpe") 'paste-EOL)
+(define-key my-keys-minor-mode-map (kbd "C-cmq") 'quote-list)
+
+;; ----- Org-gateway:
+;; ----- C-c o
+
+(define-key my-keys-minor-mode-map (kbd "C-col") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-coa") 'org-agenda)
+(define-key my-keys-minor-mode-map (kbd "C-coq") 'org-iswitchb)
+
+;; ----- Kitchen sink gateway:
+;; ----- C-c <f10>
+(define-key my-keys-minor-mode-map (kbd "C-c<f10>y") 'bring-up-yank-menu)
+
+;; ----- Top-level aliases:
+(define-key my-keys-minor-mode-map (kbd "C-cl") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-ci") 'imenu)
+(define-key my-keys-minor-mode-map (kbd "C-cd") 'emx-duplicate-current-line) ; or dup + comment:
+(define-key my-keys-minor-mode-map (kbd "C-cn") 'lva-show-buffer-name-and-put-on-kill-ring)
+(define-key my-keys-minor-mode-map (kbd "C-ce") 'fc-eval-and-replace)
+(define-key my-keys-minor-mode-map [(control c) tab]  'indent-according-to-mode)
+
+;; ----- Nonstandard aliases:
+(define-key my-keys-minor-mode-map (kbd "C-c S-i" 'indent-region)
+(define-key my-keys-minor-mode-map (kbd "C-c C-d") 'djcb-duplicate-line-cmt)
+(define-key my-keys-minor-mode-map (kbd "C-c M-d") 'djcb-duplicate-line-cmt)
+;; -----     M-{*&8}
+(define-key my-keys-minor-mode-map (kbd "M-*") 'select-text-in-quote-balanced)
+(define-key my-keys-minor-mode-map (kbd "M-8") 'extend-selection)
+(define-key my-keys-minor-mode-map (kbd "M-&") 'add-before-after-region)
+;; -----     F-keys
+(define-key my-keys-minor-mode-map (kbd "<f7>")      'fold-dwim-toggle)
+(define-key my-keys-minor-mode-map (kbd "<M-f7>")    'fold-dwim-hide-all)
+(define-key my-keys-minor-mode-map (kbd "<S-M-f7>")  'fold-dwim-show-all)
+(define-key my-keys-minor-mode-map (kbd "<f8>") 'shell-dwim)
+(global-set-key [(meta f3)] 'highlight-symbol-at-point)
+
+;(define-key my-keys-minor-mode-map (kbd "") ...)
+
 (define-minor-mode my-keys-minor-mode
   "A minor mode so that my key settings override annoying major modes."
   t " my-keys" 'my-keys-minor-mode-map)
@@ -250,6 +326,7 @@ the grep command in R"
 (defun my-minibuffer-setup-hook ()
   (my-keys-minor-mode 0))
 (add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
+;;}}}
 
 (when (require 'diminish nil 'noerror)
   (diminish 'my-keys-minor-mode ""))
@@ -263,7 +340,7 @@ the grep command in R"
              (current-buffer))
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
-(global-set-key (kbd "C-ce") 'fc-eval-and-replace)
+
 
 ;; http://www.emacswiki.org/emacs/ShellMode#toc3
 ;; Note also that you'll want to customize same-window-regexps 
@@ -289,7 +366,6 @@ the grep command in R"
                       (generate-new-buffer-name "*shell*")
                     next-shell-buffer)))
      (shell buffer)))
-(global-set-key (kbd "M-<f8>") 'shell-dwim)
 
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
@@ -375,14 +451,6 @@ the grep command in R"
 ;;(setq browse-url-browser-function 'browse-url-firefox)
 
 ;; Misc. keybindings
-(global-set-key "\C-c\S-i" 'indent-region)
-(global-set-key "\C-ci" 'imenu)
-(global-set-key "\C-co" 'occur)
-(global-set-key [(control c) (control o)] 'occur)
-(global-set-key [(control f3)] 'explorer-here)
-(global-set-key [(control super f3)] 'explorer-here)
-(global-set-key [(control f4)] 'terminal-here)
-(global-set-key [(control super f4)] 'terminal-here)
 ; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
 (global-set-key [(control c) (control \\)] 'toggle-input-method)
 (global-unset-key [\C-down-mouse-3])
@@ -467,10 +535,7 @@ the grep command in R"
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 (setq autopair-autowrap t)
-;; stuff to deal with foo()bar-type situations
-(fset 'autopair-paren-fwd-1
-   [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
-(global-set-key (kbd "\C-cf") 'autopair-paren-fwd-1)
+
 (defun autopair-skip-dollar-action (action pair pos-before)
   "Let |.| define the position of the cursor.  Want the following behavior
 when pressing $: 
@@ -574,9 +639,6 @@ Delimiters are paired characters: ()[]$$<>«»“”‘’「」, including \"\"
      (select-text-in-quote-balanced-base)
      ))
 
-(global-set-key (kbd "M-*") 'select-text-in-quote-balanced)
-
-
 (defun select-text-in-quote ()
 "Select text between the nearest left and right delimiters.
 Delimiters are paired characters: ()[]<>«»“”‘’「」, including \"\"."
@@ -624,7 +686,6 @@ Subsequent calls expands the selection to larger semantic unit."
           (forward-sexp)))
       (mark-sexp -1))))
 
-(global-set-key (kbd "M-8") 'extend-selection)
 
 (defun matched-delims-p (chstr1 chstr2)
   "Returns t if the two arguments are 1-char strings corr to ordered matched delimiters."
@@ -673,14 +734,12 @@ Subsequent calls expands the selection to larger semantic unit."
     )
   )
 
-(global-set-key (kbd "M-&") 'add-before-after-region)
 
 ;;}}}
 
 ;; highlight symbol
 ;; (add-to-list 'load-path "~/.emacs.d/elisp/highlight-symbol")
 (require 'highlight-symbol)
-(global-set-key [(meta f3)] 'highlight-symbol-at-point)
 
 ;; From Xah Lee's page:
 ;; temporarily set fill-column to a huge number (point-max); 
@@ -723,9 +782,6 @@ Subsequent calls expands the selection to larger semantic unit."
 
 (require 'fold-dwim)
 (require 'fold-dwim-org)
-(global-set-key (kbd "<f7>")      'fold-dwim-toggle)
-(global-set-key (kbd "<M-f7>")    'fold-dwim-hide-all)
-(global-set-key (kbd "<S-M-f7>")  'fold-dwim-show-all)
 
 ;; useful to check: (check-folding-line (thing-at-point 'line))
 (defun check-folding-line (line)
@@ -785,8 +841,6 @@ block -- if there are folding markups or if it matches outline regex"
 	  ad-do-it)
       (indent-according-to-mode)))
 
-
-(global-set-key [(control c) tab]  'indent-according-to-mode)
 
 ;; HideShow stuff:
 (require 'hideshow-org)
@@ -877,9 +931,6 @@ overwrite other highlighting.")
 (setq org-startup-indented t)
 ;; The following lines are always needed.  Choose your own keys.
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cq" 'org-iswitchb)
 (setq org-todo-keywords
        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
 (add-hook 'org-mode-hook 
@@ -1873,48 +1924,6 @@ in dired mode without it."
 
 ;; --- Quick bookmarks -----------------------------------------------------
 (require 'af-bookmarks)
-(global-set-key [(control f2)]  'af-bookmark-toggle )
-(global-set-key "\C-cb"  'af-bookmark-toggle )
-(global-set-key [f2]  'af-bookmark-cycle-forward )
-(global-set-key [(shift f2)]  'af-bookmark-cycle-reverse )
-(global-set-key [(control shift f2)]  'af-bookmark-clear-all )
-(global-set-key "\C-c\C-b"  'af-bookmark-clear-all )
-(global-set-key "\C-ccb"  'af-bookmark-clear-all )
-
-
-
-;;{{{ --- Breadcrumb settings ---------------------------------------------------
-
-;(require 'breadcrumb)
-;; (autoload 'bc-set "breadcrumb" "Set bookmark in current point." t)
-;; (autoload 'bc-previous "breadcrumb" "Go to previous bookmark." t)
-;; (autoload 'bc-next "breadcrumb" "Go to next bookmark." t)
-;; (autoload 'bc-local-previous "breadcrumb" "Go to previous local bookmark." t)
-;; (autoload 'bc-local-next "breadcrumb" "Go to next local bookmark." t)
-;; (autoload 'bc-goto-current "breadcrumb" "Go to the current bookmark." t)
-;; (autoload 'bc-list "breadcrumb" "List all bookmarks in menu mode." t)
-;; (autoload 'bc-clear "breadcrumb" "Clear all bookmarks." t) 
-;;   ; breadcrumb keys:
-;; ; (global-set-key (kbd "S-SPC")         'bc-set)  ;; used to be S-M-SPC
-;; (global-set-key (kbd "C-S-SPC") 'bc-set)
-;; (global-set-key (kbd "C-S-<left>") 'bc-previous)
-;; (global-set-key (kbd "C-S-<right>") 'bc-next)
-;; (global-set-key (kbd "C-S-<down>") 'bc-local-previous)
-;; (global-set-key (kbd "C-S-<up>") 'bc-local-next)
-;; (global-set-key (kbd "C-S-<return>") 'bc-goto-current)
-;; (global-set-key (kbd "C-S-l") 'bc-list)
-;; (global-set-key (kbd "C-S-c") 'bc-clear)
-
-;;(global-set-key [f2]         'bc-set) 
-;; Shift-SPACE for set bookmark
-;; (global-set-key [(meta j)]              'bc-previous)       ;; M-j for jump to previous
-;; (global-set-key [(shift meta j)]        'bc-next)           ;; Shift-M-j for jump to next
-;; (global-set-key [(meta up)]             'bc-local-previous) ;; M-up-arrow for local previous
-;; (global-set-key [(meta down)]           'bc-local-next)     ;; M-down-arrow for local next
-;; (global-set-key [(control c)(j)]        'bc-goto-current)   ;; C-c j for jump to current bookmark
-;; (global-set-key [(control x)(meta j)]   'bc-list)           ;; C-x M-j for the bookmark menu list
-
-;;}}}~end Breadcrumb settings ---------------------------------------------------
 
 ;; Add color to a shell running in emacs 'M-x shell'
 (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
@@ -1982,9 +1991,9 @@ in dired mode without it."
 (when (require 'browse-kill-ring nil 'noerror)
   (browse-kill-ring-default-keybindings))
 
-(global-set-key "\C-cy" '(lambda ()
+(defun bring-up-yank-menu ()
    (interactive)
-   (popup-menu 'yank-menu)))
+   (popup-menu 'yank-menu))
 
 ;; enable killing/copying lines w/o having them marked
 ;; cf http://www.emacswiki.org/emacs/SlickCopy
@@ -2033,6 +2042,7 @@ With argument, do this that many times."
     (insert-string
       (concat (if (= 0 (forward-line 1)) "" "\n") str "\n"))
     (forward-line -1)))
+(defun djcb-duplicate-line-cmt () (interactive) (djcb-duplicate-line t))
 
 
 
@@ -2042,8 +2052,6 @@ With argument, do this that many times."
   (yank)
   (back-to-indentation))
 
-(global-set-key (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
-(global-set-key (kbd "C-c C-d") (lambda()(interactive)(djcb-duplicate-line t)))
 ;; (global-set-key "\C-cd" 'emx-duplicate-current-line)
 (global-set-key (kbd "s-w") 'duplicate-current-line)
 (global-set-key (kbd "s-k") 'kill-ring-save)
@@ -2105,21 +2113,20 @@ With argument, do this that many times."
 ;; Macros:
 (fset 'paste-BOL
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
-(global-set-key "\C-c\C-p" 'paste-BOL)
-(global-set-key "\C-cpb" 'paste-BOL)
 (fset 'paste-EOL
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("" 0 "%d")) arg)))
-(global-set-key "\C-cpe" 'paste-EOL)
 (fset 'square-parens-and-sincos
    [?\M-% ?\[ return ?\( return ?! up up up up up up up ?\M-< ?\M-% ?\] return ?\) return ?! ?\M-< ?\M-% ?C ?o ?s return ?c ?o ?s return ?! ?\M-< ?\M-% ?S ?i ?n return ?s ?i ?n return ?! ?\M-< ?\M-% ?G backspace])
 (fset 'quote-list
    (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([201326624 134217766 34 34 return C-right C-left] 0 "%d")) arg)))
-(global-set-key "\C-cmq" 'quote-list)
 (fset 'prev-input-goto-paren
    [?\M-p ?\C-a ?\C-s ?\( ?\C-m left])
 ;;(global-set-key "\M-o" 'prev-input-goto-paren)
 (fset 'hive-grab-column-names
    "\C-s\C-q\C-i\C-m\C-k\C-[[1;5D\C-[[1;5C,\C-[OB\C-[^ ")
+;; stuff to deal with foo()bar-type situations in autopair
+(fset 'autopair-paren-fwd-1
+   [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
 
 
 (setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d") 
