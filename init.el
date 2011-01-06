@@ -45,7 +45,6 @@ the grep command in R"
   (kill-new buffer-file-name)
   (minibuffer-message (concat "Filename [copied]:" buffer-file-name))
 )
-(global-set-key "\C-cn" 'lva-show-buffer-name-and-put-on-kill-ring)
 
 (defun lva-get-time-from-epoch-and-put-on-kill-ring ()
   (interactive)
@@ -55,8 +54,6 @@ the grep command in R"
   (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (string-to-number (thing-at-point 'word)))))
   (kill-new time-as-string)
   (minibuffer-message (concat "Readable time [copied]:" time-as-string))))
-(global-set-key "\C-ct" 'lva-get-time-from-epoch-and-put-on-kill-ring)
-(global-set-key "\C-c\C-t" 'lva-get-time-from-epoch-and-put-on-kill-ring)
 
 (defun clear-shell ()
    (interactive)
@@ -177,8 +174,7 @@ the grep command in R"
 
 ;;}}}
 ;; enable winner mode for swiching windows configurations
-(when (fboundp 'winner-mode)
-  (winner-mode 1))
+(when (fboundp 'winner-mode) (winner-mode 1))
 
 ;;{{{ -- anything.el and anything-config
 
@@ -1750,17 +1746,6 @@ in dired mode without it."
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
 
-;; (defvar lva-quick-file-1-fname 
-;;   (lva-get-first-matching-string lva-quick-file-1 recentf-list))
-;; (defvar lva-quick-file-2-fname 
-;;   (lva-get-first-matching-string lva-quick-file-2 recentf-list)) 
-;; (defvar lva-quick-file-3-fname 
-;;   (lva-get-first-matching-string lva-quick-file-3 recentf-list))
-;; (global-set-key "\C-c1" '(lambda () (interactive) (find-file lva-quick-file-1-fname)))
-;; (global-set-key "\C-c2" '(lambda () (interactive) (find-file lva-quick-file-2-fname)))
-;; (global-set-key "\C-c3" '(lambda () (interactive) (find-file lva-quick-file-3-fname)))
-;; if not lambda interactive, it complains that it's not commandp
-
 
 (defvar lva-quick-files-paths ())
 (defun lva-quick-files-paths-generate ()
@@ -1783,23 +1768,6 @@ in dired mode without it."
      do (global-set-key (concat "\C-c" (number-to-string n)) `(lambda () (interactive) (lva-quick-files-find-nth-file ,n))))))
 (lva-quick-files-bind-keys)
 
-;; (let ((idx))
-;;   (loop for idx across 'lva-quick-files-paths
-;; 	do (push (concat "\C-c" (number-to-string idx)) mynewlist)))
-;; for n in 1:length(files):
-;;   (global-set-key (concat "\C-c" (number-to-string n)) (find-file flie_paths[n]))
-
-
-;; (defmacro lva-quick-file-X-fname (X)
-;;   `(lva-get-first-matching-string ,(intern (concat "lva-quick-file-" (number-to-string X))) recentf-list))
-;; (defmacro lva-quick-file-X-fname-setq (X)
-;;   `(setq ,(intern (concat "lva-quick-file-" (number-to-string X) "-fname")) (lva-quick-file-X-fname ,X)))
-;; (defmacro lva-quick-file-X-find-file (X)
-;;   `(progn
-;;      (unless (boundp (quote ,(intern (concat "lva-quick-file-" (number-to-string X) "-fname"))))
-;;        (lva-quick-file-X-fname-setq ,X))
-;;      (find-file ,(intern (concat "lva-quick-file-" (number-to-string X) "-fname")))))
-;; (global-set-key "\C-c9" '(lambda () (interactive) (lva-quick-file-X-find-file 3)))
 
 ;; uniquify settings
 (require 'uniquify)
