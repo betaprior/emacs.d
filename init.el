@@ -417,6 +417,7 @@ the grep command in R"
 (define-key my-keys-minor-mode-map (kbd "M-&") 'add-before-after-region)
 ;; -----     F-keys
 (define-key my-keys-minor-mode-map (kbd "<f7>")      'fold-dwim-toggle)
+(define-key my-keys-minor-mode-map [(shift f7)]      'fold-dwim-toggle-all)
 (define-key my-keys-minor-mode-map (kbd "<M-f7>")    'fold-dwim-hide-all)
 (define-key my-keys-minor-mode-map (kbd "<S-M-f7>")  'fold-dwim-show-all)
 (define-key my-keys-minor-mode-map (kbd "<f8>") 'shell-dwim)
@@ -892,7 +893,15 @@ Subsequent calls expands the selection to larger semantic unit."
 
 
 (require 'fold-dwim)
-(require 'fold-dwim-org)
+;; (require 'fold-dwim-org)
+(defvar fold-dwim-hide-show-all-next nil  "Keeps the state of how the buffer was last toggled.")
+(make-variable-buffer-local 'fold-dwim-hide-show-all-next)
+(defun fold-dwim-toggle-all ()
+  (interactive)
+  (if fold-dwim-hide-show-all-next
+      (fold-dwim-show-all)
+    (fold-dwim-hide-all))
+  (setq fold-dwim-hide-show-all-next (not fold-dwim-hide-show-all-next)))
 
 ;; useful to check: (check-folding-line (thing-at-point 'line))
 (defun check-folding-line (line)
