@@ -438,6 +438,7 @@ the grep command in R"
 (define-mode-specific-keymap lva-submap-org ?o "Org"
   (((kbd "l")   "org-store-link"   org-store-link)
    ((kbd "a") "org-agenda"   org-agenda)
+   ((kbd "I") "Ind mode"   org-indent-mode)
    ((kbd "i d") "inl. images DISPLAY"   org-display-inline-images)
    ((kbd "i h") "inl. images HIDE"   org-remove-inline-images)
    ((kbd "q") "org-iswitchb"   org-iswitchb)))
@@ -1798,6 +1799,18 @@ in dired mode without it."
     ;; If somewhere else, just move around.
     (funcall alt-action n))))
 
+(defun comint-previous-matching-input-from-input-maybe ()
+  "Get the Nth previous matching input from for the command line,
+   unless we are at BOL in which case go up a line"
+  (interactive "p")
+  (let ((start-point (point)) (at-bol nil))
+    (save-excursion (comint-bol)
+		    (if (eq start-point (point))
+			(setq at-bol t)))
+    (if (and (comint-after-pmark-p) (not at-bol))
+	(comint-previous-matching-input-from-input 1)
+      (previous-line))))
+
 (defun my-matlab-shell-next-matching-input-from-input-prevline (n)
   (interactive "p")
   (my-matlab-shell-next-matching-input-from-input n 'previous-line))
@@ -1815,8 +1828,9 @@ in dired mode without it."
 
 (add-hook 'inferior-ess-mode-hook
 	  '(lambda()
-	     ;; (local-set-key [C-up] 'comint-previous-matching-input-from-input)
-	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input-prevline)
+	     (local-set-key [C-up] 'comint-previous-matching-input-from-input)
+	     (local-set-key [up] 'comint-previous-matching-input-from-input-maybe)
+	     ;; (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input-prevline)
 	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input-prevline)
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
