@@ -51,9 +51,9 @@ the grep command in R"
   (let ((time-as-string)
         (minibuffer-message-timeout 5))
   (require 'thingatpt)
-  (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (string-to-number (thing-at-point 'word)))))
+  (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S %Z" (seconds-to-time (string-to-number (thing-at-point 'word)))))
   (kill-new time-as-string)
-  (minibuffer-message (concat "Readable time [copied]:" time-as-string))))
+  (message (concat "Readable time [copied]:" time-as-string))))
 
 (defun clear-shell ()
    (interactive)
@@ -473,6 +473,7 @@ the grep command in R"
 (define-key my-keys-minor-mode-map [(shift f9)] 'buffer-stack-up)
 (define-key my-keys-minor-mode-map [(control f9)] 'buffer-stack-down-thru-all) ; looks same as C-x <right>
 (define-key my-keys-minor-mode-map [(control shift f9)] 'buffer-stack-up-thru-all) ; C-x <left>
+(define-key my-keys-minor-mode-map [(meta f9)] 'switch-to-previous-buffer)
 
 ;(define-key my-keys-minor-mode-map (kbd "") ...)
 
@@ -489,6 +490,10 @@ the grep command in R"
 
 (when (require 'diminish nil 'noerror)
   (diminish 'my-keys-minor-mode ""))
+
+(defun switch-to-previous-buffer ()
+      (interactive)
+      (switch-to-buffer (other-buffer)))
 
 (defun fc-eval-and-replace ()
   "Replace the preceding sexp with its value."
