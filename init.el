@@ -1789,7 +1789,11 @@ in dired mode without it."
 			(setq at-bol t)))
   (if (and (comint-after-pmark-p) (not at-bol))
       (if (memq last-command '(my-matlab-shell-previous-matching-input-from-input
-			       my-matlab-shell-next-matching-input-from-input))
+			       my-matlab-shell-previous-matching-input-from-input-prevline
+			       my-matlab-shell-previous-matching-input-from-input-previnput
+			       my-matlab-shell-next-matching-input-from-input
+			       my-matlab-shell-next-matching-input-from-input-prevline
+			       my-matlab-shell-next-matching-input-from-input-previnput))
 	  ;; This hack keeps the cycling working well. 
 	  (let ((last-command 'comint-previous-matching-input-from-input))
 	    (comint-next-matching-input-from-input (- n)))
@@ -1799,17 +1803,6 @@ in dired mode without it."
     ;; If somewhere else, just move around.
     (funcall alt-action n))))
 
-(defun comint-previous-matching-input-from-input-maybe ()
-  "Get the Nth previous matching input from for the command line,
-   unless we are at BOL in which case go up a line"
-  (interactive "p")
-  (let ((start-point (point)) (at-bol nil))
-    (save-excursion (comint-bol)
-		    (if (eq start-point (point))
-			(setq at-bol t)))
-    (if (and (comint-after-pmark-p) (not at-bol))
-	(comint-previous-matching-input-from-input 1)
-      (previous-line))))
 
 (defun my-matlab-shell-next-matching-input-from-input-prevline (n)
   (interactive "p")
@@ -1829,8 +1822,7 @@ in dired mode without it."
 (add-hook 'inferior-ess-mode-hook
 	  '(lambda()
 	     (local-set-key [C-up] 'comint-previous-matching-input-from-input)
-	     (local-set-key [up] 'comint-previous-matching-input-from-input-maybe)
-	     ;; (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input-prevline)
+	     (local-set-key [up] 'my-matlab-shell-previous-matching-input-from-input-prevline)
 	     (local-set-key [down] 'my-matlab-shell-next-matching-input-from-input-prevline)
 ;;	     (define-key inferior-ess-mode-map "\M-o" 'prev-input-goto-paren)
 	     (local-set-key "\M-o" 'prev-input-goto-paren)))
