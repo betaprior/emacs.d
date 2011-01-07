@@ -43,16 +43,19 @@ the grep command in R"
 (defun lva-show-buffer-name-and-put-on-kill-ring () (interactive)
  ; (describe-variable 'buffer-file-name)
   (kill-new buffer-file-name)
-  (minibuffer-message (concat "Filename [copied]:" buffer-file-name))
+  ;; (sleep-for 0 100) ; need if using minibuffer-message
+  (message (concat "Filename [copied]:" buffer-file-name))
 )
 
 (defun lva-get-time-from-epoch-and-put-on-kill-ring ()
   (interactive)
+  (message "")
   (let ((time-as-string)
         (minibuffer-message-timeout 5))
   (require 'thingatpt)
   (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S %Z" (seconds-to-time (string-to-number (thing-at-point 'word)))))
   (kill-new time-as-string)
+  ;; (sleep-for 0 100) ; need if using minibuffer-message
   (message (concat "Readable time [copied]:" time-as-string))))
 
 (defun clear-shell ()
