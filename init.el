@@ -284,6 +284,7 @@ the grep command in R"
 		     (mode . python-mode)
 		     (mode . emacs-lisp-mode)))
 	 ("Dired" (mode . dired-mode))
+	 ("Images" (mode . image-mode))
 	 ("Web Dev" (or (mode . html-mode)
 			(mode . css-mode)))
 	 ("Subversion" (name . "\*svn"))
@@ -706,6 +707,8 @@ the grep command in R"
 (require 'autopair)
 (autopair-global-mode) ;; to enable in all buffers
 (setq autopair-autowrap t)
+
+(require 'auto-pair+)
 
 (defun autopair-skip-dollar-action (action pair pos-before)
   "Let |.| define the position of the cursor.  Want the following behavior
