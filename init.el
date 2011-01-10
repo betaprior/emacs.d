@@ -440,6 +440,7 @@ the grep command in R"
   (((kbd "l")   "org-store-link"   org-store-link)
    ((kbd "a") "org-agenda"   org-agenda)
    ((kbd "I") "Ind mode"   org-indent-mode)
+   ((kbd "i s") "inl. images SHOW"   org-display-inline-images)
    ((kbd "i d") "inl. images DISPLAY"   org-display-inline-images)
    ((kbd "i h") "inl. images HIDE"   org-remove-inline-images)
    ((kbd "q") "org-iswitchb"   org-iswitchb)))
