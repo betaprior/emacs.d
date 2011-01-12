@@ -396,7 +396,8 @@ the grep command in R"
 ;; ----- Built-in commands/accelerator gateway (may be used for UDFs):
 ;; ----- C-c c
 (define-mode-specific-keymap lva-submap-aliases ?c "Aliases"
-  (((kbd "i") "imenu"		 imenu)
+  (((kbd "f") "ffap"		 ffap)
+   ((kbd "i") "imenu"		 imenu)
    ((kbd "I") "indent-region"	 indent-region)
    ((kbd "o") "occur"		 occur)
    ((kbd "d") "duplicate"	 emx-duplicate-current-line) ; or dup + comment:
@@ -454,6 +455,7 @@ the grep command in R"
 
 ;; ----- Top-level aliases:
 (define-key my-keys-minor-mode-map (kbd "C-c l") 'org-store-link)
+(define-key my-keys-minor-mode-map (kbd "C-c f") 'ffap)
 (define-key my-keys-minor-mode-map (kbd "C-c i") 'imenu)
 (define-key my-keys-minor-mode-map (kbd "C-c I") 'indent-region)
 (define-key my-keys-minor-mode-map (kbd "C-c d") 'emx-duplicate-current-line) ; or dup + comment:
@@ -1134,6 +1136,7 @@ overwrite other highlighting.")
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((R . t) (sh . t) (python . t) (perl . t) (matlab . t) (latex . t)))
+(setq org-confirm-babel-evaluate nil)
 
 ;; Make windmove work in org-mode:
 (add-hook 'org-shiftup-final-hook 'windmove-up)
