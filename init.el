@@ -115,6 +115,7 @@ the grep command in R"
   '("memos\\.txt\\'"           ;1
     "cnotes\\.org\\'"          ;2
     "imageshack\\.org\\'"      ;3
+    "thesis\\.org\\'"          ;4
 ))
 
 (if (eq emacs-profile 'windows-2)
@@ -423,7 +424,8 @@ the grep command in R"
    ((kbd "e") "eval and replace"   fc-eval-and-replace)
    ((kbd "h t") "hive template"    lva-hive-template-find-file)
    ((kbd "h c") "hive copy cols"   lva-hive-copy-column-list)
-   ((kbd "c s") "clear shell"      clear-shell)))
+   ((kbd "c s") "clear shell"      clear-shell)
+   ((kbd "c o") "clear outline (helps w/ fl)"    lva-toggle-omm)))
 (define-key my-keys-minor-mode-map (kbd "C-c u") lva-submap-udf)
 
 ;; ----- Macro gateway:
@@ -485,7 +487,6 @@ the grep command in R"
 (define-key my-keys-minor-mode-map [(control f9)] 'buffer-stack-down-thru-all) ; looks same as C-x <right>
 (define-key my-keys-minor-mode-map [(control shift f9)] 'buffer-stack-up-thru-all) ; C-x <left>
 (define-key my-keys-minor-mode-map [(meta f9)] 'switch-to-previous-buffer)
-
 ;(define-key my-keys-minor-mode-map (kbd "") ...)
 
 (define-minor-mode my-keys-minor-mode
@@ -498,6 +499,20 @@ the grep command in R"
 
 
 ;;}}}
+
+(defun browser-nav-keys ()
+  "Add some browser styled nav keys for Info-mode.
+  The following keys and mouse buttons are added:
+ 【Backspace】 and <mouse-4> for `Info-history-back'
+ 【Shift+Backspace】 and <mouse-5> for `Info-history-forward'."
+ (local-set-key (kbd "<backspace>") 'Info-history-back)
+ (local-set-key (kbd "<S-backspace>") 'Info-history-forward)
+ (local-set-key (kbd "S-SPC") 'Info-scroll-down)
+ (local-set-key (kbd "<mouse-4>") 'Info-history-back)
+ (local-set-key (kbd "<mouse-5>") 'Info-history-forward)
+ (local-set-key (kbd "<mouse-5>") 'Info-history-forward))
+(add-hook 'Info-mode-hook 'browser-nav-keys)
+
 
 (when (require 'diminish nil 'noerror)
   (diminish 'my-keys-minor-mode ""))
@@ -632,10 +647,6 @@ the grep command in R"
 (define-key function-key-map [\C-mouse-3] [mouse-2])
 ; keybindings for screen running inside shell, as per
 ; http://blog.nguyenvq.com/2010/07/11/using-r-ess-remote-with-screen-in-emacs/
-;; used to send screen keybindings to shell in emacs
-;; for some reason shell-mode-map thing might have to be moved further in the file, while inferior-ess-mode map line made conditional on ess being present
-;(define-key shell-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
-;(define-key inferior-ess-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
 
 ; work-around for C-M-p broken in my windows
 (global-set-key [(control meta shift z)] 'backward-list)
@@ -643,7 +654,7 @@ the grep command in R"
 (defalias 'evabuf 'eval-buffer)
 (defalias 'eregion 'eval-region)
 
-
+;;{{{ scrolling and navigation
 ;  -- faster point movement:
 ;; (global-set-key "\M-\C-p"
 ;;   '(lambda () (interactive) (previous-line 5)))
@@ -657,6 +668,9 @@ the grep command in R"
 (global-set-key "\C-x\C-\\" 'goto-last-change)
 (global-set-key "\C-x\\" 'goto-last-change)
 (global-set-key "\C-x|" 'goto-last-change)
+
+
+
 
 ;; similar effect is obtained by exchange point and mark (turn off the highlighting)
 (defun transient-exchange-point-and-mark () (interactive) (exchange-point-and-mark 1))
@@ -686,6 +700,82 @@ the grep command in R"
   ;; to change where the scrolling starts, customize-variable smooth-scroll-margin
 )
 
+;; smart-symbol:
+(defvar smart-use-extended-syntax nil
+  "If t the smart symbol functionality will consider extended
+syntax in finding matches, if such matches exist.")
+(defvar smart-last-symbol-name ""
+  "Contains the current symbol name.
+This is only refreshed when `last-command' does not contain
+either `smart-symbol-go-forward' or `smart-symbol-go-backward'")
+(make-local-variable 'smart-use-extended-syntax)
+ 
+(defvar smart-symbol-old-pt nil
+  "Contains the location of the old point")
+ 
+(defun smart-symbol-goto (name direction)
+  "Jumps to the next NAME in DIRECTION in the current buffer.
+DIRECTION must be either `forward' or `backward'; no other option
+is valid."
+ 
+  ;; if `last-command' did not contain
+  ;; `smart-symbol-go-forward/backward' then we assume it's a
+  ;; brand-new command and we re-set the search term.
+  (unless (memq last-command '(smart-symbol-go-forward
+                               smart-symbol-go-backward))
+    (setq smart-last-symbol-name name))
+  (setq smart-symbol-old-pt (point))
+  (message (format "%s scan for symbol \"%s\""
+                   (capitalize (symbol-name direction))
+                   smart-last-symbol-name))
+  (unless (catch 'done
+            (while (funcall (cond
+                             ((eq direction 'forward) ; forward
+                              'search-forward)
+                             ((eq direction 'backward) ; backward
+                              'search-backward)
+                             (t (error "Invalid direction"))) ; all others
+                            smart-last-symbol-name nil t)
+              (unless (memq (syntax-ppss-context
+                             (syntax-ppss (point))) '(string comment))
+                (throw 'done t))))
+    (goto-char smart-symbol-old-pt)))
+ 
+(defun smart-symbol-go-forward ()
+  "Jumps forward to the next symbol at point"
+  (interactive)
+  (smart-symbol-goto (smart-symbol-at-pt 'end) 'forward))
+ 
+(defun smart-symbol-go-backward ()
+  "Jumps backward to the previous symbol at point"
+  (interactive)
+  (smart-symbol-goto (smart-symbol-at-pt 'beginning) 'backward))
+ 
+(defun smart-symbol-at-pt (&optional dir)
+  "Returns the symbol at point and moves point to DIR (either `beginning' or `end') of the symbol.
+If `smart-use-extended-syntax' is t then that symbol is returned
+instead."
+  (with-syntax-table (make-syntax-table)
+    (if smart-use-extended-syntax
+        (modify-syntax-entry ?. "w"))
+    (modify-syntax-entry ?_ "w")
+    (modify-syntax-entry ?- "w")
+    ;; grab the word and return it
+    (let ((word (thing-at-point 'word))
+          (bounds (bounds-of-thing-at-point 'word)))
+      (if word
+          (progn
+            (cond
+             ((eq dir 'beginning) (goto-char (car bounds)))
+             ((eq dir 'end) (goto-char (cdr bounds)))
+             (t (error "Invalid direction")))
+            word)
+        (error "No symbol found")))))
+ 
+(global-set-key (kbd "M-n") 'smart-symbol-go-forward)
+(global-set-key (kbd "M-p") 'smart-symbol-go-backward)
+
+;;}}}
 
 ;; Color-theme:
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp/color-theme-6.6.0")) load-path))
@@ -1072,8 +1162,12 @@ overwrite other highlighting.")
     th-outline-minor-mode-font-lock-keywords)
     (font-lock-fontify-buffer)))
 
-(add-hook 'outline-minor-mode-hook
-         'th-outline-minor-mode-init)
+(defun lva-toggle-omm ()   (interactive) ;; th-outline stuff fails to fontify
+  (outline-minor-mode nil)
+  (outline-minor-mode t)
+  (org-global-cycle 20))
+
+(add-hook 'outline-minor-mode-hook 'th-outline-minor-mode-init)
 
 ;; (global-unset-key [f1])
 ;; (global-set-key [f1] 'hs-toggle-hiding)
@@ -1144,6 +1238,13 @@ overwrite other highlighting.")
 (add-hook 'org-shiftdown-final-hook 'windmove-down)
 (add-hook 'org-shiftright-final-hook 'windmove-right)
 
+;; Switch around some org-mode built-ins
+(defun lva-org-goto-bindings-wrapper (&optional alternative-interface) 
+  "Switches the sense of C-u C-c C-j and C-c C-j"
+  (interactive "P")
+  (if (not alternative-interface) (org-goto '(4)) (org-goto)))
+(add-hook 'org-mode-hook 
+	  '(lambda () (local-set-key (kbd "C-c C-j") 'lva-org-goto-bindings-wrapper)))
 
 ;;}}}
 
@@ -2272,7 +2373,12 @@ With argument, do this that many times."
 ;; Optionally add key to toggle line wrap
 ;; (global-set-key [f10] 'toggle-truncate-lines)
 
-
+;; used to send screen keybindings to shell in emacs
+;; for some reason shell-mode-map thing might have to be moved further in the file, while inferior-ess-mode map line made conditional on ess being present
+(define-key shell-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
+(define-key inferior-ess-mode-map (kbd "C-l") (lambda (seq) (interactive "k") (process-send-string nil seq)))
+(autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 ;; Macros:
 (fset 'paste-BOL
