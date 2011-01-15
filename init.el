@@ -111,7 +111,7 @@ the grep command in R"
 ;;}}}
 
 ;; bind cnotes and memos to keys:
-(defvar lva-quick-files-list
+(setq lva-quick-files-list
   '("memos\\.txt\\'"           ;1
     "cnotes\\.org\\'"          ;2
     "imageshack\\.org\\'"      ;3
