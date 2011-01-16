@@ -9,10 +9,19 @@
 	(t 'linux-default)))
 (defvar turn-off-miktex t)
 (defvar master-session (getenv "EMACS_MASTER"))
-(setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
 
-;; Because GNOME refuses to divulge environment variables without some voodoo
-;; set them up here
+;; bind cnotes and memos to keys:
+(setq lva-quick-files-list
+  '("memos\\.txt\\'"           ;1
+    "cnotes\\.org\\'"          ;2
+    "imageshack\\.org\\'"      ;3
+    "thesis\\.org\\'"          ;4
+    "research\\.org\\'"        ;5
+))
+
+;;{{{ Set up some env. variables
+;; We need to explicitly set some variables because Gnome refuses to pass them 
+;; to emacs without some weird voodoo
 (setenv "R_PATH"
 	(if (eq system-type 'windows-nt)
 	    (concat
@@ -23,6 +32,8 @@
 	    "/home/leo/code/R/addons/" ":"
 	    "/home/leo/code/R/addons/misc/" ":"
 	    (getenv "R_PATH"))))
+(setenv "IN_SCREEN" "0") ;; if IN_SCREEN is set, emacs shell prompt misreads escapes intended for screen
+;;}}}
 
 ;;{{{ utility elisp functions
 
@@ -110,13 +121,6 @@ the grep command in R"
 
 ;;}}}
 
-;; bind cnotes and memos to keys:
-(setq lva-quick-files-list
-  '("memos\\.txt\\'"           ;1
-    "cnotes\\.org\\'"          ;2
-    "imageshack\\.org\\'"      ;3
-    "thesis\\.org\\'"          ;4
-))
 
 (if (eq emacs-profile 'windows-2)
     ;; for 32-bit R
