@@ -251,7 +251,8 @@ the grep command in R"
 (autoload 'buffer-stack-up "buffer-stack"  nil t)
 (autoload 'buffer-stack-bury-and-kill "buffer-stack"  nil t)
 (autoload 'buffer-stack-bury "buffer-stack"  nil t)
-(eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
+;; (eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
+(require 'buffer-stack-suppl)
 
 ;; here are the possible keybindings.  Define/customize them in the my-keys map
 ;; (global-set-key [(f9)] 'buffer-stack-down)
@@ -1185,7 +1186,7 @@ overwrite other highlighting.")
 (global-set-key (kbd "C-S-s") 'sr-speedbar-toggle)
 
 ;; docview
-(require 'doc-view)
+;; (require 'doc-view)
 ;; (load-file (expand-file-name "~/.emacs/doc-view.el"))
 ;; ("\\.pdf$" . open-in-doc-view)
 ;; ("\\.dvi$" . open-in-doc-view)
@@ -1225,8 +1226,19 @@ overwrite other highlighting.")
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 (setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
-(if (eq system-type 'windows-nt)
-  (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+(if (eq emacs-profile 'windows-2)
+    (progn
+      (setq org-file-apps (cons '("\\.jnt\\'" . "c:/PROGRA~1/WI0FCF~1/Journal.exe %s") org-file-apps))
+      (setq org-file-apps (cons '("\\.nb\\'" . "c:/PROGRA~1/WOLFRA~1/MATHEM~1/8.0/MATHEM~1.EXE %s") org-file-apps))
+      (setq org-file-apps (cons '("\\.pdf\\'" . "c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe %s") org-file-apps)))
+      ;; (setq org-file-apps (cons '("\\.jnt\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files\\Windows Journal\\Journal.exe"))) org-file-apps))
+      ;; (setq org-file-apps (cons '("\\.pdf\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe")
+							;; )) org-file-apps)))
+      ;; (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+      ;; (setq org-file-apps (cons '("\\.jnt\\'" . "C:\\Program Files\\Windows Journal\\Journal.exe %s") org-file-apps))) ;; else:
+  (if (eq emacs-profile 'windows-1)
+      (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
+(unless (eq system-type 'windows-nt)
   (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
   (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
 
@@ -2437,7 +2449,8 @@ With argument, do this that many times."
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
- '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
+ '(setq font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
+ ;; '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
