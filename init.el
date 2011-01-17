@@ -2449,7 +2449,7 @@ With argument, do this that many times."
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
- '(setq font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
+ '(font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
  ;; '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
