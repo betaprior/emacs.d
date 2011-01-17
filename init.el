@@ -206,6 +206,8 @@ the grep command in R"
 (define-key anything-map [(shift tab)] 'anything-previous-line)
 (define-key anything-map [backtab] 'anything-previous-line)
 
+(require 'descbinds-anything)
+(descbinds-anything-install)
 ;;}}}
 
 ;;{{{ `-- Interface / appearance settings
