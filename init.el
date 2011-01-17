@@ -1340,6 +1340,8 @@ overwrite other highlighting.")
     (if (file-directory-p w32file)
 	(w32-shell-execute "explore" w32file "/e,/select,")
       (w32-shell-execute "open" "explorer" (concat "/e,/select," w32file)))))
+(define-key dired-mode-map [f4] 'explorer-here)
+
 
 (defun terminal-here ()   
   "Launch external terminal in the current buffer's directory or current dired
