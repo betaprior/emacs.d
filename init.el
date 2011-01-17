@@ -1454,11 +1454,11 @@ in dired mode without it."
 (define-key dired-mode-map [?%?h] 'dired-show-only) 
 
 ;; When in dired mode, quit isearch + visit file with:
-(add-hook 'isearch-mode-end-hook 
-  (lambda ()
-    (when (and (eq major-mode 'dired-mode)
-           (not isearch-mode-end-hook-quit))
-      (dired-find-file))))
+;; (add-hook 'isearch-mode-end-hook 
+;;   (lambda ()
+;;     (when (and (eq major-mode 'dired-mode)
+;;            (not isearch-mode-end-hook-quit))
+;;       (dired-find-file))))
 
 ;; rename the dired buffer; take care of possible buffer name collisions
 (defun buffer-exists (bufname) (not (eq nil (get-buffer bufname)))) 
@@ -1484,6 +1484,12 @@ in dired mode without it."
 		      ;; 	    (concat dired-omit-files "\\|^\\..+$"))
 		      )))
 
+(defun w32-browser (doc) (w32-shell-execute 1 doc))
+
+(eval-after-load "dired" '(define-key dired-mode-map [f3] (lambda () (interactive) (w32-browser (dired-replace-in-string "/" "\\" (dired-get-filename))))))
+
+
+;;}}}
 
 ;; unfill paragraph (remove hard linebreaks; use w/ longlines mode)
 ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
@@ -1498,7 +1504,6 @@ in dired mode without it."
   (let ((fill-column (point-max)))
     (fill-region start end nil)))
 
-;;}}}
 
 ;;{{{ search enhancements:
 
