@@ -1501,6 +1501,7 @@ in dired mode without it."
       (w32-browser (dired-replace-in-string "/" "\\" dired-fname)))))
 (define-key dired-mode-map [f3] 'w32-browser-path-convert-open)
 (define-key dired-mode-map [(shift return)] 'w32-browser-path-convert-open)
+;; this does not handle .. and . links right yet
 (defun dired-open-in-other-program-maybe () (interactive)
   (let ((dired-fname (dired-get-filename))
 	(extensions '("pdf" "jnt" "nb")) (this-ext))
@@ -1509,8 +1510,8 @@ in dired mode without it."
     (if (member this-ext extensions)
 	(w32-browser-path-convert-open)
       (diredp-find-file-reuse-dir-buffer))))
-(if (eq system-type 'windows-nt)
-    (define-key dired-mode-map [(return)] 'dired-open-in-other-program-maybe))
+;; (if (eq system-type 'windows-nt)
+;;     (define-key dired-mode-map [(return)] 'dired-open-in-other-program-maybe))
 
 ;;}}}
 
