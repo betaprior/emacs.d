@@ -138,8 +138,15 @@ the grep command in R"
       (if (string-match "^/ssh" path)
 	  (setq path (replace-match "/plink" t t path))))
   (cons type path))
+(defun lva-org-translation-function-win2 (type path)
+  (if (string= type "file")
+      (if (string-match "^/ssh" path)
+	  (setq path (replace-match "/plink" t t path))
+	(if (or (string-match "^~/Work" path) (string-match "^/home/leo/Work" path))
+	    (setq path (replace-match "c:/Work" t t path)))))
+  (cons type path))
 (if (eq emacs-profile 'windows-2)
-    (setq org-link-translation-function 'lva-org-translate-ssh-to-plink)
+    (setq org-link-translation-function 'lva-org-translation-function-win2)
     (setq org-link-translation-function 'lva-org-link-translation-function))
 
 
