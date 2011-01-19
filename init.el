@@ -1777,8 +1777,7 @@ in dired mode without it."
 
 (add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
                             ; via some other magic, this will turn it OFF
-
-(add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
+(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
 (add-hook 'TeX-mode-hook
 	  '(lambda ()
@@ -2439,7 +2438,7 @@ With argument, do this that many times."
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
- '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
+ '(font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
