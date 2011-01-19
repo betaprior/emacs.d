@@ -4,15 +4,15 @@
 ;; Description: Run Windows application associated with a file.
 ;; Author: Emacs Wiki, Drew Adams
 ;; Maintainer: Drew Adams
-;; Copyright (C) 2004-2009, Drew Adams, all rights reserved.
+;; Copyright (C) 2004-2011, Drew Adams, all rights reserved.
 ;; Created: Thu Mar 11 13:40:52 2004
 ;; Version: 21.0
-;; Last-Updated: Sat Dec 27 10:09:27 2008 (-0800)
+;; Last-Updated: Tue Jan  4 14:57:54 2011 (-0800)
 ;;           By: dradams
-;;     Update #: 193
+;;     Update #: 211
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/w32-browser.el
 ;; Keywords: mouse, dired, w32, explorer
-;; Compatibility: GNU Emacs 20.x, GNU Emacs 21.x, GNU Emacs 22.x
+;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -34,8 +34,13 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;; Change log:
+;;; Change Log:
 ;;
+;; 2010/01/21 dadams
+;;     Added: dired(-mouse)-w32-browser-reuse-dir-buffer.
+;; 2010/01/12 dadams
+;;     dired-mouse-w32-browser, dired-mouse-w32explore:
+;;       save-excursion + set-buffer -> with-current-buffer.
 ;; 2008/09/22 dadams
 ;;     dired(-mouse)-w32(-browser|explore): Use t as 2nd arg for dired-get-filename.
 ;; 2008/07/18 dadams
@@ -98,7 +103,7 @@ If no associated application, then `find-file' FILE."
 If file is a directory, then `dired-find-file' instead.
 If no application is associated with file, then `find-file'."
     (interactive)
-    (let ((file (dired-get-filename nil t)))
+    (let ((file  (dired-get-filename nil t)))
       (if (file-directory-p file)
           (dired-find-file)
         (w32-browser (dired-replace-in-string "/" "\\" file)))))
@@ -109,14 +114,34 @@ If file is a directory or no application is associated with file, then
 `find-file' instead."
     (interactive "e")
     (let (file)
-      (save-excursion
-        (set-buffer (window-buffer (posn-window (event-end event))))
+      (with-current-buffer (window-buffer (posn-window (event-end event)))
         (save-excursion
           (goto-char (posn-point (event-end event)))
           (setq file (dired-get-filename nil t))))
       (select-window (posn-window (event-end event)))
       (if (file-directory-p file)
           (find-file (file-name-sans-versions file t))
+        (w32-browser (file-name-sans-versions file t)))))
+
+  (defun dired-w32-browser-reuse-dir-buffer ()
+    "Like `dired-w32-browser', but reuse Dired buffers."
+    (interactive)
+    (let ((file  (dired-get-filename nil t)))
+      (if (file-directory-p file)
+          (find-alternate-file file)
+        (w32-browser (dired-replace-in-string "/" "\\" file)))))
+
+  (defun dired-mouse-w32-browser-reuse-dir-buffer (event)
+    "Like `dired-mouse-w32-browser', but reuse Dired buffers."
+    (interactive "e")
+    (let (file)
+      (with-current-buffer (window-buffer (posn-window (event-end event)))
+        (save-excursion
+          (goto-char (posn-point (event-end event)))
+          (setq file (dired-get-filename nil t))))
+      (select-window (posn-window (event-end event)))
+      (if (file-directory-p file)
+          (find-alternate-file (file-name-sans-versions file t))
         (w32-browser (file-name-sans-versions file t)))))
 
   (defun dired-multiple-w32-browser ()
@@ -145,8 +170,7 @@ If file is a directory or no application is associated with file, then
     "Open Windows Explorer to file or folder under mouse."
     (interactive "e")
     (let (file)
-      (save-excursion
-        (set-buffer (window-buffer (posn-window (event-end event))))
+      (with-current-buffer (window-buffer (posn-window (event-end event)))
         (save-excursion
           (goto-char (posn-point (event-end event)))
           (setq file (dired-get-filename nil t))))
@@ -190,7 +214,7 @@ If file is a directory or no application is associated with file, then
 ;;;         (define-key dired-mode-map [menu-bar immediate dired-w32-browser]
 ;;;           '("Open Associated Applications" . dired-multiple-w32-browser)))))
 
-)
+  )
 
 ;;;;;;;;
 
