@@ -128,13 +128,26 @@ the grep command in R"
 ;  ;; for 64-bit R
 ;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
 
+(defun lva-org-link-translation-function (type path)
+  (if (string= type "file")
+      (if (string-match "^c:/Work" path)
+	  (setq path (replace-match "/home/leo/Work" t t path))))
+  (cons type path))
 (defun lva-org-translate-ssh-to-plink (type path)
   (if (string= type "file")
       (if (string-match "^/ssh" path)
 	  (setq path (replace-match "/plink" t t path))))
   (cons type path))
+(defun lva-org-translation-function-win2 (type path)
+  (if (string= type "file")
+      (if (string-match "^/ssh" path)
+	  (setq path (replace-match "/plink" t t path))
+	(if (or (string-match "^~/Work" path) (string-match "^/home/leo/Work" path))
+	    (setq path (replace-match "c:/Work" t t path)))))
+  (cons type path))
 (if (eq emacs-profile 'windows-2)
-    (setq org-link-translation-function 'lva-org-translate-ssh-to-plink))
+    (setq org-link-translation-function 'lva-org-translation-function-win2)
+    (setq org-link-translation-function 'lva-org-link-translation-function))
 
 
 ;; filter recentf-list to get full path by doing regex matching;
@@ -253,7 +266,8 @@ the grep command in R"
 (autoload 'buffer-stack-up "buffer-stack"  nil t)
 (autoload 'buffer-stack-bury-and-kill "buffer-stack"  nil t)
 (autoload 'buffer-stack-bury "buffer-stack"  nil t)
-(eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
+;; (eval-after-load "buffer-stack" '(require 'buffer-stack-suppl))
+(require 'buffer-stack-suppl)
 
 ;; here are the possible keybindings.  Define/customize them in the my-keys map
 ;; (global-set-key [(f9)] 'buffer-stack-down)
@@ -1187,7 +1201,7 @@ overwrite other highlighting.")
 (global-set-key (kbd "C-S-s") 'sr-speedbar-toggle)
 
 ;; docview
-(require 'doc-view)
+;; (require 'doc-view)
 ;; (load-file (expand-file-name "~/.emacs/doc-view.el"))
 ;; ("\\.pdf$" . open-in-doc-view)
 ;; ("\\.dvi$" . open-in-doc-view)
@@ -1227,8 +1241,19 @@ overwrite other highlighting.")
 (global-font-lock-mode 1)			  ; for all buffers
 (add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
 (setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
-(if (eq system-type 'windows-nt)
-  (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+(if (eq emacs-profile 'windows-2)
+    (progn
+      (setq org-file-apps (cons '("\\.jnt\\'" . "c:/PROGRA~1/WI0FCF~1/Journal.exe %s") org-file-apps))
+      (setq org-file-apps (cons '("\\.nb\\'" . "c:/PROGRA~1/WOLFRA~1/MATHEM~1/8.0/MATHEM~1.EXE %s") org-file-apps))
+      (setq org-file-apps (cons '("\\.pdf\\'" . "c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe %s") org-file-apps)))
+      ;; (setq org-file-apps (cons '("\\.jnt\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files\\Windows Journal\\Journal.exe"))) org-file-apps))
+      ;; (setq org-file-apps (cons '("\\.pdf\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe")
+							;; )) org-file-apps)))
+      ;; (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+      ;; (setq org-file-apps (cons '("\\.jnt\\'" . "C:\\Program Files\\Windows Journal\\Journal.exe %s") org-file-apps))) ;; else:
+  (if (eq emacs-profile 'windows-1)
+      (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
+(unless (eq system-type 'windows-nt)
   (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
   (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
 
@@ -1330,6 +1355,8 @@ overwrite other highlighting.")
     (if (file-directory-p w32file)
 	(w32-shell-execute "explore" w32file "/e,/select,")
       (w32-shell-execute "open" "explorer" (concat "/e,/select," w32file)))))
+(define-key dired-mode-map [f4] 'explorer-here)
+
 
 (defun terminal-here ()   
   "Launch external terminal in the current buffer's directory or current dired
@@ -1444,11 +1471,11 @@ in dired mode without it."
 (define-key dired-mode-map [?%?h] 'dired-show-only) 
 
 ;; When in dired mode, quit isearch + visit file with:
-(add-hook 'isearch-mode-end-hook 
-  (lambda ()
-    (when (and (eq major-mode 'dired-mode)
-           (not isearch-mode-end-hook-quit))
-      (dired-find-file))))
+;; (add-hook 'isearch-mode-end-hook 
+;;   (lambda ()
+;;     (when (and (eq major-mode 'dired-mode)
+;;            (not isearch-mode-end-hook-quit))
+;;       (dired-find-file))))
 
 ;; rename the dired buffer; take care of possible buffer name collisions
 (defun buffer-exists (bufname) (not (eq nil (get-buffer bufname)))) 
@@ -1474,6 +1501,34 @@ in dired mode without it."
 		      ;; 	    (concat dired-omit-files "\\|^\\..+$"))
 		      )))
 
+(defun w32-browser (doc) (w32-shell-execute 1 doc))
+(defun w32-browser-path-convert-open () (interactive) 
+  (let ((dired-fname (dired-get-filename))
+	(journal-exe-path "c:/PROGRA~1/WI0FCF~1/Journal.exe")
+	(my-shell-arg) (cmd))
+    (if (string-match ".+\\.jnt$" dired-fname) 
+	(progn
+	  (setq my-shell-arg (concat journal-exe-path " " 
+			      (concat "\\\"" (convert-standard-filename 
+					      (replace-regexp-in-string "/" "\\" dired-fname t t)) "\\\"")))
+	  (setq cmd (concat "bash -c \"" my-shell-arg  "\""))
+	  (start-process-shell-command cmd nil cmd))	 ;; else
+      (w32-browser (dired-replace-in-string "/" "\\" dired-fname)))))
+(define-key dired-mode-map [f3] 'w32-browser-path-convert-open)
+(define-key dired-mode-map [(shift return)] 'w32-browser-path-convert-open)
+;; this does not handle .. and . links right yet
+(defun dired-open-in-other-program-maybe () (interactive)
+  (let ((dired-fname (dired-get-filename))
+	(extensions '("pdf" "jnt" "nb")) (this-ext))
+    (string-match "\\(.+\\)\\.\\(.+?\\)$" dired-fname)
+    (setq this-ext (match-string 2 dired-fname))
+    (if (member this-ext extensions)
+	(w32-browser-path-convert-open)
+      (diredp-find-file-reuse-dir-buffer))))
+;; (if (eq system-type 'windows-nt)
+;;     (define-key dired-mode-map [(return)] 'dired-open-in-other-program-maybe))
+
+;;}}}
 
 ;; unfill paragraph (remove hard linebreaks; use w/ longlines mode)
 ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
@@ -1488,7 +1543,6 @@ in dired mode without it."
   (let ((fill-column (point-max)))
     (fill-region start end nil)))
 
-;;}}}
 
 ;;{{{ search enhancements:
 
@@ -2439,6 +2493,7 @@ With argument, do this that many times."
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
  '(font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
+ ;; '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
