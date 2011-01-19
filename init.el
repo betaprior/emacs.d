@@ -129,7 +129,7 @@ the grep command in R"
 ;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
 
 (defun lva-org-link-translation-function (type path)
-  (if (string= type "file")
+  (if (string-match "^file" type) ;; string= fails on file+emacs: links
       (if (string-match "^c:/Work" path)
 	  (setq path (replace-match "/home/leo/Work" t t path))))
   (cons type path))
@@ -139,7 +139,7 @@ the grep command in R"
 	  (setq path (replace-match "/plink" t t path))))
   (cons type path))
 (defun lva-org-translation-function-win2 (type path)
-  (if (string= type "file")
+  (if (string-match "^file" type) ;; string= fails on file+emacs: links
       (if (string-match "^/ssh" path)
 	  (setq path (replace-match "/plink" t t path))
 	(if (or (string-match "^~/Work" path) (string-match "^/home/leo/Work" path))
