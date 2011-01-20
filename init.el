@@ -1444,9 +1444,9 @@ in dired mode without it."
 
 
 ;; ispell:
-(when (eq system-type 'windows-nt)
-    (setq ispell-program-name "C:/Program Files/Aspell/bin/aspell.exe")
-)
+;; (when (eq system-type 'windows-nt)
+;;     (setq ispell-program-name "C:/Program Files/Aspell/bin/aspell.exe")
+;; )
 
 ;; git
 (if (eq system-type 'windows-nt)
@@ -1836,7 +1836,8 @@ in dired mode without it."
 (add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
                             ; via some other magic, this will turn it OFF
 
-(add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
+(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+;; (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
 (add-hook 'TeX-mode-hook
 	  '(lambda ()
@@ -1880,13 +1881,13 @@ in dired mode without it."
 ;; 		      )))
 
 ;; Tun on the flyspell mode
-(defun turn-on-flyspell-mode () (flyspell-mode t))
+;; (defun turn-on-flyspell-mode () (flyspell-mode t))
 ;; disable spell chekcing of out commented lines
 (setq ispell-check-comments nil)
 
-(add-hook 'LaTex-mode-hook 'turn-on-flyspell-mode)
-(add-hook 'TeX-mode-hook 'turn-on-flyspell-mode)
-(add-hook 'html-mode-hook 'turn-on-flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'turn-on-flyspell)
+(add-hook 'TeX-mode-hook 'turn-on-flyspell)
+(add-hook 'html-mode-hook 'turn-on-flyspell)
 
 (add-hook 'LaTeX-mode-hook
 	  (function (lambda ()
