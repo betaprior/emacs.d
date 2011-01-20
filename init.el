@@ -129,7 +129,8 @@ the grep command in R"
 ;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
 
 (defun lva-org-link-translation-function (type path)
-  (if (or (string= type "file") (string= type "git"))
+  (if (or (string-match "^file" type) ;; string= fails on file+emacs: links
+	  (string= "git" type))
       (if (string-match "^c:/Work" path)
 	  (setq path (replace-match "/home/leo/Work" t t path))))
   (cons type path))
@@ -139,7 +140,8 @@ the grep command in R"
 	  (setq path (replace-match "/plink" t t path))))
   (cons type path))
 (defun lva-org-translation-function-win2 (type path)
-  (if (or (string= type "file") (string= type "git"))
+  (if (or (string-match "^file" type) ;; string= fails on file+emacs: links
+	  (string= "git" type))
       (if (string-match "^/ssh" path)
 	  (setq path (replace-match "/plink" t t path))
 	(if (or (string-match "^~/Work" path) (string-match "^/home/leo/Work" path))
@@ -219,6 +221,8 @@ the grep command in R"
 (define-key anything-map [(shift tab)] 'anything-previous-line)
 (define-key anything-map [backtab] 'anything-previous-line)
 
+(require 'descbinds-anything)
+(descbinds-anything-install)
 ;;}}}
 
 ;;{{{ `-- Interface / appearance settings
@@ -1838,6 +1842,7 @@ in dired mode without it."
 
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
 ;; (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
+
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
 (add-hook 'TeX-mode-hook
 	  '(lambda ()
