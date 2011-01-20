@@ -129,7 +129,8 @@ the grep command in R"
 ;  (setq-default inferior-R-program-name "C:\\Program Files\\R\\R-2.12.1\\bin\\x64\\Rterm.exe"))
 
 (defun lva-org-link-translation-function (type path)
-  (if (string-match "^file" type) ;; string= fails on file+emacs: links
+  (if (or (string-match "^file" type) ;; string= fails on file+emacs: links
+	  (string= "git" type))
       (if (string-match "^c:/Work" path)
 	  (setq path (replace-match "/home/leo/Work" t t path))))
   (cons type path))
@@ -139,7 +140,8 @@ the grep command in R"
 	  (setq path (replace-match "/plink" t t path))))
   (cons type path))
 (defun lva-org-translation-function-win2 (type path)
-  (if (string-match "^file" type) ;; string= fails on file+emacs: links
+  (if (or (string-match "^file" type) ;; string= fails on file+emacs: links
+	  (string= "git" type))
       (if (string-match "^/ssh" path)
 	  (setq path (replace-match "/plink" t t path))
 	(if (or (string-match "^~/Work" path) (string-match "^/home/leo/Work" path))
@@ -461,11 +463,13 @@ the grep command in R"
 ;; ----- C-c o
 (define-mode-specific-keymap lva-submap-org ?o "Org"
   (((kbd "l")   "org-store-link"   org-store-link)
+   ((kbd "L")   "org-git-store-link"   org-git-store-link-interactively)
    ((kbd "a") "org-agenda"   org-agenda)
    ((kbd "I") "Ind mode"   org-indent-mode)
    ((kbd "i s") "inl. images SHOW"   org-display-inline-images)
    ((kbd "i d") "inl. images DISPLAY"   org-display-inline-images)
    ((kbd "i h") "inl. images HIDE"   org-remove-inline-images)
+   ((kbd "i t") "inl. images TOGGLE"   org-toggle-inline-images)
    ((kbd "q") "org-iswitchb"   org-iswitchb)))
 (define-key my-keys-minor-mode-map (kbd "C-c o") lva-submap-org)
 
@@ -1277,6 +1281,10 @@ overwrite other highlighting.")
 (add-hook 'org-mode-hook 
 	  '(lambda () (local-set-key (kbd "C-c C-j") 'lva-org-goto-bindings-wrapper)))
 
+;; load stuff from org-contrib:
+(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
+(require 'org-git-link)
+
 ;;}}}
 
 ;; fix misbehaving overloaded temp-buffer display function
@@ -1440,9 +1448,9 @@ in dired mode without it."
 
 
 ;; ispell:
-(when (eq system-type 'windows-nt)
-    (setq ispell-program-name "C:/Program Files/Aspell/bin/aspell.exe")
-)
+;; (when (eq system-type 'windows-nt)
+;;     (setq ispell-program-name "C:/Program Files/Aspell/bin/aspell.exe")
+;; )
 
 ;; git
 (if (eq system-type 'windows-nt)
@@ -1831,7 +1839,10 @@ in dired mode without it."
 
 (add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
                             ; via some other magic, this will turn it OFF
+
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+;; (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
+
 (add-hook 'TeX-mode-hook 'outline-minor-mode) 
 (add-hook 'TeX-mode-hook
 	  '(lambda ()
@@ -1875,13 +1886,13 @@ in dired mode without it."
 ;; 		      )))
 
 ;; Tun on the flyspell mode
-(defun turn-on-flyspell-mode () (flyspell-mode t))
+;; (defun turn-on-flyspell-mode () (flyspell-mode t))
 ;; disable spell chekcing of out commented lines
 (setq ispell-check-comments nil)
 
-(add-hook 'LaTex-mode-hook 'turn-on-flyspell-mode)
-(add-hook 'TeX-mode-hook 'turn-on-flyspell-mode)
-(add-hook 'html-mode-hook 'turn-on-flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'turn-on-flyspell)
+(add-hook 'TeX-mode-hook 'turn-on-flyspell)
+(add-hook 'html-mode-hook 'turn-on-flyspell)
 
 (add-hook 'LaTeX-mode-hook
 	  (function (lambda ()
@@ -2063,7 +2074,8 @@ in dired mode without it."
 (require 'recentf)
 (setq recentf-exclude '(".ftp:.*" ".sudo:.*" ".*\.recentf" ".*\.ido.last"))
 (setq recentf-keep '(file-remote-p file-readable-p))
-(setq recentf-exclude '("\\.ido\\.last" "\\.recentf"))
+(setq recentf-exclude '("c:/Users/leo/AppData/Local/Temp*"))
+(setq recentf-exclude (append '("\\.ido\\.last" "\\.recentf") recentf-exclude))
 (recentf-mode 1)
 (setq recentf-max-saved-items 500)
 (setq recentf-max-menu-items 60)
