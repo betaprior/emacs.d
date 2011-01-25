@@ -555,7 +555,7 @@ the grep command in R"
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
-
+;;{{{ Useful UDFs (not written by me)
 ;; http://www.emacswiki.org/emacs/ShellMode#toc3
 ;; Note also that you'll want to customize same-window-regexps
 ;; to include "\\*shell.*\\*\\(\\|<[0-9]+>\\)"
@@ -581,6 +581,30 @@ the grep command in R"
                     next-shell-buffer)))
      (shell buffer)))
 
+;; Tassilo Horn's zap-to-char improvements:
+;; http://tsdh.wordpress.com/category/applications/emacs/page/2/
+(defun th-zap-to-string (arg str)
+  "Same as `zap-to-char' except that it zaps to the given string
+instead of a char.  Note that the str you type isn't a part of what's zapped."
+  (interactive "p\nsZap to string: ")
+  (kill-region (point) (progn
+                         (search-forward str nil nil arg)
+			 (backward-char (length str))
+                         (point))))
+
+(defun th-zap-to-regexp (arg regexp)
+  "Same as `zap-to-char' except that it zaps to the given regexp
+instead of a char."
+  (interactive "p\nsZap to regexp: ")
+  (kill-region (point) (progn
+                         (re-search-forward regexp nil nil arg)
+                         (point))))
+
+(global-set-key (kbd "M-z")   'th-zap-to-string)
+(global-set-key (kbd "M-Z")   'th-zap-to-regexp)
+(global-set-key (kbd "C-M-z") 'zap-to-char)
+
+;;}}}
 
 ;;{{{ Customize comment-style (and other newcomment.el options)
 
@@ -662,7 +686,8 @@ the grep command in R"
 ;;}}}
 
 ;; Default browser: Emacs doesn't seem to respect the OS defaults (prefers chromium)
-;;(setq browse-url-browser-function 'browse-url-firefox)
+(unless (eq emacs-profile 'windows-2)
+  (setq browse-url-browser-function 'browse-url-firefox))
 
 ;; Misc. keybindings
 ; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
