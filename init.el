@@ -1465,6 +1465,7 @@ in dired mode without it."
 (setq dired-details-hidden-string "")
 (require 'dired+)
 (toggle-dired-find-file-reuse-dir 1)	; show subdirs in same buffer
+(setq dired-listing-switches "-alk")	; sizes in kilobyes
 
 (define-key dired-mode-map [(backspace)] 'dired-up-directory) 
 (define-key dired-mode-map (kbd "DEL") 'dired-up-directory)  ; need when working
@@ -2479,7 +2480,7 @@ With argument, do this that many times."
 (defvar TeX-output-view-style-commands)
 (if (eq system-type 'windows-nt)
     (setq TeX-output-view-style-commands
-	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("^html?$" "." "start \"\" %o")))
+	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "c:/cygwin/bin/cygstart.exe 'C:/Program Files/Ghostgum/gsview/gsview64.exe' %o") ("^pdf$" "." "c:/cygwin/bin/cygstart.exe 'c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe' %o") ("^html?$" "." "start \"\" %o")))
 	  )
     (setq TeX-output-view-style-commands
 	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'evince' %o") ("^html?$" "." "start \"\" %o")))
