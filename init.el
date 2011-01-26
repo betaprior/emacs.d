@@ -1491,6 +1491,8 @@ in dired mode without it."
 (require 'dired+)
 (toggle-dired-find-file-reuse-dir 1)	; show subdirs in same buffer
 (setq dired-listing-switches "-alk")	; sizes in kilobyes
+(require 'dired-extension)		; for up-dir win reuse and gnome
+					; open, etc
 
 (define-key dired-mode-map [(backspace)] 'dired-up-directory) 
 (define-key dired-mode-map (kbd "DEL") 'dired-up-directory)  ; need when working
@@ -1549,7 +1551,18 @@ in dired mode without it."
 	  (start-process-shell-command cmd nil cmd))	 ;; else
       (w32-browser (dired-replace-in-string "/" "\\" dired-fname)))))
 (define-key dired-mode-map [f3] 'w32-browser-path-convert-open)
-(define-key dired-mode-map [(shift return)] 'w32-browser-path-convert-open)
+
+;; gnome-open-file defined in dired-extension.el
+(defun dired-open-in-os ()
+  (interactive)
+  (if (eq system-type 'windows-nt)
+      (w32-browser-path-convert-open)
+    (gnome-open-file (dired-get-file-for-visit))))
+(define-key dired-mode-map [(shift return)] 'dired-open-in-os)
+
+;; ideally, we'd like to get a list of files to open in OS by default with
+;; RET; also, only certain extensions need to be xlated with
+;; path-convert-open under w32 (as opposed to just using w32-shell-execute)
 ;; this does not handle .. and . links right yet
 (defun dired-open-in-other-program-maybe () (interactive)
   (let ((dired-fname (dired-get-filename))
