@@ -199,6 +199,9 @@ the grep command in R"
 ;; enable winner mode for swiching windows configurations
 (when (fboundp 'winner-mode) (winner-mode 1))
 
+;; hide-lines:
+(autoload 'hide-lines "hide-lines" "Hide lines based on a regexp" t)
+
 ;;{{{ -- anything.el and anything-config
 
 (require 'anything)
@@ -1486,6 +1489,10 @@ in dired mode without it."
 
 ;;{{{ dired enhancements:
 
+(setq dired-dwim-target t)  ;;  if the variable dired-dwim-target is non-nil,
+			    ;;  and if there is another Dired buffer
+			    ;;  displayed in the next window, that other
+			    ;;  buffer's directory is suggested instead.
 (require 'dired-details+)
 (setq dired-details-hidden-string "")
 (require 'dired+)
@@ -1851,6 +1858,9 @@ in dired mode without it."
 ;;}}}
 
 ;;{{{ LaTex/AucTeX settings
+(setq load-path (cons "~/.emacs.d/elisp/ebib.git/src" load-path))
+(autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
+
 
 (if (not (eq emacs-profile 'linux-default))
     ;; (unless (eq emacs-profile 'windows-2) (require 'tex-site))
@@ -2527,11 +2537,13 @@ With argument, do this that many times."
  '(cua-remap-control-z nil)
  '(cygwin-mount-cygwin-bin-directory "c:\\cygwin\\bin")
  '(doc-view-ghostscript-program "c:/cygwin/bin/gs.exe")
+ '(ebib-index-window-size 20)
+ '(ebib-layout (quote custom))
+ '(ebib-width 55)
  '(ecb-options-version "2.40")
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
- '(font-lock-maximum-decoration (quote ((dired-mode . nil) (t . t))))
- ;; '(font-lock-maximum-decoration (quote ((dired-mode . 1))))
+ '(font-lock-maximum-decoration (quote ((dired-mode) (t . t))))
  '(grep-command "grep -nHi ")
  '(help-window-select t)
  '(hideshowvis-ignore-same-line nil)
@@ -2577,3 +2589,5 @@ With argument, do this that many times."
 ;; Local variables:
 ;; folded-file: t
 ;; end:
+(put 'autopair-newline 'disabled nil)
+(put 'downcase-region 'disabled nil)
