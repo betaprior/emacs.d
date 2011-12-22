@@ -1,6 +1,6 @@
 [submodule "elisp/magit"]
 	path = elisp/magit
-	url = http://github.com/philjackson/magit.git
+	url = http://github.com/magit/magit.git
 [submodule "elisp/smex.git"]
 	path = elisp/smex.git
 	url = http://github.com/nonsequitur/smex.git
@@ -9,10 +9,14 @@
 	url = git://github.com/ZungBang/emacs-grep-a-lot.git
 [submodule "elisp/org-mode.git"]
 	path = elisp/org-mode.git
-	url = ssh://leo@dnquark.xen.prgmr.com/home/leo/vc/forks/org-mode.git
+	url = git://repo.or.cz/org-mode.git
+	# url = ssh://leo@dnquark.xen.prgmr.com/home/leo/vc/forks/org-mode.git
 [submodule "elisp/color-theme-twilight-emacs.git"]
 	path = elisp/color-theme-twilight-emacs.git
 	url = https://github.com/crafterm/twilight-emacs.git
 [submodule "elisp/ebib.git"]
 	path = elisp/ebib.git
 	url = http://repo.or.cz/r/ebib.git
+[submodule "elisp/evil.git"]
+	path = elisp/evil.git
+	url = git://gitorious.org/evil/evil.git
