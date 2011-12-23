@@ -227,7 +227,7 @@
 (define-key my-keys-minor-mode-map (kbd "M-8") 'extend-selection)
 (define-key my-keys-minor-mode-map (kbd "M-&") 'add-before-after-region)
 ;; -----     F-keys
-(define-key my-keys-minor-mode-map (kbd "<M-f5>")    'lva-toggle-emacs-state)
+(define-key my-keys-minor-mode-map (kbd "<M-f5>")    'lva-toggle-emacs-state-advice)
 (define-key my-keys-minor-mode-map (kbd "<f7>")      'fold-dwim-toggle)
 (define-key my-keys-minor-mode-map [(shift f7)]      'fold-dwim-toggle-all)
 (define-key my-keys-minor-mode-map (kbd "<M-f7>")    'fold-dwim-hide-all)
@@ -471,6 +471,7 @@ http://gitorious.org/evil/pages/Home
 ** Mode defaults and keymap overrides
 #+begin_src emacs-lisp
   (evil-set-initial-state 'browse-kill-ring-mode 'motion)
+  (evil-set-initial-state 'Man-mode 'motion)
   (evil-set-initial-state 'occur-mode 'motion)
   (evil-declare-key 'motion occur-mode-map (kbd "<return>") 'occur-mode-goto-occurrence)
   (evil-declare-key 'motion occur-mode-map "RET" 'occur-mode-goto-occurrence)
