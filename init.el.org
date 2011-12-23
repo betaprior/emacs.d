@@ -627,92 +627,93 @@ Disabled keybindings:
 * Some utility elisp  
 ** LVA  
 #+begin_src emacs-lisp
-(defun lva-string-match-in-list (regex lst)
-  "Returns the indices where there are regex matches in the list, similar to
-the grep command in R"
-  (delq nil (let ((idx -1)) 
-	      (mapcar (lambda (x) (progn (setq idx (1+ idx)) (if x idx)))
-		      (mapcar (lambda (x) (string-match
-					   regex x)) lst)))))
-(defun lva-get-first-matching-string (regex lst)
-  "Return the first string in list that matches the regex"
-  (let ((idx (car (lva-string-match-in-list regex lst))))
-    (if idx (nth idx lst)
-      nil)))
-
-(defun lva-occur-at-point ()
-  "Sends word at point to occur"
-  (interactive)
-  (occur (thing-at-point 'word)))
-(define-key my-keys-minor-mode-map (kbd "M-s O") 'lva-occur-at-point)
-
-(defun lva-show-buffer-name-and-put-on-kill-ring () (interactive)
- ; (describe-variable 'buffer-file-name)
-  (kill-new buffer-file-name)
-  ;; (sleep-for 0 100) ; need if using minibuffer-message
-  (message (concat "Filename [copied]:" buffer-file-name))
-)
-
-(defun lva-get-time-from-epoch-and-put-on-kill-ring ()
-  (interactive)
-  (message "")
-  (let ((time-as-string)
-        (minibuffer-message-timeout 5))
-  (require 'thingatpt)
-  (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S %Z" (seconds-to-time (string-to-number (thing-at-point 'word)))))
-  (kill-new time-as-string)
-  ;; (sleep-for 0 100) ; need if using minibuffer-message
-  (message (concat "Readable time [copied]:" time-as-string))))
-
-(defun clear-shell ()
-   (interactive)
-   (let ((old-max comint-buffer-maximum-size))
-     (setq comint-buffer-maximum-size 0)
-     (comint-truncate-buffer)
-     (setq comint-buffer-maximum-size old-max)))
-
-
-(defun lva-hive-template-find-file () (interactive)
-  (require 'template)
-  (template-initialize)
-  (let ((file (read-file-name "New file (from HiveShelRun.tpl): "
-			       nil "")))
-      (template-new-file file "~/.emacs.d/.templates/HiveShellRun.tpl")
-))
-
-(defun lva-hive-copy-column-list (start end)
-  (interactive "r")
-  (unless mark-active
-    (error "Mark inactive"))
-  (let ((buffer (current-buffer)) (words '()) (s))
-    (with-temp-buffer
-      (insert-buffer-substring-no-properties buffer start end)
-      (goto-char (point-min))
-      ;; Wnat to stop at the line that starts w/
-      ;; "Time taken:"
-      ;; Use the fact that search-forward moves point
-      (if (search-forward "Time taken:" nil t)
-	  (progn
-	    (beginning-of-line)
-	    (delete-region (point) (line-end-position))))
-      (goto-char (point-min))
-	(while (re-search-forward "^\\([[:word:]_-]+?\\)[ 	]+\\w+" nil t)
-	  (push (match-string 1) words)))
-    (deactivate-mark)
-    (setq s (mapconcat 'identity (nreverse words) ", "))
-    (message s)
-    (kill-new s)))
-(defun lva-quote-words-in-region (start end)
-  (interactive "r")
-  (unless mark-active
-    (error "Mark inactive"))
-  (save-excursion
-    (save-restriction
-      (narrow-to-region start end)
-      (goto-char start)
-      (while (re-search-forward "[[:word:]_-]+" nil t)
-	(replace-match "\"\\&\""))))
-  (deactivate-mark))
+  (defun lva-string-match-in-list (regex lst)
+    "Returns the indices where there are regex matches in the list, similar to
+  the grep command in R"
+    (delq nil (let ((idx -1)) 
+                (mapcar (lambda (x) (progn (setq idx (1+ idx)) (if x idx)))
+                        (mapcar (lambda (x) (string-match
+                                             regex x)) lst)))))
+  (defun lva-get-first-matching-string (regex lst)
+    "Return the first string in list that matches the regex"
+    (let ((idx (car (lva-string-match-in-list regex lst))))
+      (if idx (nth idx lst)
+        nil)))
+  
+  (defun lva-occur-at-point ()
+    "Sends word at point to occur"
+    (interactive)
+    (if (region-active-p) (occur (buffer-substring-no-properties (region-beginning) (region-end)))
+      (occur (grep-tag-default)))) ;; seems better than (thing-at-point 'word)
+  (define-key my-keys-minor-mode-map (kbd "M-s O") 'lva-occur-at-point)
+  
+  (defun lva-show-buffer-name-and-put-on-kill-ring () (interactive)
+   ; (describe-variable 'buffer-file-name)
+    (kill-new buffer-file-name)
+    ;; (sleep-for 0 100) ; need if using minibuffer-message
+    (message (concat "Filename [copied]:" buffer-file-name))
+  )
+  
+  (defun lva-get-time-from-epoch-and-put-on-kill-ring ()
+    (interactive)
+    (message "")
+    (let ((time-as-string)
+          (minibuffer-message-timeout 5))
+    (require 'thingatpt)
+    (setq time-as-string (format-time-string "%Y-%m-%d %H:%M:%S %Z" (seconds-to-time (string-to-number (thing-at-point 'word)))))
+    (kill-new time-as-string)
+    ;; (sleep-for 0 100) ; need if using minibuffer-message
+    (message (concat "Readable time [copied]:" time-as-string))))
+  
+  (defun clear-shell ()
+     (interactive)
+     (let ((old-max comint-buffer-maximum-size))
+       (setq comint-buffer-maximum-size 0)
+       (comint-truncate-buffer)
+       (setq comint-buffer-maximum-size old-max)))
+  
+  
+  (defun lva-hive-template-find-file () (interactive)
+    (require 'template)
+    (template-initialize)
+    (let ((file (read-file-name "New file (from HiveShelRun.tpl): "
+                                 nil "")))
+        (template-new-file file "~/.emacs.d/.templates/HiveShellRun.tpl")
+  ))
+  
+  (defun lva-hive-copy-column-list (start end)
+    (interactive "r")
+    (unless mark-active
+      (error "Mark inactive"))
+    (let ((buffer (current-buffer)) (words '()) (s))
+      (with-temp-buffer
+        (insert-buffer-substring-no-properties buffer start end)
+        (goto-char (point-min))
+        ;; Wnat to stop at the line that starts w/
+        ;; "Time taken:"
+        ;; Use the fact that search-forward moves point
+        (if (search-forward "Time taken:" nil t)
+            (progn
+              (beginning-of-line)
+              (delete-region (point) (line-end-position))))
+        (goto-char (point-min))
+          (while (re-search-forward "^\\([[:word:]_-]+?\\)[       ]+\\w+" nil t)
+            (push (match-string 1) words)))
+      (deactivate-mark)
+      (setq s (mapconcat 'identity (nreverse words) ", "))
+      (message s)
+      (kill-new s)))
+  (defun lva-quote-words-in-region (start end)
+    (interactive "r")
+    (unless mark-active
+      (error "Mark inactive"))
+    (save-excursion
+      (save-restriction
+        (narrow-to-region start end)
+        (goto-char start)
+        (while (re-search-forward "[[:word:]_-]+" nil t)
+          (replace-match "\"\\&\""))))
+    (deactivate-mark))
 #+end_src
 
 ** Modified snippets stolen from others
