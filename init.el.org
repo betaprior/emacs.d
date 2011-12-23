@@ -1,30 +1,31 @@
+-*- mode: Org; comment-start: ";; " -*- 
 #+title:  Emacs .init.el in org-mode format 
 #+author:  Leo Alekseyev
 #+startup: noindent
 
 * Machine portability and default global flags
 #+begin_src emacs-lisp
-;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
-;; Customize according to the machine
-(defvar hostname (downcase (system-name)))
-(defvar emacs-profile
-  (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
-	((string= hostname "leo-fujitsu2-w7") 'windows-2)
-	((string= hostname "matroskin") 'linux-1)
-	((string= hostname "begemot") 'linux-1)
-	((string= hostname "leo-gateway") 'linux-gateway)
-	(t 'linux-default)))
-(defvar turn-off-miktex t)
-(defvar master-session (getenv "EMACS_MASTER"))
-
-;; bind cnotes and memos to keys:
-(setq lva-quick-files-list
-  '("memos\\.txt\\'"           ;1
-    "cnotes\\.org\\'"          ;2
-    "imageshack\\.org\\'"      ;3
-    "thesis\\.org\\'"          ;4
-    "research\\.org\\'"        ;5
-))
+  ;; To use folding: turn on folding mode and use F7/M-F7/M-S-F7
+  ;; Customize according to the machine
+  (defvar hostname (downcase (system-name)))
+  (defvar emacs-profile
+    (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
+          ((string= hostname "leo-fujitsu2-w7") 'windows-2)
+          ((string= hostname "matroskin") 'linux-1)
+          ((string= hostname "begemot") 'linux-1)
+          ((string= hostname "leo-gateway") 'linux-gateway)
+          (t 'linux-default)))
+  (defvar turn-off-miktex t)
+  (defvar master-session (getenv "EMACS_MASTER"))
+  
+  ;; bind cnotes and memos to keys:
+  (setq lva-quick-files-list
+    '("memos\\.txt\\'"           ;1
+      "cnotes\\.org\\'"          ;2
+      "imageshack\\.org\\'"      ;3
+      "thesis\\.org\\'"          ;4
+      "research\\.org\\'"        ;5
+  ))
 #+end_src
 ** Set some environment variables
 #+begin_src emacs-lisp
@@ -226,6 +227,7 @@
 (define-key my-keys-minor-mode-map (kbd "M-8") 'extend-selection)
 (define-key my-keys-minor-mode-map (kbd "M-&") 'add-before-after-region)
 ;; -----     F-keys
+(define-key my-keys-minor-mode-map (kbd "<M-f5>")    'lva-toggle-emacs-state)
 (define-key my-keys-minor-mode-map (kbd "<f7>")      'fold-dwim-toggle)
 (define-key my-keys-minor-mode-map [(shift f7)]      'fold-dwim-toggle-all)
 (define-key my-keys-minor-mode-map (kbd "<M-f7>")    'fold-dwim-hide-all)
@@ -270,7 +272,8 @@
 (defalias 'evabuf 'eval-buffer)
 (defalias 'eregion 'eval-region)
 (defalias 'greprep 'grep-o-matic-repository)
-(defalias 'grepdir 'grep-o-matic-directory)
+(defalias 'grepdir 'grep-o-matic-current-directory)
+(defalias 'grepbuf 'grep-o-matic-visited-files)
 #+end_src
 ** Some navigation key tweaks for Info-mode
 #+begin_src emacs-lisp
@@ -287,40 +290,334 @@
  (local-set-key (kbd "<mouse-5>") 'Info-history-forward))
 (add-hook 'Info-mode-hook 'browser-nav-keys)
 #+end_src
-* EVIL 
+* Org-mode
+http://orgmode.org/org.html  
+Note: it's convenient to navigate through headings with C-f C-b,u,f,p,n
+** Override org keybindings
+NB: This must be executed before org loads!   
+Org likes to mess with windmove and line dragging; so we fix it here
 #+begin_src emacs-lisp
-(add-to-list 'load-path "~/.emacs.d/elisp/evil.git")
-(defun def-assoc (key alist default)
-  "Return cdr of `KEY' in `ALIST' or `DEFAULT' if key is no car in alist."
-  (let ((match (assoc key alist)))
-    (if match
-        (cdr match)
-      default)))
-(require 'undo-tree)  
-(require 'evil)  
-(evil-mode 1)
-;; (setq evil-default-cursor t)
-(setq evil-default-cursor #'cofi/evil-cursor)
-(defun cofi/evil-cursor ()
-  "Change cursor color according to evil-state."
-  (let ((default "OliveDrab4")
-        (cursor-colors '((insert . "dark orange")
-                         (emacs  . "sienna")
-                         (visual . "white"))))
-    (setq cursor-type (if (eq evil-state 'visual)
-                          'hollow
-                        'box))
-    (set-cursor-color (def-assoc evil-state cursor-colors default))))
+;; Replace disputed keys:
+;; don't clobber windmove bindings: code must be placed _before_ org loads
+;; also, the (add-hook 'org-shiftup-final-hook 'windmove-up), etc lines don't seem to do squat
+;; default disputed keys remap so that windowmove commands aren't overridden
+(setq org-disputed-keys '(([(shift up)] . [(meta p)])
+			  ([(shift down)] . [(meta n)])
+			  ([(shift left)] . [(meta -)])
+			  ([(shift right)] . [(meta +)])
+			  ([(meta return)] . [(control meta return)])
+			  ([(control shift right)] . [(meta shift +)])
+			  ([(control shift left)] . [(meta shift -)])))
+(setq org-replace-disputed-keys t)
+(define-key org-mode-map (kbd "S-M-<down>") 'move-line-down) 
+(define-key org-mode-map (kbd "S-M-<up>") 'move-line-up)
+#+end_src
+** Set load and export paths; load org
+#+begin_src emacs-lisp   
+(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/lisp" load-path))
+(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
+(require 'org-install)
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+;; export paths:
+(setq org-mobile-directory "~/Dropbox/testmobile")
+(setq org-mobile-files (quote ("~/Dropbox/Notes.org/cnotes.org" "~/Dropbox/Notes.org/memos.txt")))
+#+end_src
+** Useful options
+#+begin_src emacs-lisp
+(setq org-outline-path-complete-in-steps nil)
+(setq org-src-fontify-natively t)
+(setq org-use-speed-commands t)
+(setq org-startup-indented nil)
+(setq org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
+(setq org-cycle-include-plain-lists nil)
+(setq org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
+(setq org-goto-interface (quote outline-path-completion))
+(setq org-hide-leading-stars t)
+(setq org-replace-disputed-keys t)
+(setq org-src-tab-acts-natively t)
+(setq org-todo-keywords
+       '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
+(add-hook 'org-mode-hook 
+	  '(lambda () (auto-fill-mode t) (setq comment-start nil)))
+(setq org-return-follows-link t)
+(global-font-lock-mode 1)			  ; for all buffers
+(add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
+#+end_src
+*** Windmove bindings
+NB: These have to come after org-mode loads
+#+begin_src emacs-lisp
+;; Make windmove work in org-mode:
+(add-hook 'org-shiftup-final-hook 'windmove-up)
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
+#+end_src
+** Org link handling
+#+begin_src emacs-lisp
+(setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
+(if (eq emacs-profile 'windows-2)
+    (progn
+      (setq org-file-apps (cons '("\\.jnt\\'" . "c:/PROGRA~1/WI0FCF~1/Journal.exe %s") org-file-apps))
+      (setq org-file-apps (cons '("\\.nb\\'" . "c:/PROGRA~1/WOLFRA~1/MATHEM~1/8.0/MATHEM~1.EXE %s") org-file-apps))
+      (setq org-file-apps (cons '("\\.pdf\\'" . "c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe %s") org-file-apps)))
+      ;; (setq org-file-apps (cons '("\\.jnt\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files\\Windows Journal\\Journal.exe"))) org-file-apps))
+      ;; (setq org-file-apps (cons '("\\.pdf\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe")
+							;; )) org-file-apps)))
+      ;; (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+      ;; (setq org-file-apps (cons '("\\.jnt\\'" . "C:\\Program Files\\Windows Journal\\Journal.exe %s") org-file-apps))) ;; else:
+  (if (eq emacs-profile 'windows-1)
+      (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
+(unless (eq system-type 'windows-nt)
+  (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
+  (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
+#+end_src
+** Babel and org-contrib
+#+begin_src emacs-lisp
+;; active Babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((R . t) (sh . t) (python . t) (perl . t) (matlab . t) (latex . t)))
+(setq org-confirm-babel-evaluate nil)
 
- (require 'key-chord) ; for mapping simultaneous key presses
-;; http://www.emacswiki.org/emacs/key-chord.el
-(key-chord-mode 1)
-(key-chord-define-global "jk"  'evil-normal-state) ; super ESC
-(key-chord-define-global "JK"  'evil-emacs-state)
-(key-chord-define-global "df"  'evil-window-map)
-(key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
+;; load stuff from org-contrib:
+(require 'org-git-link)
+(require 'org-man)
+#+end_src
+** Workaround for broken org-goto   
+#+begin_src emacs-lisp-disabled
+;; fix misbehaving overloaded temp-buffer display function
+(defadvice org-goto (around dont-focus-temp-buffer activate)
+  (let ((temp-buffer-show-function nil))
+    (if (org-before-first-heading-p) 
+	(re-search-forward "^*"))
+ ad-do-it))
+#+end_src
+* EVIL
+Some references: 
+http://comments.gmane.org/gmane.emacs.vim-emulation/1135
+http://zuttobenkyou.wordpress.com/2011/02/15/some-thoughts-on-emacs-and-vim/
+http://gitorious.org/evil/pages/Home
+** Basic setup  
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/evil.git")
+  (defun def-assoc (key alist default)
+    "Return cdr of `KEY' in `ALIST' or `DEFAULT' if key is no car in alist."
+  (let ((match (assoc key alist)))
+      (if match
+          (cdr match)
+        default)))
+  (require 'undo-tree)  
+  (define-key undo-tree-map (kbd "\C-x U") 'undo-tree-visualize)
+  (define-key undo-tree-map (kbd "\C-x u") 'undo-tree-undo)
+  (require 'evil)  
+  (evil-mode 1)
+  ;; (setq evil-default-cursor t)
+  
+  ;; darker orange color: "sienna"
+  (setq evil-default-cursor #'cofi/evil-cursor)
+  (defun cofi/evil-cursor ()
+    "Change cursor color according to evil-state."
+    (let ((default "OliveDrab4")
+          (cursor-colors '((insert . "OliveDrab4")
+                           (emacs  . "dark orange")
+                           (visual . "white"))))
+      (setq cursor-type (cond ((eq evil-state 'visual) 'hollow)
+                              ((eq evil-state 'emacs) 'bar)
+                              ((eq evil-state 'insert) 'bar)
+                              (t 'box)))
+      (set-cursor-color (def-assoc evil-state cursor-colors default))))
+  
+  ;; this is done just as well by key chord
+  ;; (define-key evil-insert-state-map "k" #'cofi/maybe-exit) 
+  
+  (evil-define-command cofi/maybe-exit ()
+    :repeat change
+    (interactive)
+    (let ((modified (buffer-modified-p)))
+      (insert "k")
+      (let ((evt (read-event (format "Insert %c to exit insert state" ?j)
+                             nil 0.5)))
+        (cond
+         ((null evt) (message ""))
+         ((and (integerp evt) (char-equal evt ?j))
+          (delete-char -1)
+          (set-buffer-modified-p modified)
+          (push 'escape unread-command-events))
+         (t (setq unread-command-events (append unread-command-events
+                                                (list evt))))))))
+  
+  ;; can't use kj for switching without the keychord (at least with the current
+  ;;cofi/maybe-exit code) 
+   (require 'key-chord) ; for mapping simultaneous key presses
+  ;; http://www.emacswiki.org/emacs/key-chord.el
+  (key-chord-mode 1)
+  (key-chord-define-global "jk"  'evil-normal-state) ; super ESC
+  (key-chord-define-global "JK"  'evil-emacs-state)
+  (key-chord-define-global "df"  'evil-window-map)
+  (key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
 #+end_src
 
+** Global keymap overrides   
+#+begin_src emacs-lisp
+(define-key evil-normal-state-map "\C-n" 'evil-next-line)
+(define-key evil-normal-state-map "\C-p" 'evil-previous-line)
+(define-key evil-normal-state-map "\C-\M-y" 'evil-scroll-line-up)
+(define-key evil-normal-state-map "\C-\M-e" 'evil-scroll-line-down)
+(define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
+(define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
+(define-key evil-normal-state-map "\C-y" 'evil-paste-after)
+#+end_src
+** Mode defaults and keymap overrides
+#+begin_src emacs-lisp
+  (evil-set-initial-state 'browse-kill-ring-mode 'motion)
+  (evil-set-initial-state 'occur-mode 'motion)
+  (evil-set-initial-state 'magit-log-edit-mode 'emacs)
+  (evil-set-initial-state 'ibuffer-mode 'motion)
+  (evil-declare-key 'motion ibuffer-mode-map (kbd "<return>") 'ibuffer-visit-buffer)
+  (evil-declare-key 'motion ibuffer-mode-map "RET" 'ibuffer-visit-buffer)
+#+end_src
+*** Org-mode integration
+Some of this stuff was inspired by    
+http://zuttobenkyou.wordpress.com/2011/02/15/some-thoughts-on-emacs-and-vim/
+However, lots of over-ridden keybindings don't sit well with me, so I put
+them in a separate disabled source block for reference
+#+begin_src emacs-lisp
+(defun always-insert-item ()
+     (interactive)
+     (if (not (org-in-item-p))
+       (insert "\n- ")
+       (org-insert-item)))
+
+(evil-declare-key 'normal org-mode-map (kbd "<return>") 'org-return)
+(evil-declare-key 'normal org-mode-map "RET" 'org-return)
+(evil-declare-key 'normal org-mode-map "T" 'org-todo)
+(evil-declare-key 'normal org-mode-map "-" 'org-cycle-list-bullet)
+(evil-declare-key 'normal org-mode-map ",a" 'org-agenda) ; access agenda buffer
+
+(evil-declare-key 'normal org-mode-map (kbd "M-l") 'org-metaright)
+(evil-declare-key 'normal org-mode-map (kbd "M-h") 'org-metaleft)
+(evil-declare-key 'normal org-mode-map (kbd "M-k") 'org-metaup)
+(evil-declare-key 'normal org-mode-map (kbd "M-j") 'org-metadown)
+(evil-declare-key 'normal org-mode-map (kbd "M-L") 'org-shiftmetaright)
+(evil-declare-key 'normal org-mode-map (kbd "M-H") 'org-shiftmetaleft)
+(evil-declare-key 'normal org-mode-map (kbd "M-K") 'org-shiftmetaup)
+(evil-declare-key 'normal org-mode-map (kbd "M-J") 'org-shiftmetadown)
+
+(evil-declare-key 'normal org-mode-map (kbd "<f12>") 'org-export-as-html)
+#+end_src   
+Disabled keybindings:
+#+begin_src emacs-lisp-disabled
+(define-key evil-normal-state-map "O" (lambda ()
+                     (interactive)
+                     (end-of-line)
+                     (org-insert-heading)
+                     (evil-append nil)
+                     ))
+
+(define-key evil-normal-state-map "o" (lambda ()
+                     (interactive)
+                     (end-of-line)
+                     (always-insert-item)
+                     (evil-append nil)
+                     ))
+
+(define-key evil-normal-state-map "t" (lambda ()
+                     (interactive)
+                     (end-of-line)
+                     (org-insert-todo-heading nil)
+                     (evil-append nil)
+                     ))
+(define-key evil-normal-state-map (kbd "M-o") (lambda ()
+                     (interactive)
+                     (end-of-line)
+                     (org-insert-heading)
+                     (org-metaright)
+                     (evil-append nil)
+                     ))
+(define-key evil-normal-state-map (kbd "M-t") (lambda ()
+                     (interactive)
+                     (end-of-line)
+                     (org-insert-todo-heading nil)
+                     (org-metaright)
+                     (evil-append nil)
+                     ))
+
+
+; allow us to access org-mode keys directly from Evil's Normal mode
+(evil-declare-key 'normal org-mode-map "L" 'org-shiftright)
+(evil-declare-key 'normal org-mode-map "H" 'org-shiftleft)
+(evil-declare-key 'normal org-mode-map "K" 'org-shiftup)
+(evil-declare-key 'normal org-mode-map "J" 'org-shiftdown)
+#+end_src   
+      
+** Advice to use emacs state in place of insert
+#+begin_src emacs-lisp
+  
+  ;; switch to emacs mode instead of insert mode
+  (defadvice evil-append
+    (after evil-append/emacs-state activate)
+    (evil-backward-char)
+    (evil-emacs-state)
+    (forward-char))
+  (defadvice evil-append-line
+    (after evil-append-line/emacs-state activate)
+    (evil-emacs-state)
+    (end-of-line))
+  (defadvice evil-insert
+    (after evil-insert/emacs-state activate)
+    (let ((old-point (point)))
+    (evil-emacs-state)
+    (unless (eq old-point (point)) ; that is, if switching to emacs state moved cursor back
+      (forward-char))))
+  (defadvice evil-insert-line
+    (after evil-insert-line/emacs-state activate)
+    (evil-emacs-state))
+  (defadvice evil-open-below
+    (after evil-open-below/emacs-state activate)
+    (evil-emacs-state))
+  (defadvice evil-open-above
+    (after evil-open-above/emacs-state activate)
+    (evil-emacs-state))
+  
+  (defvar lva-emacs-state-toggle 1  "Keeps the state of how the buffer was last toggled.")
+  (make-variable-buffer-local 'lva-emacs-state-toggle)
+  (defun lva-toggle-emacs-state-advice ()
+    (interactive)
+    (if lva-emacs-state-toggle
+       (progn
+          (ad-disable-advice 'evil-append 'after 'evil-append/emacs-state)
+          (ad-activate 'evil-append)
+          (ad-disable-advice 'evil-append-line 'after 'evil-append-line/emacs-state)
+          (ad-activate 'evil-append-line)
+          (ad-disable-advice 'evil-insert 'after 'evil-insert/emacs-state)
+          (ad-activate 'evil-insert)
+          (ad-disable-advice 'evil-insert-line 'after 'evil-insert-line/emacs-state)
+          (ad-activate 'evil-insert-line)
+          (ad-disable-advice 'evil-open-below 'after 'evil-open-below/emacs-state)
+          (ad-activate 'evil-open-below)
+          (ad-disable-advice 'evil-open-above 'after 'evil-open-above/emacs-state)
+          (ad-activate 'evil-open-above)
+          (setq lva-emacs-state-toggle nil))
+      (progn
+        (ad-enable-advice 'evil-append 'after 'evil-append/emacs-state)
+        (ad-activate 'evil-append)
+        (ad-enable-advice 'evil-append-line 'after 'evil-append-line/emacs-state)
+        (ad-activate 'evil-append-line)
+        (ad-enable-advice 'evil-insert 'after 'evil-insert/emacs-state)
+        (ad-activate 'evil-insert)
+        (ad-enable-advice 'evil-insert-line 'after 'evil-insert-line/emacs-state)
+        (ad-activate 'evil-insert-line)
+        (ad-enable-advice 'evil-open-below 'after 'evil-open-below/emacs-state)
+        (ad-activate 'evil-open-below)
+        (ad-enable-advice 'evil-open-above 'after 'evil-open-above/emacs-state)
+        (ad-activate 'evil-open-above)
+        (setq lva-emacs-state-toggle 1))
+      )
+    (if (and lva-emacs-state-toggle) ; V->E
+        (evil-emacs-state))
+    (if (and (not lva-emacs-state-toggle)) ; E->V
+        (evil-insert-state)))
+#+end_src   
 * Some utility elisp  
 ** LVA  
 #+begin_src emacs-lisp
@@ -502,7 +799,7 @@ instead of a char."
 ;; (global-set-key (kbd "C-M-z") 'zap-to-char)
 
 
-(defun comment-dwim-line (&optional arg)
+(defun comment-dwim-line (&optional arg) ;; u
   "Replacement for the comment-dwim command.
     If no region is selected and current line is not blank and we are not at the end of the line,
       then comment current line.
@@ -512,6 +809,7 @@ instead of a char."
   (if (and (not (region-active-p)) (not (looking-at "[ \t]*$")))
       (comment-or-uncomment-region (line-beginning-position) (line-end-position))
     (comment-dwim arg)))
+(global-set-key "\M-;" 'comment-dwim-line)
 
 #+end_src
 
@@ -1072,12 +1370,17 @@ Subsequent calls expands the selection to larger semantic unit."
 		   ((string= before ":DE") ;for org-mode drawers
 		    (progn
 		      (setq before ":DETAILS:\n")
-		      (setq after "\n:END:")
+		      (setq after ":END:")
+		      t))
+                   ((string= before ":bsl") ;for org-mode drawers
+		    (progn
+		      (setq before "#+begin_src emacs-lisp\n")
+		      (setq after "#+end_src")
 		      t))
 		   ((or (string= before ":CODE") (string= before ":CO"))  ;for org-mode drawers
 		    (progn
 		      (setq before ":CODE:\n")
-		      (setq after "\n:END:")
+		      (setq after ":END:")
 		      t)))) ;; end checking for special cases
 	(setq after (read-from-minibuffer "'After' string:")))
     (setq pos2 (+ end (length before)))
@@ -1504,84 +1807,6 @@ overwrite other highlighting.")
 ;; (global-unset-key [f1])
 ;; (global-set-key [f1] 'hs-toggle-hiding)
 ;;~end folding stuff 
-
-#+end_src
-* Org-mode
-#+begin_src emacs-lisp
-;; don't clobber windmove bindings: code must be placed _before_ org loads
-;; also, the (add-hook 'org-shiftup-final-hook 'windmove-up), etc lines don't seem to do squat
-;; default disputed keys remap so that windowmove commands aren't overridden
-(setq org-disputed-keys '(([(shift up)] . [(meta p)])
-			  ([(shift down)] . [(meta n)])
-			  ([(shift left)] . [(meta -)])
-			  ([(shift right)] . [(meta +)])
-			  ([(meta return)] . [(control meta return)])
-			  ([(control shift right)] . [(meta shift +)])
-			  ([(control shift left)] . [(meta shift -)])))
-(setq org-replace-disputed-keys t)
-(setq org-outline-path-complete-in-steps nil)
-(setq org-src-fontify-natively t)
-(setq org-mobile-directory "~/Dropbox/testmobile")
-(setq org-mobile-files (quote ("~/Dropbox/Notes.org/cnotes.org" "~/Dropbox/Notes.org/memos.txt")))
-(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/lisp" load-path))
-;(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
-(require 'org-install)
-(setq org-startup-indented nil)
-;; The following lines are always needed.  Choose your own keys.
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(setq org-todo-keywords
-       '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
-(add-hook 'org-mode-hook 
-	  '(lambda () (auto-fill-mode t) (setq comment-start nil)))
-(setq org-return-follows-link t)
-(global-font-lock-mode 1)			  ; for all buffers
-(add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
-(setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
-(if (eq emacs-profile 'windows-2)
-    (progn
-      (setq org-file-apps (cons '("\\.jnt\\'" . "c:/PROGRA~1/WI0FCF~1/Journal.exe %s") org-file-apps))
-      (setq org-file-apps (cons '("\\.nb\\'" . "c:/PROGRA~1/WOLFRA~1/MATHEM~1/8.0/MATHEM~1.EXE %s") org-file-apps))
-      (setq org-file-apps (cons '("\\.pdf\\'" . "c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe %s") org-file-apps)))
-      ;; (setq org-file-apps (cons '("\\.jnt\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files\\Windows Journal\\Journal.exe"))) org-file-apps))
-      ;; (setq org-file-apps (cons '("\\.pdf\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe")
-							;; )) org-file-apps)))
-      ;; (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
-      ;; (setq org-file-apps (cons '("\\.jnt\\'" . "C:\\Program Files\\Windows Journal\\Journal.exe %s") org-file-apps))) ;; else:
-  (if (eq emacs-profile 'windows-1)
-      (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
-(unless (eq system-type 'windows-nt)
-  (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
-  (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
-
-;; active Babel languages
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((R . t) (sh . t) (python . t) (perl . t) (matlab . t) (latex . t)))
-(setq org-confirm-babel-evaluate nil)
-
-;; Make windmove work in org-mode:
-(add-hook 'org-shiftup-final-hook 'windmove-up)
-(add-hook 'org-shiftleft-final-hook 'windmove-left)
-(add-hook 'org-shiftdown-final-hook 'windmove-down)
-(add-hook 'org-shiftright-final-hook 'windmove-right)
-
-
-;; load stuff from org-contrib:
-(setq load-path (cons "~/.emacs.d/elisp/org-mode.git/contrib/lisp" load-path))
-(require 'org-git-link)
-(require 'org-man)
-
-
-;; fix misbehaving overloaded temp-buffer display function
-(defadvice org-goto (around dont-focus-temp-buffer activate)
-  (let ((temp-buffer-show-function nil))
-    (if (org-before-first-heading-p) 
-	(re-search-forward "^*"))
- ad-do-it))
-;; override default list-buffers to use pop-to-buffero
-(defadvice list-buffers (around pop-to-list-buffers activate)
-    (pop-to-buffer (list-buffers-noselect files-only)))
-
 
 #+end_src
 * Windows/cygwin functions  
@@ -2334,6 +2559,7 @@ With argument, do this that many times."
 ;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
 (if (not (eq emacs-profile 'linux-default))
     (require 'ess-site))
+(require 'ess-smart-underscore)
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
 (setq ansi-color-for-comint-mode 'filter)
@@ -2653,4 +2879,12 @@ With argument, do this that many times."
 ;; stuff to deal with foo()bar-type situations in autopair
 (fset 'autopair-paren-fwd-1
    [?\C-  right ?\C-w ?\C-\M-f ?\C-\M-f ?\C-y ?\C-\M-b ?\M-f])
+#+end_src
+* Cruft
+This will be a holding pen for code that I don't think I any longer use.  The
+code will be disabled, but it's all there in case something breaks that I
+care about.
+#+begin_src emacs-lisp-disabled
+(defadvice list-buffers (around pop-to-list-buffers activate)
+    (pop-to-buffer (list-buffers-noselect files-only)))
 #+end_src
