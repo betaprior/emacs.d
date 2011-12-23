@@ -413,13 +413,13 @@ http://gitorious.org/evil/pages/Home
   (evil-mode 1)
   ;; (setq evil-default-cursor t)
   
-  ;; darker orange color: "sienna"
+  ;; darker orange color: "sienna" ("dark orange" is also good)
   (setq evil-default-cursor #'cofi/evil-cursor)
   (defun cofi/evil-cursor ()
     "Change cursor color according to evil-state."
     (let ((default "OliveDrab4")
           (cursor-colors '((insert . "OliveDrab4")
-                           (emacs  . "dark orange")
+                           (emacs  . "sienna")
                            (visual . "white"))))
       (setq cursor-type (cond ((eq evil-state 'visual) 'hollow)
                               ((eq evil-state 'emacs) 'bar)
@@ -457,13 +457,14 @@ http://gitorious.org/evil/pages/Home
   (key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
 #+end_src
 
-** Global keymap overrides   
+** Global keymap overrides
 #+begin_src emacs-lisp
 (define-key evil-normal-state-map "\C-n" 'evil-next-line)
 (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
 (define-key evil-normal-state-map "\C-\M-y" 'evil-scroll-line-up)
 (define-key evil-normal-state-map "\C-\M-e" 'evil-scroll-line-down)
 (define-key evil-normal-state-map "\C-e" 'evil-end-of-line)
+(define-key evil-motion-state-map "\C-e" 'evil-end-of-line)
 (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
 (define-key evil-normal-state-map "\C-y" 'evil-paste-after)
 #+end_src
@@ -471,6 +472,11 @@ http://gitorious.org/evil/pages/Home
 #+begin_src emacs-lisp
   (evil-set-initial-state 'browse-kill-ring-mode 'motion)
   (evil-set-initial-state 'occur-mode 'motion)
+  (evil-declare-key 'motion occur-mode-map (kbd "<return>") 'occur-mode-goto-occurrence)
+  (evil-declare-key 'motion occur-mode-map "RET" 'occur-mode-goto-occurrence)
+  (evil-set-initial-state 'grep-mode 'motion)
+  (evil-declare-key 'motion grep-mode-map (kbd "<return>") 'compile-goto-error)
+  (evil-declare-key 'motion grep-mode-map "RET" 'compile-goto-error)
   (evil-set-initial-state 'magit-log-edit-mode 'emacs)
   (evil-set-initial-state 'ibuffer-mode 'motion)
   (evil-declare-key 'motion ibuffer-mode-map (kbd "<return>") 'ibuffer-visit-buffer)
