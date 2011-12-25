@@ -23,6 +23,7 @@
 
 ;; load up all literate org-mode files in this directory
 (mapc #'org-babel-load-file (directory-files dotfiles-dir t "\\.org$")))
+;; (load-file "/home/leo/.emacs.d/init.el.el")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

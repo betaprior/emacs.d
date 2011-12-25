@@ -12,6 +12,7 @@
     (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
           ((string= hostname "leo-fujitsu2-w7") 'windows-2)
           ((string= hostname "matroskin") 'linux-1)
+          ((string= hostname "leo-fujitsu") 'linux-1)
           ((string= hostname "begemot") 'linux-1)
           ((string= hostname "leo-gateway") 'linux-gateway)
           (t 'linux-default)))
@@ -293,7 +294,7 @@
 * Org-mode
 http://orgmode.org/org.html  
 Note: it's convenient to navigate through headings with C-f C-b,u,f,p,n
-** Override org keybindings
+** Replace disputed keys for windmove
 NB: This must be executed before org loads!   
 Org likes to mess with windmove and line dragging; so we fix it here
 #+begin_src emacs-lisp
@@ -309,8 +310,6 @@ Org likes to mess with windmove and line dragging; so we fix it here
 			  ([(control shift right)] . [(meta shift +)])
 			  ([(control shift left)] . [(meta shift -)])))
 (setq org-replace-disputed-keys t)
-(define-key org-mode-map (kbd "S-M-<down>") 'move-line-down) 
-(define-key org-mode-map (kbd "S-M-<up>") 'move-line-up)
 #+end_src
 ** Set load and export paths; load org
 #+begin_src emacs-lisp   
@@ -383,6 +382,13 @@ NB: These have to come after org-mode loads
 (require 'org-git-link)
 (require 'org-man)
 #+end_src
+** Override some keybindings
+For some reason, this has to come late in the code; putting this in the
+"useful options" section didn't work   
+#+begin_src emacs-lisp
+(define-key org-mode-map (kbd "S-M-<down>") 'move-line-down) 
+(define-key org-mode-map (kbd "S-M-<up>") 'move-line-up)
+#+end_src
 ** Workaround for broken org-goto   
 #+begin_src emacs-lisp-disabled
 ;; fix misbehaving overloaded temp-buffer display function
@@ -453,12 +459,13 @@ http://gitorious.org/evil/pages/Home
   (key-chord-mode 1)
   (key-chord-define-global "jk"  'evil-normal-state) ; super ESC
   (key-chord-define-global "JK"  'evil-emacs-state)
-  (key-chord-define-global "df"  'evil-window-map)
-  (key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
+  ;; (key-chord-define-global "df"  'evil-window-map)
+  ;; (key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
 #+end_src
 
 ** Global keymap overrides
 #+begin_src emacs-lisp
+(define-key evil-emacs-state-map [escape] 'evil-normal-state)
 (define-key evil-normal-state-map "\C-n" 'evil-next-line)
 (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
 (define-key evil-normal-state-map "\C-\M-y" 'evil-scroll-line-up)
