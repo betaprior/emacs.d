@@ -17,19 +17,28 @@
        (load-path (append 
 		   (list org-dir org-contrib-dir) (or load-path nil))))
   (setq debug-lp load-path)
+  ;; this must be done before org loads to guarantee that windmove works
+  (setq org-disputed-keys '(([(shift up)] . [(meta p)])
+			    ([(shift down)] . [(meta n)])
+			    ([(shift left)] . [(meta -)])
+			    ([(shift right)] . [(meta +)])
+			    ([(meta return)] . [(control meta return)])
+			    ([(control shift right)] . [(meta shift +)])
+			    ([(control shift left)] . [(meta shift -)])))
+  (setq org-replace-disputed-keys t)
   ;; load up Org-mode and Org-babel
   (require 'org-install)
-  (require 'ob-tangle)
+  (require 'ob-tangle))
 
 ;; load up all literate org-mode files in this directory
-(mapc #'org-babel-load-file (directory-files dotfiles-dir t "\\.org$")))
+(mapc #'org-babel-load-file (directory-files dotfiles-dir t "\\.org$"))
 ;; (load-file "/home/leo/.emacs.d/init.el.el")
 
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
  '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))) t)
@@ -47,7 +56,7 @@
  '(ess-eval-deactivate-mark t)
  '(ess-r-args-show-as (quote tooltip))
  '(evil-cross-lines t)
- '(evil-default-state (quote emacs))
+ '(evil-flash-delay 10)
  '(font-lock-maximum-decoration (quote ((dired-mode) (t . t))))
  '(grep-command "grep -nHi ")
  '(grep-o-matic-ask-about-save nil)
@@ -78,10 +87,10 @@
  '(winner-ring-size 100)
  '(x-select-enable-clipboard t))
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(hs-face ((nil (:box nil)))))
 
 (put 'narrow-to-region 'disabled nil)
