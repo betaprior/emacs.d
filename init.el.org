@@ -2400,51 +2400,80 @@ block -- if there are folding markups or if it matches outline regex"
 
 ** Outline minor mode w/ org TAB enhancements
 See http://orgmode.org/worg/org-faq.html#use-visibility-cycling-in-outline-mode
+Tassilo Horn's code for outline-minor-mode was fixed as follows:
+:DETAILS:
+when outline-level variable is not the default defined in outline.el, it
+did not behave as expected.  outline-level is itself a variable that stores
+the function to determine the outline level and is thus called via (funcall
+outline-level). w/ default function from outline.el, the levels weren't
+determined correctly since it just counted chars, (e.g. it reported heading 
+label "## * " as level 5). Useful code to test this:
+ (progn (re-search-forward (concat "^" outline-regexp) nil t)
+       (goto-char (match-beginning 0))
+       (message "%d" (funcall outline-level)))
+A fixed outline-level function was written and provided.
+Relevant functions when digging through this were:
+org-overview in org.el, which calls (hide-sublevels level); level is
+determined via outline-level in outline.el (which is sometimes overloaded by modes).
+:END:
 #+begin_src emacs-lisp
-(require 'outline)
-
-(add-hook 'outline-minor-mode-hook 	
-	  '(lambda ()
-	     ;; (fold-dwim-org/minor-mode)
-	     (define-key outline-minor-mode-map (kbd "TAB") 'org-cycle)
-	     (define-key outline-minor-mode-map [(tab)] 'org-cycle)
-	     (define-key outline-minor-mode-map [(shift tab)] 'org-global-cycle)
-	     (define-key outline-minor-mode-map [backtab] 'org-global-cycle)))
-
-
-;; Tassilo Horn's outline-minor-mode enhancement: derive regex from comment syntax
-(defvar th-outline-minor-mode-font-lock-keywords
- '((eval . (list (concat "^\\(?:" outline-regexp "\\).*")
-                 0 '(outline-font-lock-face) t t)))
- "Additional expressions to highlight in Orgstruct Mode and Outline minor mode.
-The difference to `outline-font-lock-keywords' is that this will
-overwrite other highlighting.")
-
-(defun th-outline-regexp ()
- "Calculate the outline regexp for the current mode."
- (let ((comment-starter (replace-regexp-in-string
-                         "[[:space:]]+" "" comment-start)))
-   (when (string= comment-starter ";")
-     (setq comment-starter ";;"))
-   (when (string= comment-starter "#")
-     (setq comment-starter "##"))
-   (concat comment-starter " [*]+ ")))
-
-(defun th-outline-minor-mode-init ()
- (interactive)
- (unless (eq major-mode 'latex-mode)
-   (setq outline-regexp (th-outline-regexp))
-   (font-lock-add-keywords
-    nil
-    th-outline-minor-mode-font-lock-keywords)
-    (font-lock-fontify-buffer)))
-
-(defun lva-toggle-omm ()   (interactive) ;; th-outline stuff fails to fontify
-  (outline-minor-mode nil)
-  (outline-minor-mode t)
-  (org-global-cycle 20))
-
-(add-hook 'outline-minor-mode-hook 'th-outline-minor-mode-init)
+  (require 'outline)
+  
+  (add-hook 'outline-minor-mode-hook      
+            '(lambda ()
+               ;; (fold-dwim-org/minor-mode)
+               (define-key outline-minor-mode-map (kbd "TAB") 'org-cycle)
+               (define-key outline-minor-mode-map [(tab)] 'org-cycle)
+               (define-key outline-minor-mode-map [(shift tab)] 'org-global-cycle)
+               (define-key outline-minor-mode-map [backtab] 'org-global-cycle)))
+  
+  
+  ;; Tassilo Horn's outline-minor-mode enhancement: derive regex from comment syntax
+  (defvar th-outline-minor-mode-font-lock-keywords
+   '((eval . (list (concat "^\\(?:" outline-regexp "\\).*")
+                   0 '(outline-font-lock-face) t t)))
+   "Additional expressions to highlight in Orgstruct Mode and Outline minor mode.
+  The difference to `outline-font-lock-keywords' is that this will
+  overwrite other highlighting.")
+  
+  (defun th-outline-regexp ()
+   "Calculate the outline regexp for the current mode."
+   (let ((comment-starter (replace-regexp-in-string
+                           "[[:space:]]+" "" comment-start)))
+     (setq comment-starter (replace-regexp-in-string "*" "[*]" comment-starter))
+     (when (string= comment-starter ";")
+       (setq comment-starter ";;"))
+     (when (string= comment-starter "#")
+       (setq comment-starter "##"))
+     (concat "\\(" comment-starter "\\)" "\\( [*]+ \\)")))
+  
+  (defun th-lva-outline-level ()
+    "Calculates appropriate outline level by counting the stars in the regex"
+    (let ((stars-regex "[*]+") (outline-start-string (match-string 2)))
+       ;; ideally, second group obtained by (match-string 2) will be just the stars
+      (if (string-match stars-regex outline-start-string)
+          (- (match-end 0) (match-beginning 0))
+        0)))
+  
+  (defun th-outline-minor-mode-init ()
+   (interactive)
+   (unless (eq major-mode 'latex-mode)
+     (setq outline-regexp (th-outline-regexp))
+     (setq outline-level 'th-lva-outline-level)
+     (font-lock-add-keywords
+      nil
+      th-outline-minor-mode-font-lock-keywords)
+      (font-lock-fontify-buffer)))
+  
+  (defun lva-toggle-omm ()   (interactive) ;; th-outline stuff fails to fontify
+    (outline-minor-mode nil)
+    (outline-minor-mode t)
+    (org-global-cycle 20))
+  
+  (add-hook 'outline-minor-mode-hook 'th-outline-minor-mode-init)
+  
+    
+  
 #+end_src
 * Compilation
 #+begin_src emacs-lisp
