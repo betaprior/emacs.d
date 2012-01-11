@@ -544,7 +544,7 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-normal-state-map (kbd "S-SPC") 'evil-scroll-up)
   (define-key evil-motion-state-map (kbd "S-SPC") 'evil-scroll-up)
   (define-key evil-normal-state-map "\C-r" 'isearch-backward)
-  (define-key evil-normal-state-map "\C-R" 'undo-tree-redo)
+  (define-key evil-normal-state-map "\C-\M-r" 'undo-tree-redo)
   (define-key evil-normal-state-map "\C-n" 'evil-next-line)
   (define-key evil-normal-state-map "\C-p" 'evil-previous-line)
   (define-key evil-normal-state-map "\C-\M-y" 'evil-scroll-line-up)
