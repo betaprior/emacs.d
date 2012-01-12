@@ -21,6 +21,7 @@ Quick links:
           (t 'linux-default)))
   (defvar turn-off-miktex t)
   (defvar master-session (getenv "EMACS_MASTER"))
+  
 #+end_src
 ** Quick file access
 #+begin_src emacs-lisp  
@@ -356,6 +357,8 @@ Org likes to mess with windmove and line dragging; so we fix it here
 (setq org-src-fontify-natively t)
 (setq org-use-speed-commands t)
 (setq org-startup-indented nil)
+(setq org-directory "~/Dropbox/org/")
+(setq org-src-window-setup (quote current-window))
 (setq org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
 (setq org-cycle-include-plain-lists nil)
 (setq org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
@@ -460,6 +463,23 @@ For some reason, this has to come late in the code; putting this in the
 ;    (setq org-link-translation-function 'lva-org-link-translation-function))
 #+end_src
 
+** Org2blog
+https://github.com/punchagan/org2blog
+#+begin_src emacs-lisp
+  (require 'xml-rpc)
+  (setq load-path (cons "~/.emacs.d/elisp/org2blog.git/" load-path))
+  (require 'netrc)
+  ;; (setq lva-netrc-wp (netrc-machine (netrc-parse "~/.netrc") "wordpress" t))
+  (require 'org2blog-autoloads)
+  (setq org2blog/wp-blog-alist
+         '(("wordpress"
+            :url "http://dnquark.com/blog/xmlrpc.php"
+            :username "admin" ;(netrc-get lva-netrc-wp "login")
+            ;; :password (netrc-get lva-netrc-wp "password")
+            :tags-as-categories nil)))
+  (setq org2blog/wp-use-sourcecode-shortcode t)
+  (setq org2blog/wp-track-posts (list ".org2blog.org" "Posts"))
+#+end_src
 * EVIL
 Some references: 
 http://comments.gmane.org/gmane.emacs.vim-emulation/1135
@@ -536,7 +556,7 @@ http://gitorious.org/evil/pages/Home
 #+end_src
 ** Global keymap overrides
 #+begin_src emacs-lisp
-  (define-key evil-emacs-state-map [escape] 'evil-normal-state)
+   (define-key evil-emacs-state-map [escape] 'evil-normal-state)
   (define-key evil-visual-state-map [escape] 'evil-normal-state)
   (define-key evil-motion-state-map [escape] 'evil-motion-state)
   (define-key evil-normal-state-map (kbd "SPC") 'evil-scroll-down)
@@ -563,6 +583,7 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
   (define-key evil-visual-state-map "\C-w" 'kill-region)
   (define-key evil-normal-state-map "\C-y" 'evil-paste-after)
+  
 #+end_src
 ** Mode defaults and keymap overrides
 #+begin_src emacs-lisp

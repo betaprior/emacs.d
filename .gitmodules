@@ -20,3 +20,9 @@
 [submodule "elisp/evil.git"]
 	path = elisp/evil.git
 	url = git://gitorious.org/evil/evil.git
+[submodule "org2blog"]
+	path = org2blog
+	url = /home/leo/.emacs.d/elisp/org2blog.git/
+[submodule "elisp/org2blog.git"]
+	path = elisp/org2blog.git
+	url = https://github.com/punchagan/org2blog.git
