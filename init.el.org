@@ -370,7 +370,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
 (setq org-mobile-directory "~/Dropbox/testmobile")
 (setq org-mobile-files (quote ("~/Dropbox/Notes.org/cnotes.org" "~/Dropbox/Notes.org/memos.txt")))
 #+end_src
-** Useful options
+** Useful options and hooks
 #+begin_src emacs-lisp
   (setq org-outline-path-complete-in-steps nil)
   (setq org-src-fontify-natively t)
@@ -392,7 +392,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-return-follows-link t)
   (global-font-lock-mode 1)                         ; for all buffers
   (add-hook 'org-mode-hook 'turn-on-font-lock)      ; Org buffers only
-  
+  (add-hook 'org-src-mode-hook '(lambda () (if evil-mode (evil-emacs-state)))) 
 #+end_src
 *** Windmove bindings
 NB: These have to come after org-mode loads
@@ -504,6 +504,7 @@ Custom keybinding defined [[*My-keys-minor-mode%20keybindings][in my-keys minor 
   (setq org2blog/wp-use-sourcecode-shortcode t)
   (setq org2blog/wp-track-posts (list "posts.org" "Posts"))
   (add-hook 'org2blog/wp-mode-hook 'flyspell-mode)
+  (add-hook 'org2blog/wp-mode-hook '(lambda () (auto-save-mode t)))
   (add-hook 'org2blog/wp-mode-hook '(lambda () (assq-delete-all 'org2blog/wp-mode minor-mode-map-alist)))
 #+end_src
 * EVIL
@@ -618,7 +619,7 @@ http://gitorious.org/evil/pages/Home
 #+begin_src emacs-lisp
   (setq my-evil-motion-state-modes '(ibuffer-mode grep-mode occur-mode Man-mode
     woman-mode browse-kill-ring-mode completion-list-mode))
-  (setq my-evil-emacs-state-modes '(shell-mode term-mode gud-mode
+  (setq my-evil-emacs-state-modes '(Info-mode shell-mode term-mode gud-mode
     inferior-ess-mode m-shell-mode inferior-octave-mode magit-status-mode magit-log-edit-mode))
   (mapc (lambda (mode) (evil-set-initial-state mode 'motion))
     my-evil-motion-state-modes)
@@ -635,6 +636,11 @@ http://gitorious.org/evil/pages/Home
   (evil-declare-key 'motion grep-mode-map "RET" 'compile-goto-error)
   (evil-declare-key 'motion ibuffer-mode-map (kbd "<return>") 'ibuffer-visit-buffer)
   (evil-declare-key 'motion ibuffer-mode-map "RET" 'ibuffer-visit-buffer)
+  (evil-declare-key 'emacs Info-mode-map "/" 'evil-search-forward)
+  (evil-declare-key 'emacs Info-mode-map "SPC" 'evil-scroll-down)
+  (evil-declare-key 'emacs Info-mode-map "S-SPC" 'evil-scroll-up)
+  (evil-declare-key 'emacs Info-mode-map "j" 'evil-next-line)
+  (evil-declare-key 'emacs Info-mode-map "k" 'evil-previous-line)
 #+end_src
 *** Org-mode integration
 Some of this stuff was inspired by    
@@ -807,7 +813,6 @@ Disabled keybindings:
        (comint-truncate-buffer)
        (setq comint-buffer-maximum-size old-max)))
   
-  
   (defun lva-hive-template-find-file () (interactive)
     (require 'template)
     (template-initialize)
@@ -849,6 +854,7 @@ Disabled keybindings:
         (while (re-search-forward "[[:word:]_-]+" nil t)
           (replace-match "\"\\&\""))))
     (deactivate-mark))
+  
 #+end_src
 
 ** Modified snippets stolen from others
@@ -1083,23 +1089,28 @@ instead of a char."
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 #+end_src
 ** Autosave tweaks
-
 #+begin_src emacs-lisp
-(setq auto-save-interval 120)
-(setq auto-save-timeout 30) 
-
-;; Put autosave files (ie #foo#) in one place
-(defvar autosave-dir (concat "~/.emacs.d/autosave.1"))
-(make-directory autosave-dir t)
-(defun auto-save-file-name-p (filename) (string-match "^#.*#$" (file-name-nondirectory filename)))
-(defun make-auto-save-file-name () (concat autosave-dir (if buffer-file-name (concat "#" (file-name-nondirectory buffer-file-name) "#") (expand-file-name (concat "#%" (buffer-name) "#")))))
-
-;; Put backup files (ie foo~) in one place too. (The backup-directory-alist 
-;; list contains regexp=>directory mappings; filenames matching a regexp are 
-;; backed up in the corresponding directory. Emacs will mkdir it if necessary.) 
-(setq backup-directory-alist '(("." . "~/.emacs.d/autosave")))
-(setq version-control t)
-(setq delete-old-versions t)
+  (setq auto-save-interval 120)
+  (setq auto-save-timeout 30) 
+  
+  ;; Put autosave files (ie #foo#) in one place
+  (defvar autosave-dir (concat "~/.emacs.d/autosave.1"))
+  (defvar autosave-dir-nonfile (concat "~/.emacs.d/autosave.nonfile"))
+  (make-directory autosave-dir t)
+  (make-directory autosave-dir-nonfile t)
+  (defun auto-save-file-name-p (filename) (string-match "^#.*#$" (file-name-nondirectory filename)))
+  (defun make-auto-save-file-name () 
+    (if buffer-file-name (concat autosave-dir "/" "#" (file-name-nondirectory buffer-file-name) "#")
+      (expand-file-name (concat autosave-dir-nonfile "/" "#%" 
+                                (replace-regexp-in-string "[*]\\|/" "" (buffer-name)) "#"))))
+  
+  ;; Put backup files (ie foo~) in one place too. (The backup-directory-alist 
+  ;; list contains regexp=>directory mappings; filenames matching a regexp are 
+  ;; backed up in the corresponding directory. Emacs will mkdir it if necessary.) 
+  (setq backup-directory-alist '(("." . "~/.emacs.d/autosave")))
+  (setq version-control t)
+  (setq delete-old-versions t)
+  
 #+end_src
 ** Modify line open behavior to be more like Vim's   
 #+begin_src emacs-lisp
@@ -2753,8 +2764,10 @@ determined via outline-level in outline.el (which is sometimes overloaded by mod
 ;; (autoload 'mew-send "mew" nil t)
 #+end_src
 ** Tramp (incl. sudo-edit)
+Some issues with ESS and tramp; see [[https://mail.google.com/mail/u/0/?shva%3D1#search/tramp%2Bssh/134d2d6bd4dbafd8][this gmail message]]
 #+begin_src emacs-lisp
 (require 'tramp)
+(require 'tramp-sh)
 (setq tramp-verbose 2)
 (setq tramp-debug-buffer nil)
 (setq tramp-default-method "ssh")
