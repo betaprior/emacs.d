@@ -228,6 +228,24 @@ Submaps are defined and bound to C-c [letter]
   ))
   (define-key my-keys-minor-mode-map (kbd "C-c o") lva-submap-org)
   
+  ;; ----- Org2blog-gateway:
+  ;; ----- C-c p
+  (define-mode-specific-keymap lva-submap-org2blog ?p "Org2blog" 
+    (((kbd "l") "login" org2blog/wp-login)
+     ((kbd "n") "new-entry" org2blog/wp-new-entry)
+     ((kbd "d") "draft" org2blog/wp-post-buffer) ;; orig. in org2blog/wp-map
+     ((kbd "p") "publish" org2blog/wp-post-buffer-and-publish) ;; orig. in org2blog/wp-map
+     ((kbd "s") "post-subtree" org2blog/wp-post-subtree)
+     ((kbd "r b") "preview-buffer-post" org2blog/wp-preview-buffer-post)
+     ((kbd "r s") "preview-subtree-post" org2blog/wp-preview-subtree-post)
+     ((kbd "t b") "track-buffer" org2blog/wp-track-buffer)
+     ((kbd "t s") "track-subtree" org2blog/wp-track-subtree)
+     ((kbd "c") "complete category" org2blog/wp-complete-category) ;; orig. in org2blog/wp-map
+     ((kbd "D") "page draft" org2blog/wp-post-buffer-as-page) ;; orig. in org2blog/wp-map
+     ((kbd "P") "page publish" org2blog/wp-post-buffer-as-page-and-publish) ;; orig. in org2blog/wp-map
+  ))
+  (define-key my-keys-minor-mode-map (kbd "C-c p") lva-submap-org2blog) 
+  
   ;; ----- Kitchen sink gateway:
   ;; ----- C-c <f10>
   (define-mode-specific-keymap lva-submap-misc f10 "Misc"
@@ -269,6 +287,7 @@ Submaps are defined and bound to C-c [letter]
   (define-key my-keys-minor-mode-map [(control shift f9)] 'buffer-stack-up-thru-all) ; C-x <left>
   (define-key my-keys-minor-mode-map [(meta f9)] 'switch-to-previous-buffer)
   ;(define-key my-keys-minor-mode-map (kbd "") ...)
+  
 #+end_src
 *** Define and turn on my-keys-minor-mode
 #+begin_src emacs-lisp
@@ -353,26 +372,27 @@ Org likes to mess with windmove and line dragging; so we fix it here
 #+end_src
 ** Useful options
 #+begin_src emacs-lisp
-(setq org-outline-path-complete-in-steps nil)
-(setq org-src-fontify-natively t)
-(setq org-use-speed-commands t)
-(setq org-startup-indented nil)
-(setq org-directory "~/Dropbox/org/")
-(setq org-src-window-setup (quote current-window))
-(setq org-agenda-files (quote ("c:/Work/Dipole Problem/dipole.org" "~/My Dropbox/notes.org/memos.txt")))
-(setq org-cycle-include-plain-lists nil)
-(setq org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
-(setq org-goto-interface (quote outline-path-completion))
-(setq org-hide-leading-stars t)
-(setq org-replace-disputed-keys t)
-(setq org-src-tab-acts-natively t)
-(setq org-todo-keywords
-       '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
-(add-hook 'org-mode-hook 
-	  '(lambda () (auto-fill-mode t) (setq comment-start nil)))
-(setq org-return-follows-link t)
-(global-font-lock-mode 1)			  ; for all buffers
-(add-hook 'org-mode-hook 'turn-on-font-lock)	  ; Org buffers only
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-src-fontify-natively t)
+  (setq org-use-speed-commands t)
+  (setq org-startup-indented nil)
+  (setq org-directory "~/Dropbox/org/")
+  (setq org-src-window-setup (quote current-window))
+  (setq org-agenda-files (quote ("~/My Dropbox/notes.org/memos.txt")))
+  (setq org-cycle-include-plain-lists nil)
+  (setq org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
+  (setq org-goto-interface (quote outline-path-completion))
+  (setq org-hide-leading-stars t)
+  (setq org-replace-disputed-keys t)
+  (setq org-src-tab-acts-natively t)
+  (setq org-todo-keywords
+         '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
+  (add-hook 'org-mode-hook 
+            '(lambda () (auto-fill-mode t) (setq comment-start nil)))
+  (setq org-return-follows-link t)
+  (global-font-lock-mode 1)                         ; for all buffers
+  (add-hook 'org-mode-hook 'turn-on-font-lock)      ; Org buffers only
+  
 #+end_src
 *** Windmove bindings
 NB: These have to come after org-mode loads
@@ -410,6 +430,8 @@ NB: These have to come after org-mode loads
   (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
 #+end_src
 ** Babel and org-contrib
+Useful org-babel examples:
+http://eschulte.me/org-scraps/   
 #+begin_src emacs-lisp
 ;; active Babel languages
 (org-babel-do-load-languages
@@ -465,12 +487,14 @@ For some reason, this has to come late in the code; putting this in the
 
 ** Org2blog
 https://github.com/punchagan/org2blog
+Custom keybinding defined [[*My-keys-minor-mode%20keybindings][in my-keys minor mode]]
 #+begin_src emacs-lisp
   (require 'xml-rpc)
   (setq load-path (cons "~/.emacs.d/elisp/org2blog.git/" load-path))
   (require 'netrc)
   ;; (setq lva-netrc-wp (netrc-machine (netrc-parse "~/.netrc") "wordpress" t))
   (require 'org2blog-autoloads)
+  (setq org2blog/wp-map nil) ;; defined custom map (see above) 
   (setq org2blog/wp-blog-alist
          '(("wordpress"
             :url "http://dnquark.com/blog/xmlrpc.php"
@@ -478,7 +502,9 @@ https://github.com/punchagan/org2blog
             ;; :password (netrc-get lva-netrc-wp "password")
             :tags-as-categories nil)))
   (setq org2blog/wp-use-sourcecode-shortcode t)
-  (setq org2blog/wp-track-posts (list ".org2blog.org" "Posts"))
+  (setq org2blog/wp-track-posts (list "posts.org" "Posts"))
+  (add-hook 'org2blog/wp-mode-hook 'flyspell-mode)
+  (add-hook 'org2blog/wp-mode-hook '(lambda () (assq-delete-all 'org2blog/wp-mode minor-mode-map-alist)))
 #+end_src
 * EVIL
 Some references: 
@@ -488,7 +514,6 @@ http://gitorious.org/evil/pages/Home
 ** Load evil
 #+begin_src emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/evil.git")
-  (require 'undo-tree)  
   (require 'evil)  
   (evil-mode 1)
 #+end_src
@@ -556,7 +581,7 @@ http://gitorious.org/evil/pages/Home
 #+end_src
 ** Global keymap overrides
 #+begin_src emacs-lisp
-   (define-key evil-emacs-state-map [escape] 'evil-normal-state)
+  (define-key evil-emacs-state-map [escape] 'evil-normal-state)
   (define-key evil-visual-state-map [escape] 'evil-normal-state)
   (define-key evil-motion-state-map [escape] 'evil-motion-state)
   (define-key evil-normal-state-map (kbd "SPC") 'evil-scroll-down)
@@ -583,7 +608,11 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-visual-state-map "\C-e" 'evil-end-of-line)
   (define-key evil-visual-state-map "\C-w" 'kill-region)
   (define-key evil-normal-state-map "\C-y" 'evil-paste-after)
-  
+  (define-key evil-normal-state-map "\C-\M-o" 'evil-jump-forward)
+  (define-key evil-normal-state-map "\C-\M-p" 'evil-jump-backward)
+  (define-key evil-normal-state-map "\C-o" 'open-next-line)
+  (global-set-key [f1] 'evil-window-map)
+
 #+end_src
 ** Mode defaults and keymap overrides
 #+begin_src emacs-lisp
@@ -602,11 +631,8 @@ http://gitorious.org/evil/pages/Home
   (evil-declare-key 'motion browse-kill-ring-mode-map "RET" 'browse-kill-ring-insert-and-quit)
   (evil-declare-key 'motion occur-mode-map (kbd "<return>") 'occur-mode-goto-occurrence)
   (evil-declare-key 'motion occur-mode-map "RET" 'occur-mode-goto-occurrence)
-  (evil-set-initial-state 'grep-mode 'motion)
   (evil-declare-key 'motion grep-mode-map (kbd "<return>") 'compile-goto-error)
   (evil-declare-key 'motion grep-mode-map "RET" 'compile-goto-error)
-  (evil-set-initial-state 'magit-log-edit-mode 'emacs)
-  (evil-set-initial-state 'ibuffer-mode 'motion)
   (evil-declare-key 'motion ibuffer-mode-map (kbd "<return>") 'ibuffer-visit-buffer)
   (evil-declare-key 'motion ibuffer-mode-map "RET" 'ibuffer-visit-buffer)
 #+end_src
@@ -686,7 +712,6 @@ Disabled keybindings:
       
 ** Advice to use emacs state in place of insert
 #+begin_src emacs-lisp
-  
   ;; switch to emacs mode instead of insert mode
   (defadvice evil-append
     (after evil-append/emacs-state activate)
@@ -713,44 +738,25 @@ Disabled keybindings:
     (after evil-open-above/emacs-state activate)
     (evil-emacs-state))
   
+  (setq lva-evil-insert-commands 
+        '(evil-append evil-append-line evil-insert evil-insert-line evil-open-below evil-open-above))
+  
   (defvar lva-emacs-state-toggle 1  "Keeps the state of how the buffer was last toggled.")
   (make-variable-buffer-local 'lva-emacs-state-toggle)
   (defun lva-toggle-emacs-state-advice ()
     (interactive)
     (if lva-emacs-state-toggle
-       (progn
-          (ad-disable-advice 'evil-append 'after 'evil-append/emacs-state)
-          (ad-activate 'evil-append)
-          (ad-disable-advice 'evil-append-line 'after 'evil-append-line/emacs-state)
-          (ad-activate 'evil-append-line)
-          (ad-disable-advice 'evil-insert 'after 'evil-insert/emacs-state)
-          (ad-activate 'evil-insert)
-          (ad-disable-advice 'evil-insert-line 'after 'evil-insert-line/emacs-state)
-          (ad-activate 'evil-insert-line)
-          (ad-disable-advice 'evil-open-below 'after 'evil-open-below/emacs-state)
-          (ad-activate 'evil-open-below)
-          (ad-disable-advice 'evil-open-above 'after 'evil-open-above/emacs-state)
-          (ad-activate 'evil-open-above)
+        (progn
+          (ad-disable-regexp "evil-*+/emacs-state")
           (setq lva-emacs-state-toggle nil))
       (progn
-        (ad-enable-advice 'evil-append 'after 'evil-append/emacs-state)
-        (ad-activate 'evil-append)
-        (ad-enable-advice 'evil-append-line 'after 'evil-append-line/emacs-state)
-        (ad-activate 'evil-append-line)
-        (ad-enable-advice 'evil-insert 'after 'evil-insert/emacs-state)
-        (ad-activate 'evil-insert)
-        (ad-enable-advice 'evil-insert-line 'after 'evil-insert-line/emacs-state)
-        (ad-activate 'evil-insert-line)
-        (ad-enable-advice 'evil-open-below 'after 'evil-open-below/emacs-state)
-        (ad-activate 'evil-open-below)
-        (ad-enable-advice 'evil-open-above 'after 'evil-open-above/emacs-state)
-        (ad-activate 'evil-open-above)
-        (setq lva-emacs-state-toggle 1))
-      )
-    (if (and lva-emacs-state-toggle) ; V->E
-        (evil-emacs-state))
-    (if (and (not lva-emacs-state-toggle)) ; E->V
-        (evil-insert-state)))
+        (ad-enable-regexp "evil-*+/emacs-state")
+        (setq lva-emacs-state-toggle 1)))
+    (mapc (lambda (advice) (ad-activate advice)) lva-evil-insert-commands)
+    (if lva-emacs-state-toggle ; V->E
+        (evil-emacs-state) ;; else E->v
+      (evil-insert-state)))
+  
 #+end_src   
 * Some utility elisp
 ** LVA
@@ -1290,6 +1296,12 @@ instead."
 (defadvice cua-set-rectangle-mark (after cua-adjust-rect-size () activate)
     (call-interactively 'cua-resize-rectangle-left))
 #+end_src
+** Flyspell
+If want to disable flyspell, use mode: no-flyspell as a file local variable   
+#+begin_src emacs-lisp
+(defun no-flyspell-mode (&optional rest)
+  (flyspell-mode -1))
+#+end_src   
 ** Docview
 #+begin_src emacs-lisp-disabled
 docview
@@ -2208,8 +2220,9 @@ https://github.com/m2ym/auto-complete
 
 #+end_src
 
-** Misc
+** Misc (sql, css, etc)
 #+begin_src emacs-lisp 
+(add-hook 'css-mode-hook 'rainbow-mode) 
 (setq sql-outline-regexp "-- \\*+ ")
 (add-hook 'sql-mode-hook
   '(lambda ()
@@ -2535,102 +2548,102 @@ determined via outline-level in outline.el (which is sometimes overloaded by mod
 #+end_src 
 * Latex / AucTeX
 #+begin_src emacs-lisp 
-;;
-(setq load-path (cons "~/.emacs.d/elisp/ebib.git/src" load-path))
-(autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
-
-
-(if (not (eq emacs-profile 'linux-default))
-    ;; (unless (eq emacs-profile 'windows-2) (require 'tex-site))
-    (require 'tex-site)
-  (when (eq system-type 'windows-nt)
-    (unless turn-off-miktex (require 'tex-mik)))
+  ;;
+  (setq load-path (cons "~/.emacs.d/elisp/ebib.git/src" load-path))
+  (autoload 'ebib "ebib" "Ebib, a BibTeX database manager." t)
+  
+  
+  (if (not (eq emacs-profile 'linux-default))
+      ;; (unless (eq emacs-profile 'windows-2) (require 'tex-site))
+      (require 'tex-site)
+    (when (eq system-type 'windows-nt)
+      (unless turn-off-miktex (require 'tex-mik)))
+    )
+  
+  ;;Anrei says forcing latex mode for tex files explicitly is better in some way
+  (setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
+                                auto-mode-alist))    
+  
+  (add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
+                              ; via some other magic, this will turn it OFF
+  
+  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+  ;; (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
+  
+  (add-hook 'TeX-mode-hook 'outline-minor-mode) 
+  (add-hook 'TeX-mode-hook
+            '(lambda ()
+               (define-key TeX-mode-map [(control \\)] 'TeX-electric-macro)))
+  
+  
+  (require 'abbrev)
+  (setq save-abbrevs t) 
+  (add-hook 'TeX-mode-hook (lambda ()
+       (setq abbrev-mode t)))
+  
+  ;; (add-hook 'outline-mode-hook
+  ;;        '(lambda ()
+  ;;           (require 'outline-mode-easy-bindings)))
+  
+  ;; (add-hook 'outline-minor-mode-hook
+  ;;        '(lambda ()
+  ;;           (require 'outline-mode-easy-bindings)))
+   
+  
+  
+  (add-hook 'TeX-mode-hook '(lambda () (setq fill-column 77)))
+  ;; (add-hook 'LaTeX-mode-hook '(lambda ()
+  ;;                            (setq outline-minor-mode-prefix "\C-c\C-o")))
+  (setq-default fill-column 77)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex) 
+  (setq reftex-plug-into-AUCTeX t)
+  (add-hook 'LaTeX-mode-hook (lambda ()
+                               (TeX-fold-mode 1))) ;turn on
+                                          ;tex-fold-mode
+                                          ;by default
+  (add-hook 'LaTeX-mode-hook
+            (function (lambda ()
+                        (setq TeX-auto-save t)
+                        (setq TeX-parse-self t)
+                        )))
+     ; not necessary, I think....:
+  ;; (add-hook 'LaTeX-mode-hook
+  ;;        (function ( lambda()
+  ;;                    (setq TeX-command-default "LaTeX")
+  ;;                    )))
+  
+  ;; Tun on the flyspell mode
+  ;; (defun turn-on-flyspell-mode () (flyspell-mode t))
+  ;; disable spell chekcing of out commented lines
+  (setq ispell-check-comments nil)
+  
+  (add-hook 'LaTeX-mode-hook 'turn-on-flyspell)
+  (add-hook 'TeX-mode-hook 'turn-on-flyspell)
+  (add-hook 'html-mode-hook 'turn-on-flyspell)
+  
+  (add-hook 'LaTeX-mode-hook
+            (function (lambda ()
+                        (setq ispell-parser 'tex)
+                        )))
+  
+  
+  
+  (setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d")
+                                ("Evince" "'evince' %o")))
+  (if (eq system-type 'windows-nt)
+      (setq TeX-view-program-selection '((output-pdf "GSView") (output-dvi "yap")))
+    (setq TeX-view-program-selection '((output-pdf "Evince") (output-dvi "Evince"))))
+  ;; TODO: figure out how to write this w/o all the copypasting
+  (defvar TeX-output-view-style-commands)
+  (if (eq system-type 'windows-nt)
+      (setq TeX-output-view-style-commands
+            (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "c:/cygwin/bin/cygstart.exe 'C:/Program Files/Ghostgum/gsview/gsview64.exe' %o") ("^pdf$" "." "c:/cygwin/bin/cygstart.exe 'c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe' %o") ("^html?$" "." "start \"\" %o")))
+            )
+      (setq TeX-output-view-style-commands
+            (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'evince' %o") ("^html?$" "." "start \"\" %o")))
+            )
   )
-
-;;Anrei says forcing latex mode for tex files explicitly is better in some way
-(setq auto-mode-alist (append '(("\\.tex$" . latex-mode))
-			      auto-mode-alist))    
-
-(add-hook 'TeX-mode-hook 'TeX-PDF-mode) ; NB: if already in TeX-PDF-mode
-                            ; via some other magic, this will turn it OFF
-
-(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-;; (add-hook 'TeX-mode-hook 'auto-fill-mode) ; hook the auto-fill-mode with LaTeX-mode
-
-(add-hook 'TeX-mode-hook 'outline-minor-mode) 
-(add-hook 'TeX-mode-hook
-	  '(lambda ()
-	     (define-key TeX-mode-map [(control \\)] 'TeX-electric-macro)))
-
-
-(require 'abbrev)
-(setq save-abbrevs t) 
-(add-hook 'TeX-mode-hook (lambda ()
-     (setq abbrev-mode t)))
-
-;; (add-hook 'outline-mode-hook
-;; 	  '(lambda ()
-;; 	     (require 'outline-mode-easy-bindings)))
-
-;; (add-hook 'outline-minor-mode-hook
-;; 	  '(lambda ()
-;; 	     (require 'outline-mode-easy-bindings)))
- 
-
-
-(add-hook 'TeX-mode-hook '(lambda () (setq fill-column 77)))
-;; (add-hook 'LaTeX-mode-hook '(lambda ()
-;; 			      (setq outline-minor-mode-prefix "\C-c\C-o")))
-(setq-default fill-column 77)
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex) 
-(setq reftex-plug-into-AUCTeX t)
-(add-hook 'LaTeX-mode-hook (lambda ()
-			     (TeX-fold-mode 1))) ;turn on
-					;tex-fold-mode
-					;by default
-(add-hook 'LaTeX-mode-hook
-	  (function (lambda ()
-		      (setq TeX-auto-save t)
-		      (setq TeX-parse-self t)
-		      )))
-   ; not necessary, I think....:
-;; (add-hook 'LaTeX-mode-hook
-;; 	  (function ( lambda()
-;; 		      (setq TeX-command-default "LaTeX")
-;; 		      )))
-
-;; Tun on the flyspell mode
-;; (defun turn-on-flyspell-mode () (flyspell-mode t))
-;; disable spell chekcing of out commented lines
-(setq ispell-check-comments nil)
-
-(add-hook 'LaTeX-mode-hook 'turn-on-flyspell)
-(add-hook 'TeX-mode-hook 'turn-on-flyspell)
-(add-hook 'html-mode-hook 'turn-on-flyspell)
-
-(add-hook 'LaTeX-mode-hook
-	  (function (lambda ()
-		      (setq ispell-parser 'tex)
-		      )))
-
-
-
-(setq TeX-view-program-list '(("GSView" "'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o") ("yap" "yap -1 %dS %d")
-			      ("Evince" "'evince' %o")))
-(if (eq system-type 'windows-nt)
-    (setq TeX-view-program-selection '((output-pdf "GSView") (output-dvi "yap")))
-  (setq TeX-view-program-selection '((output-pdf "Evince") (output-dvi "Evince"))))
-;; TODO: figure out how to write this w/o all the copypasting
-(defvar TeX-output-view-style-commands)
-(if (eq system-type 'windows-nt)
-    (setq TeX-output-view-style-commands
-	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "c:/cygwin/bin/cygstart.exe 'C:/Program Files/Ghostgum/gsview/gsview64.exe' %o") ("^pdf$" "." "c:/cygwin/bin/cygstart.exe 'c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe' %o") ("^html?$" "." "start \"\" %o")))
-	  )
-    (setq TeX-output-view-style-commands
-	  (quote (("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "dvips %d -o && start \"\" %f") ("^dvi$" "." "yap -1 %dS %d") ("^pdf$" "." "'evince' %o") ("^html?$" "." "start \"\" %o")))
-	  )
-)
-
+  
 #+end_src
 * ESS/R
 #+begin_src emacs-lisp 
