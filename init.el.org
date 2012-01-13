@@ -557,11 +557,12 @@ http://gitorious.org/evil/pages/Home
 #+end_src
 ** Basic setup
 #+begin_src emacs-lisp
-  (define-key undo-tree-map (kbd "\C-x U") 'undo-tree-visualize)
-  (define-key undo-tree-map (kbd "\C-x u") 'undo-tree-undo)
+  (when (fboundp 'undo-tree-undo)
+    (define-key undo-tree-map (kbd "\C-x U") 'undo-tree-visualize)
+    (define-key undo-tree-map (kbd "\C-x u") 'undo-tree-undo))
   (setq evil-visual-char 'exclusive)
   (setq evil-default-state 'normal)
-
+  
   ;; (setq evil-default-cursor t)
   
   ;; darker orange color: "sienna" ("dark orange" is also good)
@@ -579,6 +580,7 @@ http://gitorious.org/evil/pages/Home
   (key-chord-define-global "JK"  'evil-emacs-state)
   ;; (key-chord-define-global "df"  'evil-window-map)
   ;; (key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
+  
 #+end_src
 ** Global keymap overrides
 #+begin_src emacs-lisp
@@ -613,7 +615,7 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-normal-state-map "\C-\M-p" 'evil-jump-backward)
   (define-key evil-normal-state-map "\C-o" 'open-next-line)
   (global-set-key [f1] 'evil-window-map)
-
+  
 #+end_src
 ** Mode defaults and keymap overrides
 #+begin_src emacs-lisp
