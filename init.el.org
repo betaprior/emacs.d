@@ -219,6 +219,7 @@ Submaps are defined and bound to C-c [letter]
     (((kbd "l")   "org-store-link"   org-store-link)
      ((kbd "L")   "org-git-store-link"   org-git-store-link-interactively)
      ((kbd "a") "org-agenda"   org-agenda)
+     ((kbd "c") "org-capture"   org-capture)
      ((kbd "I") "Ind mode"   org-indent-mode)
      ((kbd "i s") "inl. images SHOW"   org-display-inline-images)
      ((kbd "i d") "inl. images DISPLAY"   org-display-inline-images)
@@ -379,6 +380,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-directory "~/Dropbox/org/")
   (setq org-src-window-setup (quote current-window))
   (setq org-agenda-files (quote ("~/My Dropbox/notes.org/memos.txt")))
+  (setq org-default-notes-file (concat org-directory "/org-capture.org"))
   (setq org-cycle-include-plain-lists nil)
   (setq org-drawers (quote ("PROPERTIES" "CLOCK" "LOGBOOK" "CODE" "DETAILS")))
   (setq org-goto-interface (quote outline-path-completion))
@@ -386,13 +388,16 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-replace-disputed-keys t)
   (setq org-src-tab-acts-natively t)
   (setq org-todo-keywords
-         '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
+        '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
   (add-hook 'org-mode-hook 
             '(lambda () (auto-fill-mode t) (setq comment-start nil)))
   (setq org-return-follows-link t)
   (global-font-lock-mode 1)                         ; for all buffers
   (add-hook 'org-mode-hook 'turn-on-font-lock)      ; Org buffers only
-  (add-hook 'org-src-mode-hook '(lambda () (if evil-mode (evil-emacs-state)))) 
+  (add-hook 'org-src-mode-hook
+              (lambda () (define-key org-src-mode-map "\C-c @"
+                      'org-src-do-key-sequence-at-code-block)))
+  (add-hook 'org-src-mode-hook '(lambda () (if (boundp evil-mode) (evil-emacs-state))))
 #+end_src
 *** Windmove bindings
 NB: These have to come after org-mode loads
@@ -622,7 +627,8 @@ http://gitorious.org/evil/pages/Home
   (setq my-evil-motion-state-modes '(ibuffer-mode grep-mode occur-mode Man-mode
     woman-mode browse-kill-ring-mode completion-list-mode))
   (setq my-evil-emacs-state-modes '(Info-mode shell-mode term-mode gud-mode
-    inferior-ess-mode m-shell-mode inferior-octave-mode magit-status-mode magit-log-edit-mode))
+    inferior-ess-mode m-shell-mode inferior-octave-mode magit-status-mode
+    magit-log-edit-mode org-src-mode))
   (mapc (lambda (mode) (evil-set-initial-state mode 'motion))
     my-evil-motion-state-modes)
   (mapc (lambda (mode) (evil-set-initial-state mode 'emacs))
@@ -643,6 +649,7 @@ http://gitorious.org/evil/pages/Home
   (evil-declare-key 'emacs Info-mode-map "S-SPC" 'evil-scroll-up)
   (evil-declare-key 'emacs Info-mode-map "j" 'evil-next-line)
   (evil-declare-key 'emacs Info-mode-map "k" 'evil-previous-line)
+  
 #+end_src
 *** Org-mode integration
 Some of this stuff was inspired by    
@@ -2767,41 +2774,51 @@ determined via outline-level in outline.el (which is sometimes overloaded by mod
 #+end_src
 ** Tramp (incl. sudo-edit)
 Some issues with ESS and tramp; see [[https://mail.google.com/mail/u/0/?shva%3D1#search/tramp%2Bssh/134d2d6bd4dbafd8][this gmail message]]
+Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
 #+begin_src emacs-lisp
-(require 'tramp)
-(require 'tramp-sh)
-(setq tramp-verbose 2)
-(setq tramp-debug-buffer nil)
-(setq tramp-default-method "ssh")
-(setq tramp-password-end-of-line "\r\n")
-(if (eq emacs-profile 'windows-2)
-    (progn (prefer-coding-system 'utf-8)
-	   (setq tramp-verbose 10)
-	   (setq tramp-debug-buffer nil)))
-
-(defun sudo-edit (&optional arg)
-  (interactive "p")
-  (if arg
-      (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
-    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
-
-(defun sudo-edit-current-file ()
-  (interactive)
-  (let ((pos (point)))
-    (find-alternate-file (concat "/sudo:root@localhost:" (buffer-file-name (current-buffer))))
-    (goto-char pos)))
-
-(when (eq system-type 'windows-nt)
-  (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
-	 '(("bash" "-i")))
-  (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
-	  '("bash -i")))
-
-
-;; stuff that was necessary to get tramp to work under cygwin
-; (setq load-path (append load-path '("/usr/share/emacs/22.1/lisp/emacs-lisp")))
-; (setq load-path (append load-path '("/usr/share/emacs/22.1/lisp/calendar")))
-; (require 'tramp)
+  (require 'tramp)
+  (require 'tramp-sh)
+  (setq tramp-verbose 2)
+  (setq tramp-debug-buffer nil)
+  (setq tramp-default-method "ssh")
+  (setq tramp-password-end-of-line "\r\n")
+  (if (eq emacs-profile 'windows-2)
+      (progn (prefer-coding-system 'utf-8)
+             (setq tramp-verbose 10)
+             (setq tramp-debug-buffer nil)))
+  
+  ;; This allows to edit files via sudo on another host
+  ;; to do this, run e.g. C-x C-f /sudo:dnquark:....
+  (add-to-list 'tramp-default-proxies-alist
+               '(nil "\\`root\\'" "/ssh:%h:"))
+  (add-to-list 'tramp-default-proxies-alist
+               '((regexp-quote (system-name)) nil nil))
+  
+  ;; This allows turn edit files as sudo locally
+  (defun sudo-edit (&optional arg)
+    (interactive "p")
+    (if arg
+        (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
+      (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+  
+  (defun sudo-edit-current-file ()
+    (interactive)
+    (let ((pos (point)))
+      (find-alternate-file (concat "/sudo:root@localhost:" (buffer-file-name (current-buffer))))
+      (goto-char pos)))
+  
+  (when (eq system-type 'windows-nt)
+    (nconc (cadr (assq 'tramp-login-args (assoc "ssh" tramp-methods)))
+           '(("bash" "-i")))
+    (setcdr (assq 'tramp-remote-sh (assoc "ssh" tramp-methods))
+            '("bash -i")))
+  
+  
+  ;; stuff that was necessary to get tramp to work under cygwin
+  ; (setq load-path (append load-path '("/usr/share/emacs/22.1/lisp/emacs-lisp")))
+  ; (setq load-path (append load-path '("/usr/share/emacs/22.1/lisp/calendar")))
+  ; (require 'tramp)
+  
 #+end_src
 
 ** Remote screen
