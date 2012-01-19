@@ -308,6 +308,7 @@ Submaps are defined and bound to C-c [letter]
 ** Misc. keybindings and defalias'es
 #+begin_src emacs-lisp
   ;; Misc. keybindings
+  (global-set-key [escape (shift z) (shift z)] 'lva-shift-z-z)
   ; alias for toggle-input-method s.t. AUCTeX electric macro could be bound to C-\
   (global-set-key [(control c) (control \\)] 'toggle-input-method)
   (global-unset-key [\C-down-mouse-3])
@@ -331,8 +332,8 @@ Submaps are defined and bound to C-c [letter]
 (defun browser-nav-keys ()
   "Add some browser styled nav keys for Info-mode.
   The following keys and mouse buttons are added:
- 【Backspace】 and <mouse-4> for `Info-history-back'
- 【Shift+Backspace】 and <mouse-5> for `Info-history-forward'."
+ [Backspace] and <mouse-4> for `Info-history-back'
+ [Shift+Backspace] and <mouse-5> for `Info-history-forward'."
  (local-set-key (kbd "<backspace>") 'Info-history-back)
  (local-set-key (kbd "<S-backspace>") 'Info-history-forward)
  (local-set-key (kbd "S-SPC") 'Info-scroll-down)
@@ -341,6 +342,11 @@ Submaps are defined and bound to C-c [letter]
  (local-set-key (kbd "<mouse-5>") 'Info-history-forward))
 (add-hook 'Info-mode-hook 'browser-nav-keys)
 #+end_src
+** Key translations (for terminal)
+#+begin_src emacs-lisp
+  (define-key key-translation-map (kbd "<return>") (kbd "RET"))
+  (define-key key-translation-map (kbd "<tab>") (kbd "TAB"))
+#+end_src   
 * Org-mode
 http://orgmode.org/org.html  
 Note: it's convenient to navigate through headings with C-f C-b,u,f,p,n
@@ -391,6 +397,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
         '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
   (add-hook 'org-mode-hook 
             '(lambda () (auto-fill-mode t) (setq comment-start nil)))
+  (add-hook 'org-mode-hook 'flyspell-mode)
   (setq org-return-follows-link t)
   (global-font-lock-mode 1)                         ; for all buffers
   (add-hook 'org-mode-hook 'turn-on-font-lock)      ; Org buffers only
@@ -559,6 +566,12 @@ http://gitorious.org/evil/pages/Home
           (push 'escape unread-command-events))
          (t (setq unread-command-events (append unread-command-events
                                                 (list evt))))))))
+  
+  (defun evil-undefine ()
+   (interactive)
+   (let (evil-mode-map-alist) 
+     (call-interactively (key-binding (this-command-keys)))))
+  
 #+end_src
 ** Basic setup
 #+begin_src emacs-lisp
@@ -592,6 +605,7 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-emacs-state-map [escape] 'evil-normal-state)
   (define-key evil-visual-state-map [escape] 'evil-normal-state)
   (define-key evil-motion-state-map [escape] 'evil-motion-state)
+  (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
   (define-key evil-normal-state-map (kbd "SPC") 'evil-scroll-down)
   (define-key evil-motion-state-map (kbd "SPC") 'evil-scroll-down)
   (define-key evil-normal-state-map (kbd "S-SPC") 'evil-scroll-up)
@@ -635,20 +649,20 @@ http://gitorious.org/evil/pages/Home
     my-evil-emacs-state-modes)
   ;; (evil-set-initial-state 'browse-kill-ring-mode 'motion)
   (evil-declare-key 'motion completion-list-mode-map (kbd "<return>") 'choose-completion)
-  (evil-declare-key 'motion completion-list-mode-map "RET" 'choose-completion)
+  (evil-declare-key 'motion completion-list-mode-map (kbd "RET") 'choose-completion)
   (evil-declare-key 'motion browse-kill-ring-mode-map (kbd "<return>") 'browse-kill-ring-insert-and-quit)
-  (evil-declare-key 'motion browse-kill-ring-mode-map "RET" 'browse-kill-ring-insert-and-quit)
+  (evil-declare-key 'motion browse-kill-ring-mode-map (kbd "RET") 'browse-kill-ring-insert-and-quit)
   (evil-declare-key 'motion occur-mode-map (kbd "<return>") 'occur-mode-goto-occurrence)
-  (evil-declare-key 'motion occur-mode-map "RET" 'occur-mode-goto-occurrence)
+  (evil-declare-key 'motion occur-mode-map (kbd "RET") 'occur-mode-goto-occurrence)
   (evil-declare-key 'motion grep-mode-map (kbd "<return>") 'compile-goto-error)
-  (evil-declare-key 'motion grep-mode-map "RET" 'compile-goto-error)
+  (evil-declare-key 'motion grep-mode-map (kbd "RET") 'compile-goto-error)
   (evil-declare-key 'motion ibuffer-mode-map (kbd "<return>") 'ibuffer-visit-buffer)
-  (evil-declare-key 'motion ibuffer-mode-map "RET" 'ibuffer-visit-buffer)
+  (evil-declare-key 'motion ibuffer-mode-map (kbd "RET") 'ibuffer-visit-buffer)
   (evil-declare-key 'emacs Info-mode-map "/" 'evil-search-forward)
   (evil-declare-key 'emacs Info-mode-map "SPC" 'evil-scroll-down)
   (evil-declare-key 'emacs Info-mode-map "S-SPC" 'evil-scroll-up)
-  (evil-declare-key 'emacs Info-mode-map "j" 'evil-next-line)
-  (evil-declare-key 'emacs Info-mode-map "k" 'evil-previous-line)
+  (evil-declare-key 'emacs Info-mode-map "j" 'evil-scroll-line-down)
+  (evil-declare-key 'emacs Info-mode-map "k" 'evil-scroll-line-up)
   
 #+end_src
 *** Org-mode integration
@@ -664,7 +678,7 @@ them in a separate disabled source block for reference
        (org-insert-item)))
 
 (evil-declare-key 'normal org-mode-map (kbd "<return>") 'org-return)
-(evil-declare-key 'normal org-mode-map "RET" 'org-return)
+(evil-declare-key 'normal org-mode-map (kbd "RET") 'org-return)
 (evil-declare-key 'normal org-mode-map "T" 'org-todo)
 (evil-declare-key 'normal org-mode-map "-" 'org-cycle-list-bullet)
 (evil-declare-key 'normal org-mode-map ",a" 'org-agenda) ; access agenda buffer
@@ -864,6 +878,10 @@ Disabled keybindings:
           (replace-match "\"\\&\""))))
     (deactivate-mark))
   
+  (defun lva-shift-z-z ()
+    (interactive)
+    (save-buffer)
+    (kill-this-buffer))
 #+end_src
 
 ** Modified snippets stolen from others
@@ -950,8 +968,8 @@ instead of a char."
                          (re-search-forward regexp nil nil arg)
                          (point))))
 (global-set-key (kbd "M-z")   'th-zap-to-string)
-(global-set-key (kbd "M-Z")   'th-zap-to-string-backwards)
-(global-set-key (kbd "C-M-z") 'th-zap-to-regexp)
+;; (global-set-key (kbd "M-Z")   'th-zap-to-string-backwards)
+;;(global-set-key (kbd "C-M-z") 'th-zap-to-regexp)
 (global-set-key "\C-c\M-z" 'zap-to-char)
 ;; (global-set-key (kbd "C-M-z") 'zap-to-char)
 
@@ -2777,7 +2795,7 @@ Some issues with ESS and tramp; see [[https://mail.google.com/mail/u/0/?shva%3D1
 Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
 #+begin_src emacs-lisp
   (require 'tramp)
-  (require 'tramp-sh)
+  ;; (require 'tramp-sh)
   (setq tramp-verbose 2)
   (setq tramp-debug-buffer nil)
   (setq tramp-default-method "ssh")
