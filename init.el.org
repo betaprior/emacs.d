@@ -150,7 +150,7 @@ Submaps are defined and bound to C-c [letter]
                              (func (cadr (cdr b))))
                          `(define-key ,map ,keys #',func)))
                    effective-bindings))))
-
+  
   ;;  Note: mode-specific-map is bound to "C-c"
   (defmacro define-mode-specific-keymap (keymap key &optional doc bindings)
     (make-mode-specific-keymap keymap key doc bindings))
@@ -515,6 +515,21 @@ For some reason, this has to come late in the code; putting this in the
 ;    (setq org-link-translation-function 'lva-org-link-translation-function))
 #+end_src
 
+** Custom org-entities
+#+BEGIN_SRC emacs-lisp
+(setq org-entities-user 
+      '(("bbE" "\\mathbb{E}" t "E" "E" "E" "E")
+	("bbR" "\\mathbb{R}" t "R" "R" "R" "ℝ")    
+	("bbC" "\\mathbb{C}" t "C" "C" "C" "ℂ")
+	("bbZ" "\\mathbb{Z}" t "Z" "Z" "Z" "ℤ")
+	("bbP" "\\mathbb{P}" t "P" "P" "P" "ℙ")
+	("bbQ" "\\mathbb{Q}" t "Q" "Q" "Q" "ℚ")
+	("bbN" "\\mathbb{N}" t "N" "N" "N" "ℕ")
+	("calN" "\\mathcal{N}" t "N" "N" "N" "N")
+	("calO" "\\mathcal{O}" t "O" "O" "O" "O")
+	("calF" "\\mathcal{F}" t "F" "F" "F" "ℱ")
+	("hbar" "\\hbar" t "&#8463;" "hbar" "hbar" "ℏ")))
+#+END_SRC   
 ** Org2blog
 https://github.com/punchagan/org2blog
 Custom keybinding defined [[*My-keys-minor-mode%20keybindings][in my-keys minor mode]]
@@ -1133,6 +1148,11 @@ instead of a char."
 (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 #+end_src
+** Pretty display
+#+BEGIN_SRC emacs-lisp
+  (require 'pretty-mode)
+  (global-pretty-mode 1)
+#+END_SRC   
 ** Autosave tweaks
 #+begin_src emacs-lisp
   (setq auto-save-interval 120)
