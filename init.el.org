@@ -1,4 +1,4 @@
--*- mode: Org; comment-start: ";; " -*- 
+-*- mode: Org; mode: no-flyspell; comment-start: ";; " -*- 
 #+title:  Emacs .init.el in org-mode format 
 #+author:  Leo Alekseyev
 #+startup: noindent
@@ -675,7 +675,7 @@ http://gitorious.org/evil/pages/Home
     woman-mode browse-kill-ring-mode completion-list-mode))
   (setq my-evil-emacs-state-modes '(Info-mode shell-mode term-mode gud-mode
     inferior-ess-mode m-shell-mode inferior-octave-mode magit-status-mode
-    magit-log-edit-mode org-src-mode))
+    magit-log-edit-mode org-src-mode reb-lisp-mode))
   (mapc (lambda (mode) (evil-set-initial-state mode 'motion))
     my-evil-motion-state-modes)
   (mapc (lambda (mode) (evil-set-initial-state mode 'emacs))
@@ -800,25 +800,27 @@ Disabled keybindings:
     (after evil-open-above/emacs-state activate)
     (evil-emacs-state))
   
-  (setq lva-evil-insert-commands 
-        '(evil-append evil-append-line evil-insert evil-insert-line evil-open-below evil-open-above))
   
   (defvar lva-emacs-state-toggle 1  "Keeps the state of how the buffer was last toggled.")
   (make-variable-buffer-local 'lva-emacs-state-toggle)
   (defun lva-toggle-emacs-state-advice ()
     (interactive)
-    (if lva-emacs-state-toggle
-        (progn
-          (ad-disable-regexp "evil-*+/emacs-state")
-          (setq lva-emacs-state-toggle nil))
-      (progn
-        (ad-enable-regexp "evil-*+/emacs-state")
-        (setq lva-emacs-state-toggle 1)))
-    (mapc (lambda (advice) (ad-activate advice)) lva-evil-insert-commands)
-    (if lva-emacs-state-toggle ; V->E
-        (evil-emacs-state) ;; else E->v
-      (evil-insert-state)))
+    (let ((evil-insert-advice-regexp "evil-.+/emacs-state"))
+      (if lva-emacs-state-toggle
+          (ad-disable-regexp evil-insert-advice-regexp)
+        (ad-enable-regexp evil-insert-advice-regexp))
+      (setq lva-emacs-state-toggle (not lva-emacs-state-toggle))
+      (ad-activate-regexp evil-insert-advice-regexp)
+      (if lva-emacs-state-toggle ; V->E
+          (evil-emacs-state) ;; else E->V
+        (evil-insert-state))))
   
+#+end_src   
+** EVIL plugins
+https://github.com/timcharper/evil-surround
+#+begin_src emacs-lisp
+  (require 'surround)
+  (global-surround-mode 1)
 #+end_src   
 * Some utility elisp
 ** LVA
@@ -2189,6 +2191,14 @@ when pressing $:
 
 #+end_src
   
+** Wrap-region
+https://github.com/rejeep/wrap-region
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/wrap-region.git")
+  (require 'wrap-region)
+  (wrap-region-mode t)
+  (wrap-region-add-wrapper "$" "$")
+#+end_src   
 * Completion, expansion, dabbrev, snippets
 Links:
 http://www.emacswiki.org/emacs/Completion#completion
