@@ -42,7 +42,6 @@
  '(TeX-electric-escape nil)
  '(TeX-output-view-style TeX-output-view-style-commands)
  '(TeX-view-program-list (quote (("((\"Ghostview\" \"'C:/Program Files/Ghostgum/gsview/gsview32.exe' %o\"))" ""))) t)
- '(color-theme-is-cumulative t)
  '(cua-delete-selection nil)
  '(cua-enable-cua-keys nil)
  '(cua-remap-control-v nil)
@@ -108,3 +107,4 @@
 (put 'downcase-region 'disabled nil)
 
 ;;; init.el ends here
+
