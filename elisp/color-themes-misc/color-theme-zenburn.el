@@ -460,8 +460,11 @@
      (rpm-spec-var-face ((t (:foreground ,zenburn-red))))
 
      ;; show-paren
-     (show-paren-mismatch ((t (:foreground ,zenburn-red-3 :weight bold))))
-     (show-paren-match ((t (:foreground ,zenburn-blue-1 :weight bold))))
+     ;; (show-paren-mismatch ((t (:foreground ,zenburn-red-3 :weight normal))))
+     ;; (show-paren-match ((t (:foreground ,zenburn-blue-1 :weight normal))))
+     ;; setting weight to bold changes line spacing when running at some resolutions (e.g. 1920x1080)
+     ;; (show-paren-mismatch ((t (:foreground ,zenburn-red-3 :weight bold))))
+     ;; (show-paren-match ((t (:foreground ,zenburn-blue-1 :weight bold))))
 
      ;; wanderlust
      (wl-highlight-folder-few-face ((t (:foreground ,zenburn-red-2))))

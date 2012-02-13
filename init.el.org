@@ -195,7 +195,7 @@ Submaps are defined and bound to C-c [letter]
      ((kbd "e") "eval & replace"   fc-eval-and-replace)
      ((kbd "g") "grep in repo"     grep-o-matic-repository)
      ((kbd "v") "vim-insert"       lva-toggle-emacs-state-advice)
-  ))
+     ))
   (define-key my-keys-minor-mode-map (kbd "C-c c") lva-submap-aliases)
     
   ;; ----- UDF gateway:
@@ -209,7 +209,7 @@ Submaps are defined and bound to C-c [letter]
      ((kbd "h c") "hive copy cols"   lva-hive-copy-column-list)
      ((kbd "c s") "clear shell"      clear-shell)
      ((kbd "c o") "clear outline (helps w/ fl)"    lva-toggle-omm)
-  ))
+     ))
   (define-key my-keys-minor-mode-map (kbd "C-c u") lva-submap-udf)
   
   ;; ----- Macro gateway:
@@ -219,7 +219,7 @@ Submaps are defined and bound to C-c [letter]
      ((kbd "p b") "paste-BOL" paste-BOL)
      ((kbd "p e") "paste-EOL" paste-EOL)
      ((kbd "q") "quote-list"   quote-list)
-  ))
+     ))
   (define-key my-keys-minor-mode-map (kbd "C-c m") lva-submap-macros)
   
   ;; ----- Org-gateway:
@@ -235,7 +235,7 @@ Submaps are defined and bound to C-c [letter]
      ((kbd "i h") "inl. images HIDE"   org-remove-inline-images)
      ((kbd "i t") "inl. images TOGGLE"   org-toggle-inline-images)
      ((kbd "q") "org-iswitchb"   org-iswitchb)
-  ))
+     ))
   (define-key my-keys-minor-mode-map (kbd "C-c o") lva-submap-org)
   
   ;; ----- Org2blog-gateway:
@@ -253,13 +253,15 @@ Submaps are defined and bound to C-c [letter]
      ((kbd "c") "complete category" org2blog/wp-complete-category) ;; orig. in org2blog/wp-map
      ((kbd "D") "page draft" org2blog/wp-post-buffer-as-page) ;; orig. in org2blog/wp-map
      ((kbd "P") "page publish" org2blog/wp-post-buffer-as-page-and-publish) ;; orig. in org2blog/wp-map
-  ))
+     ))
   (define-key my-keys-minor-mode-map (kbd "C-c p") lva-submap-org2blog) 
   
   ;; ----- Kitchen sink gateway:
   ;; ----- C-c <f10>
   (define-mode-specific-keymap lva-submap-misc f10 "Misc"
-    (((kbd "y") "yank-menu" bring-up-yank-menu)))
+    (((kbd "y") "yank-menu" bring-up-yank-menu)
+     ((kbd "r") "evil-paste-from-register" evil-paste-from-register)
+     ))
   (define-key my-keys-minor-mode-map (kbd "C-c <f10>") lva-submap-misc)
   
   ;; ----- Top-level aliases:
@@ -393,6 +395,8 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-use-speed-commands t)
   (setq org-startup-indented nil)
   (setq org-directory "~/Dropbox/org/")
+  (setq org-src-ask-before-returning-to-edit-buffer nil)
+  (define-key org-src-mode-map "\C-x\C-s" 'org-edit-src-save)
   (setq org-src-window-setup (quote current-window))
   (setq org-agenda-files (quote ("~/My Dropbox/notes.org/memos.txt")))
   (setq org-default-notes-file (concat org-directory "/org-capture.org"))
@@ -592,7 +596,7 @@ http://gitorious.org/evil/pages/Home
                            (visual . "white"))))
       (setq cursor-type (cond ((eq evil-state 'visual) 'hollow)
                               ;; ((eq evil-state 'emacs) 'bar)
-                              ;; ((eq evil-state 'insert) 'bar)
+                              ((eq evil-state 'insert) 'box)
                               (t 'box)))
       (set-cursor-color (def-assoc evil-state cursor-colors default))))
   
@@ -622,14 +626,19 @@ http://gitorious.org/evil/pages/Home
 #+begin_src emacs-lisp
   (when (fboundp 'undo-tree-undo)
     (define-key undo-tree-map (kbd "\C-x U") 'undo-tree-visualize)
+  ;; (setq evil-visual-char 'exclusive)
     (define-key undo-tree-map (kbd "\C-x u") 'undo-tree-undo))
-  (setq evil-visual-char 'exclusive)
   (setq evil-default-state 'normal)
-  
+  (setq evil-move-cursor-back t)
+  ;; (setq evil-highlight-closing-paren-at-point-states nil) ;; nil disables
+    ;; modified paren highlighting; it only makes sense w/ evil-move-cursor-back
+    ;; set to nil
+  (setq evil-want-visual-char-semi-exclusive t)
   ;; (setq evil-default-cursor t)
   
   ;; darker orange color: "sienna" ("dark orange" is also good)
   (setq evil-default-cursor #'cofi/evil-cursor)
+  (setq evil-insert-state-cursor 'box)
   
   ;; this is done just as well by key chord
   ;; (define-key evil-insert-state-map "k" #'cofi/maybe-exit) 
@@ -649,6 +658,8 @@ http://gitorious.org/evil/pages/Home
 #+begin_src emacs-lisp
   ;; remove all keybindings from insert-state keymap
   (setcdr evil-insert-state-map nil)
+  (define-key evil-insert-state-map
+    (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
   (define-key evil-insert-state-map [escape] 'evil-normal-state)
   (define-key evil-emacs-state-map [escape] 'evil-normal-state)
   (define-key evil-visual-state-map [escape] 'evil-normal-state)
@@ -820,19 +831,23 @@ Disabled keybindings:
     (after evil-open-above/emacs-state activate)
     (evil-emacs-state))
   
+  (defun lva-emacs-state-enable-advice (state)
+    (let ((evil-insert-advice-regexp "evil-.+/emacs-state"))
+      (if state
+          (ad-enable-regexp evil-insert-advice-regexp)
+        (ad-disable-regexp evil-insert-advice-regexp))
+      (ad-activate-regexp evil-insert-advice-regexp)))
   
+  (lva-emacs-state-enable-advice lva-emacs-not-insert-state)
   (defvar lva-emacs-state-toggle 
     (if lva-emacs-not-insert-state 1 nil)
         "Keeps the state of how the buffer was last toggled.")
   (make-variable-buffer-local 'lva-emacs-state-toggle)
   (defun lva-toggle-emacs-state-advice ()
     (interactive)
-    (let ((evil-insert-advice-regexp "evil-.+/emacs-state"))
-      (if lva-emacs-state-toggle
-          (ad-disable-regexp evil-insert-advice-regexp)
-        (ad-enable-regexp evil-insert-advice-regexp))
+    (progn
+      (lva-emacs-state-enable-advice (not lva-emacs-state-toggle))
       (setq lva-emacs-state-toggle (not lva-emacs-state-toggle))
-      (ad-activate-regexp evil-insert-advice-regexp)
       (if lva-emacs-state-toggle ; V->E
           (evil-emacs-state) ;; else E->V
         (evil-insert-state))))
@@ -1170,10 +1185,10 @@ instead of a char."
   (require 'color-theme-zenburn)
       
   (when (not (eq (symbol-value 'window-system) nil)) ;(not nil)
-    ;; (color-theme-twilight))
-    (color-theme-zenburn))
-    ;; (color-theme-midnight))
-  
+    ;; (color-theme-twilight)
+    (color-theme-zenburn)
+    ;; (color-theme-midnight)
+  )
 #+end_src
 ** Color in shell
 #+begin_src emacs-lisp
@@ -2157,11 +2172,14 @@ With argument, do this that many times."
 #+end_src
 ** fix copy/paste in Linux?
 #+begin_src emacs-lisp
-(when (eq emacs-profile 'linux-1)
-  (setq x-select-enable-clipboard t)
-  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-  (if (= 24 emacs-major-version)
-      (setq x-select-enable-primary t)))
+  (when (eq emacs-profile 'linux-1)
+    (setq x-select-enable-clipboard t)
+    (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
+    (if (= 24 emacs-major-version)
+        (setq x-select-enable-primary nil)))
+  ;; x-select-enable-primary interferes with M-w under Evil if setting it to t
+  ;; is needed, then M-w and C-w should be rewired to evil-yank and evil-delete
+  ;; respectively (cf https://bitbucket.org/lyro/evil/issue/110/kill-ring-save-doesnt-work-properly-in)
 #+end_src
    
 * Code-writing niceties
