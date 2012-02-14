@@ -9,19 +9,19 @@ Quick links:
 * Machine portability and default global flags
 ** Different profiles for different machines  
 #+begin_src emacs-lisp
-  ;; Customize according to the machine
-  (defvar hostname (downcase (system-name)))
-  (defvar emacs-profile
-    (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
-          ((string= hostname "leo-fujitsu2-w7") 'windows-2)
-          ((string= hostname "matroskin") 'linux-1)
-          ((string= hostname "leo-fujitsu") 'linux-1)
-          ((string= hostname "begemot") 'linux-1)
-          ((string= hostname "leo-gateway") 'linux-gateway)
-          (t 'linux-default)))
-  (defvar turn-off-miktex t)
-  (defvar master-session (getenv "EMACS_MASTER"))
-  
+    ;; Customize according to the machine
+    (defvar hostname (downcase (system-name)))
+    (defvar emacs-profile
+      (cond ((string= hostname "leo-fujitsu-xp") 'windows-1)
+            ((string= hostname "leo-fujitsu2-w7") 'windows-2)
+            ((string= hostname "matroskin") 'linux-1)
+            ((string= hostname "leo-fujitsu") 'linux-1)
+            ((string= hostname "begemot") 'linux-1)
+            ((string= hostname "leo-gateway") 'linux-gateway)
+            (t 'linux-default)))
+    (defvar turn-off-miktex t)
+    (defvar master-session (getenv "EMACS_MASTER"))
+    
 #+end_src
 ** Quick file access
 #+begin_src emacs-lisp  
@@ -274,7 +274,8 @@ Submaps are defined and bound to C-c [letter]
   (define-key my-keys-minor-mode-map (kbd "C-c D") 'djcb-duplicate-line-cmt)
   (define-key my-keys-minor-mode-map (kbd "C-c n") 'lva-show-buffer-name-and-put-on-kill-ring)
   (define-key my-keys-minor-mode-map (kbd "C-c e") 'fc-eval-and-replace)
-  (define-key my-keys-minor-mode-map [(control c) tab]  'indent-according-to-mode)
+  (define-key my-keys-minor-mode-map [(control c) tab] 'indent-according-to-mode)
+  (define-key my-keys-minor-mode-map (kbd "C-c C-SPC") 'just-one-space)
   
   ;; ----- Nonstandard aliases:
   (define-key my-keys-minor-mode-map (kbd "C-c C-d") 'djcb-duplicate-line-cmt)
@@ -417,7 +418,6 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (add-hook 'org-src-mode-hook
               (lambda () (define-key org-src-mode-map "\C-c @"
                       'org-src-do-key-sequence-at-code-block)))
-  (add-hook 'org-src-mode-hook '(lambda () (if (boundp evil-mode) (evil-emacs-state))))
 #+end_src
 *** Windmove bindings
 NB: These have to come after org-mode loads
@@ -1224,6 +1224,13 @@ instead of a char."
   (setq version-control t)
   (setq delete-old-versions t)
   
+  (add-hook 'org-src-mode-hook '(lambda () (auto-save-mode t)))
+  
+  (defadvice do-auto-save (around do-auto-save-org-src activate)
+    (if org-src-mode 
+        (org-src-in-org-buffer (do-auto-save))
+      ad-do-it))
+  
 #+end_src
 ** Modify line open behavior to be more like Vim's   
 #+begin_src emacs-lisp
@@ -1444,6 +1451,25 @@ docview
    (buffer-file-name (current-buffer))))
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 #+end_src
+Make flyspell not operate on code blocks:   
+#+begin_src emacs-lisp
+  (defun org-mode-in-block-delimiter-p ()
+    (save-excursion
+      (beginning-of-line)
+      (looking-at "^\s*#\\+\\(BEGIN\\|END\\)_.*$")))
+
+  ;; this works, but see http://debbugs.gnu.org/cgi/bugreport.cgi?bug=10804
+  (defadvice org-mode-flyspell-verify
+    (after my-org-mode-flyspell-verify activate)
+    "Don't spell check src blocks."
+    (setq ad-return-value
+          (and ad-return-value
+               (not (some (lambda (ovl)
+                            (eql (overlay-get ovl 'face)
+                                 'org-block-background))
+                          (overlays-at (point))))
+               (not (org-mode-in-block-delimiter-p)))))
+  #+end_src
 * Recentf, MRU-stuff
 #+begin_src emacs-lisp
 ;;  Allow ido to open recent files
