@@ -621,6 +621,11 @@ http://gitorious.org/evil/pages/Home
    (let (evil-mode-map-alist) 
      (call-interactively (key-binding (this-command-keys)))))
   
+  (defun my-shift-zz (&optional no-save)
+    "Calls save-buffer, kill-this-buffer"
+    (interactive)
+    (unless no-save (save-buffer))
+    (kill-this-buffer))
 #+end_src
 ** Basic setup
 #+begin_src emacs-lisp
@@ -667,6 +672,10 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
   ;; (define-key evil-normal-state-map (kbd "SPC") 'evil-scroll-down)
   ;; (define-key evil-motion-state-map (kbd "SPC") 'evil-scroll-down)
+  (define-key evil-normal-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
+  (define-key evil-motion-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
+  (define-key evil-normal-state-map "ga" 'anything)
+  (define-key evil-motion-state-map "ga" 'anything)
   (define-key evil-normal-state-map (kbd "S-SPC") 'evil-scroll-up)
   (define-key evil-motion-state-map (kbd "S-SPC") 'evil-scroll-up)
   (define-key evil-normal-state-map "\C-r" 'isearch-backward)
@@ -727,7 +736,7 @@ http://gitorious.org/evil/pages/Home
   (evil-declare-key 'emacs Info-mode-map "S-SPC" 'evil-scroll-up)
   (evil-declare-key 'emacs Info-mode-map "j" 'evil-scroll-line-down)
   (evil-declare-key 'emacs Info-mode-map "k" 'evil-scroll-line-up)
-  
+  (evil-declare-key 'normal org-mode-map "gj" 'org-goto)
 #+end_src
 *** Org-mode integration
 Some of this stuff was inspired by    
@@ -3021,7 +3030,7 @@ Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
 #+end_src  
 * anything.el and anything-config
 #+begin_src emacs-lisp
-(require 'anything)
+(add-to-list 'load-path "~/.emacs.d/elisp/anything-config.git")
 (require 'anything-config)
 (setq anything-sources
       (list anything-c-source-buffers+
@@ -3034,7 +3043,7 @@ Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
             anything-c-source-emacs-commands))
 (global-set-key (kbd "\C-xc") 'anything)
 (global-set-key (kbd "\C-xx") 'anything)
-(define-key anything-map "\t" 'anything-next-line)
+(define-key anything-map (kbd "C-i") 'anything-next-line)
 (define-key anything-map [(control tab)] 'anything-select-action)
 (define-key anything-map [(shift tab)] 'anything-previous-line)
 (define-key anything-map [backtab] 'anything-previous-line)
