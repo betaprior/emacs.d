@@ -674,8 +674,6 @@ http://gitorious.org/evil/pages/Home
   ;; (define-key evil-motion-state-map (kbd "SPC") 'evil-scroll-down)
   (define-key evil-normal-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
   (define-key evil-motion-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
-  (define-key evil-normal-state-map "ga" 'anything)
-  (define-key evil-motion-state-map "ga" 'anything)
   (define-key evil-normal-state-map (kbd "S-SPC") 'evil-scroll-up)
   (define-key evil-motion-state-map (kbd "S-SPC") 'evil-scroll-up)
   (define-key evil-normal-state-map "\C-r" 'isearch-backward)
@@ -2237,14 +2235,25 @@ With argument, do this that many times."
 #+end_src
 ** Shebang, thing-cmds
 #+begin_src emacs-lisp
-;; shebang chmods files automatically if they are scripts:
-(require 'shebang)
-
-;; thing at point mark:
-(require 'thing-cmds)
-(global-set-key [?\C-\M- ] 'cycle-thing-region) ;; C-M-SPC successively
-                                                ;; selects stuff
-(global-set-key [(meta ?@)] 'mark-thing)
+  ;; shebang chmods files automatically if they are scripts:
+  (require 'shebang)
+  
+  ;; thing at point mark:
+  (require 'thing-cmds)
+  ;; (global-set-key [?\C-\M- ] 'cycle-thing-region) ;; C-M-SPC successively
+                                                  ;; selects stuff
+  (global-set-key [?\C-\M- ] '(lambda() (cycle-thing-region "word"))) ;; temp
+  ;;  workaround; to be removed when cycle-thing-region quits hanging emacs
+  
+  (global-set-key [(meta ?@)] 'mark-thing)
+  
+  ;; make things-at-point play nice with Evil:
+  (defadvice thing-region (after thing-region-evil-select-fix-offbyone activate)
+    "When selecting a word with Evil, move cursor one position back"
+    (when (and evil-mode 
+               (not (or (eq evil-state 'insert) (eq evil-state 'emacs)))
+               (string= (ad-get-arg 0) "word"))
+      (backward-char)))
 #+end_src
 ** Autopair
 #+begin_src emacs-lisp-disabled
@@ -3030,26 +3039,36 @@ Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
 #+end_src  
 * anything.el and anything-config
 #+begin_src emacs-lisp
-(add-to-list 'load-path "~/.emacs.d/elisp/anything-config.git")
-(require 'anything-config)
-(setq anything-sources
-      (list anything-c-source-buffers+
-	    anything-c-source-recentf
-	    anything-c-source-files-in-current-dir
-            anything-c-source-info-pages
-            anything-c-source-file-name-history
-            anything-c-source-man-pages
-	    anything-c-source-file-cache
-            anything-c-source-emacs-commands))
-(global-set-key (kbd "\C-xc") 'anything)
-(global-set-key (kbd "\C-xx") 'anything)
-(define-key anything-map (kbd "C-i") 'anything-next-line)
-(define-key anything-map [(control tab)] 'anything-select-action)
-(define-key anything-map [(shift tab)] 'anything-previous-line)
-(define-key anything-map [backtab] 'anything-previous-line)
-
-(require 'descbinds-anything)
-(descbinds-anything-install)
+  (add-to-list 'load-path "~/.emacs.d/elisp/anything-config.git")
+  (require 'anything-config)
+  (setq anything-sources
+        (list anything-c-source-buffers+
+              anything-c-source-recentf
+              anything-c-source-files-in-current-dir
+              anything-c-source-info-pages
+              anything-c-source-file-name-history
+              anything-c-source-man-pages
+              anything-c-source-file-cache
+              anything-c-source-emacs-commands))
+  (global-set-key (kbd "\C-xc") 'anything)
+  (global-set-key (kbd "\C-xx") 'anything)
+  (when (fboundp 'evil-mode)
+    (define-key evil-normal-state-map "ga" 'anything-mini)
+    (define-key evil-motion-state-map "ga" 'anything-mini))
+  
+  (defun my-anything-override-tab-keys-in-map (map)
+    "Sets tab keybindings up the way I like them in a given anything source map"
+    (progn
+      (define-key map (kbd "C-i") 'anything-next-line)
+      (define-key map [(control tab)] 'anything-select-action)
+      (define-key map [(shift tab)] 'anything-previous-line)
+      (define-key map [backtab] 'anything-previous-line)))
+  
+  (mapc 'my-anything-override-tab-keys-in-map
+        (list anything-c-buffer-map anything-c-read-file-map anything-generic-files-map))
+  
+  (require 'descbinds-anything)
+  (descbinds-anything-install)
 #+end_src
 
 * Ido and smex
