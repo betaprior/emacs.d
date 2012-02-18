@@ -2259,11 +2259,8 @@ With argument, do this that many times."
   
   ;; thing at point mark:
   (require 'thing-cmds)
-  ;; (global-set-key [?\C-\M- ] 'cycle-thing-region) ;; C-M-SPC successively
+  (global-set-key [?\C-\M- ] 'cycle-thing-region) ;; C-M-SPC successively
                                                   ;; selects stuff
-  (global-set-key [?\C-\M- ] '(lambda() (cycle-thing-region "word"))) ;; temp
-  ;;  workaround; to be removed when cycle-thing-region quits hanging emacs
-  
   (global-set-key [(meta ?@)] 'mark-thing)
   
   ;; make things-at-point play nice with Evil:
