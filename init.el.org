@@ -75,6 +75,16 @@ Quick links:
 (if master-session (desktop-save-mode 1))
 ;; enable winner mode for swiching windows configurations
 (when (fboundp 'winner-mode) (winner-mode 1))
+(setq winner-boring-buffers '("*anything*"
+                              "*anything mini*"
+                              "*anything buffers*"
+                              "*anything bookmarks*"
+                              "*anything make*"
+                              "*anything uni*"
+                              "*anything config*"
+                              "*Completions*"
+                              "*Help*"
+                              "*compilation*"))
 #+end_src
 ** ELPA / package.el
 #+begin_src emacs-lisp
