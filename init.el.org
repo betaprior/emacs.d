@@ -682,6 +682,8 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-normal-state-map (kbd "TAB") 'evil-undefine)
   ;; (define-key evil-normal-state-map (kbd "SPC") 'evil-scroll-down)
   ;; (define-key evil-motion-state-map (kbd "SPC") 'evil-scroll-down)
+  (define-key evil-normal-state-map "ga" 'anything-mini)
+  (define-key evil-motion-state-map "ga" 'anything-mini)
   (define-key evil-normal-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
   (define-key evil-motion-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
   (define-key evil-normal-state-map (kbd "S-SPC") 'evil-scroll-up)
@@ -745,6 +747,13 @@ http://gitorious.org/evil/pages/Home
   (evil-declare-key 'emacs Info-mode-map "j" 'evil-scroll-line-down)
   (evil-declare-key 'emacs Info-mode-map "k" 'evil-scroll-line-up)
   (evil-declare-key 'normal org-mode-map "gj" 'org-goto)
+  (evil-declare-key 'normal dired-mode-map "ga" 'anything-mini)
+  (evil-declare-key 'normal dired-mode-map "i" 'evil-insert)
+  (evil-declare-key 'normal Info-mode-map "G" 'Info-goto-node)
+  (evil-declare-key 'insert Info-mode-map "G" 'Info-goto-node)
+  (evil-declare-key 'emacs  Info-mode-map "G" 'Info-goto-node)
+  (evil-declare-key 'normal Info-mode-map "ga" 'anything-mini)
+
 #+end_src
 *** Org-mode integration
 Some of this stuff was inspired by    
@@ -3062,9 +3071,6 @@ Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
               anything-c-source-emacs-commands))
   (global-set-key (kbd "\C-xc") 'anything)
   (global-set-key (kbd "\C-xx") 'anything)
-  (when (fboundp 'evil-mode)
-    (define-key evil-normal-state-map "ga" 'anything-mini)
-    (define-key evil-motion-state-map "ga" 'anything-mini))
   
   (defun my-anything-override-tab-keys-in-map (map)
     "Sets tab keybindings up the way I like them in a given anything source map"
