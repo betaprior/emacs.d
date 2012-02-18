@@ -107,8 +107,8 @@
      ;;; define some reusable zenburn faces that we can inherit from afterwards
      (zenburn-strong-1-face ((t (:foreground ,zenburn-yellow :weight bold))))
      (zenburn-strong-2-face ((t (:foreground ,zenburn-orange :weight bold))))
-     (zenburn-warning-face ((t (:foreground ,zenburn-yellow-1 :weight bold :underline t))))
-     (zenburn-error-face ((t (:foreground ,zenburn-red-1 :weight bold :underline t))))
+     (zenburn-warning-face ((t (:foreground ,zenburn-yellow-1 :weight normal :underline t))))
+     (zenburn-error-face ((t (:foreground ,zenburn-red-1 :weight normal :underline t))))
 
      ;;; basic coloring
      (default ((t (:foreground ,zenburn-fg))))
