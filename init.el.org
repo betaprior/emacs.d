@@ -418,6 +418,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-hide-leading-stars t)
   (setq org-replace-disputed-keys t)
   (setq org-src-tab-acts-natively t)
+  (setq org-emphasis-regexp-components '(" 	('\"{" "- 	.,:!?;'\")}\\" " 	\n" "." 1))
   (setq org-todo-keywords
         '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
   (add-hook 'org-mode-hook 
@@ -574,10 +575,12 @@ Custom keybinding defined [[*My-keys-minor-mode%20keybindings][in my-keys minor 
             ;; :password (netrc-get lva-netrc-wp "password")
             :tags-as-categories nil)))
   (setq org2blog/wp-use-sourcecode-shortcode t)
+  (setq org2blog/wp-use-wp-latex nil)
   (setq org2blog/wp-track-posts (list "posts.org" "Posts"))
   (add-hook 'org2blog/wp-mode-hook 'flyspell-mode)
   (add-hook 'org2blog/wp-mode-hook '(lambda () (auto-save-mode t)))
-  (add-hook 'org2blog/wp-mode-hook '(lambda () (assq-delete-all 'org2blog/wp-mode minor-mode-map-alist)))
+  (add-hook 'org2blog/wp-mode-hook 
+            '(lambda () (setq minor-mode-map-alist (assq-delete-all 'org2blog/wp-mode minor-mode-map-alist))))
 #+end_src
 * EVIL
 Some references: 
@@ -676,6 +679,7 @@ http://gitorious.org/evil/pages/Home
   (setcdr evil-insert-state-map nil)
   (define-key evil-insert-state-map
     (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
+  (define-key evil-insert-state-map "\C-\M-y" 'evil-copy-from-above)
   (define-key evil-insert-state-map [escape] 'evil-normal-state)
   (define-key evil-emacs-state-map [escape] 'evil-normal-state)
   (define-key evil-visual-state-map [escape] 'evil-normal-state)
@@ -685,6 +689,8 @@ http://gitorious.org/evil/pages/Home
   ;; (define-key evil-motion-state-map (kbd "SPC") 'evil-scroll-down)
   (define-key evil-normal-state-map "ga" 'anything-mini)
   (define-key evil-motion-state-map "ga" 'anything-mini)
+  (define-key evil-normal-state-map "gb" 'ido-switch-buffer)
+  (define-key evil-motion-state-map "gb" 'ido-switch-buffer)
   (define-key evil-normal-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
   (define-key evil-motion-state-map "ZZ" 'my-shift-zz) ; replace default "quit" behavior
   (define-key evil-normal-state-map (kbd "S-SPC") 'evil-scroll-up)
@@ -712,6 +718,7 @@ http://gitorious.org/evil/pages/Home
   (define-key evil-normal-state-map "\C-\M-o" 'evil-jump-forward)
   (define-key evil-normal-state-map "\C-\M-p" 'evil-jump-backward)
   (define-key evil-normal-state-map "\C-o" 'open-next-line)
+  (define-key evil-normal-state-map "\M-." 'find-tag)
   (global-set-key [f1] 'evil-window-map)
   
 #+end_src
@@ -749,11 +756,16 @@ http://gitorious.org/evil/pages/Home
   (evil-declare-key 'emacs Info-mode-map "k" 'evil-scroll-line-up)
   (evil-declare-key 'normal org-mode-map "gj" 'org-goto)
   (evil-declare-key 'normal dired-mode-map "ga" 'anything-mini)
+  (evil-declare-key 'normal dired-mode-map "gb" 'ido-switch-buffer)
   (evil-declare-key 'normal dired-mode-map "i" 'evil-insert)
   (evil-declare-key 'normal Info-mode-map "G" 'Info-goto-node)
   (evil-declare-key 'insert Info-mode-map "G" 'Info-goto-node)
   (evil-declare-key 'emacs  Info-mode-map "G" 'Info-goto-node)
   (evil-declare-key 'normal Info-mode-map "ga" 'anything-mini)
+  (evil-declare-key 'normal compilation-mode-map "i" 'evil-insert)
+  (evil-declare-key 'normal compilation-mode-map "G" 'recompile)
+  (evil-declare-key 'normal compilation-mode-map "ga" 'anything-mini)
+  (evil-declare-key 'normal compilation-mode-map "gb" 'ido-switch-buffer)
 
 #+end_src
 *** Org-mode integration
