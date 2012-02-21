@@ -63,7 +63,8 @@ Quick links:
 * Basic defaults and customizations; package management
 #+begin_src emacs-lisp
  ;; Increase the memory reserved
-(setq gc-cons-threshold 80000000)
+(setq gc-cons-percentage 0.125) ; default is 0.1
+(setq gc-cons-threshold 1600000000) 
 (setq garbage-collection-messages t)
 ;; Set the load path for the default elisp directory
 (setq load-path (append (list (expand-file-name "~/.emacs.d/elisp"))
