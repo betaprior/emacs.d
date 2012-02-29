@@ -407,6 +407,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-startup-indented nil)
   (setq org-directory "~/Dropbox/org/")
   (setq org-src-ask-before-returning-to-edit-buffer nil)
+  (setq org-babel-use-quick-and-dirty-noweb-expansion t)
   (define-key org-src-mode-map "\C-x\C-s" 'org-edit-src-save)
   (setq org-src-window-setup (quote current-window))
   (setq org-agenda-files (quote ("~/My Dropbox/notes.org/memos.txt")))
@@ -417,7 +418,7 @@ Org likes to mess with windmove and line dragging; so we fix it here
   (setq org-hide-leading-stars t)
   (setq org-replace-disputed-keys t)
   (setq org-src-tab-acts-natively t)
-  (setq org-emphasis-regexp-components '(" 	('\"{" "- 	.,:!?;'\")}\\" " 	\n" "." 1))
+  (setq org-emphasis-regexp-components '("      ('\"{" "-       .,:!?;'\")}\\" "        \n" "." 1))
   (setq org-todo-keywords
         '((sequence "TODO" "WAIT" "|" "DONE" "CANCELED")))
   (add-hook 'org-mode-hook 
@@ -725,9 +726,9 @@ http://gitorious.org/evil/pages/Home
 #+begin_src emacs-lisp
   (defvar lva-emacs-not-insert-state nil 
     "Use emacs state in place of insert (or insert w/ bindings cleared)")
-  (setq my-evil-motion-state-modes '(ibuffer-mode grep-mode occur-mode Man-mode
+  (setq my-evil-motion-state-modes '(grep-mode occur-mode Man-mode
     woman-mode browse-kill-ring-mode completion-list-mode))
-  (setq my-evil-emacs-state-modes '(Info-mode shell-mode term-mode gud-mode
+  (setq my-evil-emacs-state-modes '(ioccur-mode ibuffer-mode Info-mode shell-mode term-mode gud-mode
     inferior-ess-mode m-shell-mode inferior-octave-mode magit-status-mode
     magit-log-edit-mode org-src-mode reb-lisp-mode inferior-python-mode
     inferior-scheme-mode))
@@ -1306,6 +1307,7 @@ instead of a char."
 ;; Misc. tweaks
 (add-hook 'sql-interactive-mode-hook '(lambda () (setq comint-move-point-for-output nil))) ; don't force scroll to the bottom on output
 (add-hook 'shell-mode-hook '(lambda () (setq comint-move-point-for-output nil))) ; don't force scroll to the bottom on output
+(add-hook 'sh-set-shell-hook '(lambda () (local-set-key "<" 'self-insert-command)))
 (fset 'yes-or-no-p 'y-or-n-p) ; stop forcing me to spell out "yes"
 ;; use Unix-style line endings
 (setq-default buffer-file-coding-system 'undecided-unix)
@@ -1689,8 +1691,9 @@ http://martinowen.net/blog/2010/02/tips-for-emacs-ibuffer.html
                       (filename . "OrgMode")))
            ("Shell" (or (mode . shell-mode)))
            ("ESS" (or (mode . ess-mode)
-                      (mode . inferior-ess-mode)
-                      (name . "\\*help\\[R\\]")))
+                      (mode . inferior-ess-mode)))
+           ("ESS help" (or (mode . ess-help-mode)
+                           (name . "\\*help\\[R\\]")))
            ("Math" (or (mode . mathematica-mode)
                        (mode . matlab-mode)
                        (mode . m-shell-mode)
@@ -2323,6 +2326,19 @@ https://github.com/rejeep/wrap-region
   (wrap-region-global-mode t)
   (wrap-region-add-wrapper "$" "$")
 #+end_src   
+* ECB and Semantic
+** ECB
+#+begin_src emacs-lisp
+  (setq stack-trace-on-error t)
+  (add-to-list 'load-path "~/.emacs.d/elisp/ecb/")
+  (require 'ecb-autoloads)
+  (add-hook 'ecb-deactivate-hook 
+            '(lambda ()
+               (ecb-disable-advices 'ecb-winman-not-supported-function-advices t)))
+  (setq ecb-auto-expand-tag-tree 'all)
+  (setq ecb-layout-name "left9")
+#+end_src
+
 * Completion, expansion, dabbrev, snippets
 Links:
 http://www.emacswiki.org/emacs/Completion#completion
@@ -2905,7 +2921,7 @@ determined via outline-level in outline.el (which is sometimes overloaded by mod
 ;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
 (if (not (eq emacs-profile 'linux-default))
     (require 'ess-site))
-(require 'ess-smart-underscore)
+;; (require 'ess-smart-underscore)
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
 (setq ansi-color-for-comint-mode 'filter)
@@ -3065,7 +3081,7 @@ Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
 (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 #+end_src  
-* anything.el and anything-config
+* anything.el, anything-config, ioccur
 #+begin_src emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/anything-config.git")
   (require 'anything-config)
@@ -3090,10 +3106,15 @@ Regarding tramp and remote sudo editing: see [[info:tramp#Multi-hops]]
       (define-key map [backtab] 'anything-previous-line)))
   
   (mapc 'my-anything-override-tab-keys-in-map
-        (list anything-c-buffer-map anything-c-read-file-map anything-generic-files-map))
+        (list anything-map anything-c-buffer-map anything-c-read-file-map anything-generic-files-map))
   
   (require 'descbinds-anything)
   (descbinds-anything-install)
+  (setq descbinds-anything-window-style 'split-window) ;; or try 'same-window
+  (global-set-key (kbd "\C-h\C-b") 'describe-bindings)
+  (setq anything-samewindow t)
+  
+  (require 'ioccur)
 #+end_src
 
 * Ido and smex
