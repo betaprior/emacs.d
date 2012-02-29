@@ -673,6 +673,9 @@ http://gitorious.org/evil/pages/Home
   ;; (key-chord-define-global "df"  'evil-window-map)
   ;; (key-chord-define evil-window-map "df" 'evil-window-prev) ; df twice
   
+  ;; (add-hook 'after-save-hook 'evil-normal-state)
+  (defadvice save-buffer (after save-buffer-evil-normal activate)
+    (evil-normal-state))
 #+end_src
 ** Global keymap overrides
 #+begin_src emacs-lisp
