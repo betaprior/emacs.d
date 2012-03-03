@@ -1732,6 +1732,9 @@ http://martinowen.net/blog/2010/02/tips-for-emacs-ibuffer.html
   (add-to-list 'ibuffer-never-show-predicates "^\\*ESS")
   (add-to-list 'ibuffer-never-show-predicates "^\\*WoMan-Log\\*$")
   (add-to-list 'ibuffer-never-show-predicates "^\\*Kill Ring\\*$")
+  (define-key ibuffer-mode-map (kbd "/ M") 'ibuffer-filter-by-mode)
+  (define-key ibuffer-mode-map (kbd "/ m") 'ibuffer-filter-by-used-mode)
+
   ;; Enable ibuffer-filter-by-filename to filter on directory names too.
   (eval-after-load "ibuf-ext"
     '(define-ibuffer-filter filename
