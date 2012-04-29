@@ -32,3 +32,6 @@
 [submodule "elisp/anything-config.git"]
 	path = elisp/anything-config.git
 	url = git://repo.or.cz/anything-config.git
+[submodule "elisp/rinari.git"]
+	path = elisp/rinari.git
+	url = git://github.com/eschulte/rinari.git
