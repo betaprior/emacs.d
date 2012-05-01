@@ -1444,6 +1444,11 @@ instead."
 (global-set-key (kbd "M-<up>") 'jump-back-lines)
 #+end_src  
 * Misc. useful things:
+** Nav
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/elisp/nav/")
+  (require 'nav)
+#+end_src  
 ** Speedbar
 #+begin_src emacs-lisp
 ;; speedbar
