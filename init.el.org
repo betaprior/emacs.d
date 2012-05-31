@@ -2558,6 +2558,10 @@ Misc. tweaks for CSS and SQL:
   '(lambda ()
     (set (make-local-variable 'outline-regexp) sql-outline-regexp)))
 #+end_src
+Julia!
+#+begin_src emacs-lisp
+  (require 'julia-mode)
+#+end_src
 ** Webdev
 #+begin_src emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/rinari.git")
