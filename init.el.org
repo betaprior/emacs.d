@@ -1729,6 +1729,7 @@ http://martinowen.net/blog/2010/02/tips-for-emacs-ibuffer.html
            ("Math" (or (mode . mathematica-mode)
                        (mode . matlab-mode)
                        (mode . m-shell-mode)
+                       (mode . julia-mode)
                        (mode . mma-mode)))
            ("LaTeX" ;; all LaTeX-related buffers
                   (or (mode . latex-mode)))
@@ -2560,7 +2561,9 @@ Misc. tweaks for CSS and SQL:
 #+end_src
 Julia!
 #+begin_src emacs-lisp
-  (require 'julia-mode)
+  ;; (require 'julia-mode) ;; trying the ESS version
+  (setq auto-mode-alist (append '(("\\.jl$" . julia-mode)) auto-mode-alist))
+  (add-hook 'julia-mode-hook (lambda () (setq indent-line-function 'julia-indent-line)))
 #+end_src
 ** Webdev
 #+begin_src emacs-lisp
@@ -3038,7 +3041,8 @@ determined via outline-level in outline.el (which is sometimes overloaded by mod
 ;; Need to be careful - on some hosts ESS might be in ~/.emacs.d, on others in site-lisp
 (if (not (eq emacs-profile 'linux-default))
     (require 'ess-site))
-;; (require 'ess-smart-underscore)
+(setq inferior-julia-program-name "~/bin-local/julia-release-basic")
+(require 'ess-smart-underscore)
 (setq ess-ask-for-ess-directory nil)
 (setq ess-local-process-name "R")
 (setq ansi-color-for-comint-mode 'filter)
@@ -3069,7 +3073,7 @@ determined via outline-level in outline.el (which is sometimes overloaded by mod
 
 (defun my-ess-eval ()
   (interactive)
-  (my-ess-start-R)
+  ;; (my-ess-start-R)
   (if (and transient-mark-mode mark-active)
       (call-interactively 'ess-eval-region-and-go)
     (call-interactively 'ess-eval-line-and-go)))
