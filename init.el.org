@@ -486,7 +486,8 @@ NB: These have to come after org-mode loads
       (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
 (unless (eq system-type 'windows-nt)
   (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
-  (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps)))
+  (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps))
+  (setq org-file-apps (cons '("\\.xoj\\'" . "xournal %s") org-file-apps)))
 #+end_src
 ** Babel and org-contrib
 Useful org-babel examples:
