@@ -464,30 +464,31 @@ NB: These have to come after org-mode loads
 #+end_src
 ** Org link handling
 #+begin_src emacs-lisp
-(defadvice org-return (around org-return-universal-argument activate)
-"If called with \\[universal-argument], open link in current window"
-  (if (consp current-prefix-arg)
-      (let ((org-link-frame-setup '((file . find-file))))
-	ad-do-it)
-    ad-do-it))
-
-(setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
-(if (eq emacs-profile 'windows-2)
-    (progn
-      (setq org-file-apps (cons '("\\.jnt\\'" . "c:/PROGRA~1/WI0FCF~1/Journal.exe %s") org-file-apps))
-      (setq org-file-apps (cons '("\\.nb\\'" . "c:/PROGRA~1/WOLFRA~1/MATHEM~1/8.0/MATHEM~1.EXE %s") org-file-apps))
-      (setq org-file-apps (cons '("\\.pdf\\'" . "c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe %s") org-file-apps)))
-      ;; (setq org-file-apps (cons '("\\.jnt\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files\\Windows Journal\\Journal.exe"))) org-file-apps))
-      ;; (setq org-file-apps (cons '("\\.pdf\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe")
-							;; )) org-file-apps)))
-      ;; (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
-      ;; (setq org-file-apps (cons '("\\.jnt\\'" . "C:\\Program Files\\Windows Journal\\Journal.exe %s") org-file-apps))) ;; else:
-  (if (eq emacs-profile 'windows-1)
-      (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
-(unless (eq system-type 'windows-nt)
-  (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
-  (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps))
-  (setq org-file-apps (cons '("\\.xoj\\'" . "xournal %s") org-file-apps)))
+  (defadvice org-return (around org-return-universal-argument activate)
+  "If called with \\[universal-argument], open link in current window"
+    (if (consp current-prefix-arg)
+        (let ((org-link-frame-setup '((file . find-file))))
+          ad-do-it)
+      ad-do-it))
+  
+  (setq org-file-apps (quote ((auto-mode . emacs) ("\\.x?html?\\'" . default)  ("\\.nb\\'" . "mathematica %s"))))
+  (if (eq emacs-profile 'windows-2)
+      (progn
+        (setq org-file-apps (cons '("\\.jnt\\'" . "c:/PROGRA~1/WI0FCF~1/Journal.exe %s") org-file-apps))
+        (setq org-file-apps (cons '("\\.nb\\'" . "c:/PROGRA~1/WOLFRA~1/MATHEM~1/8.0/MATHEM~1.EXE %s") org-file-apps))
+        (setq org-file-apps (cons '("\\.pdf\\'" . "c:/PROGRA~2/Adobe/ACROBA~1.0/Acrobat/Acrobat.exe %s") org-file-apps)))
+        ;; (setq org-file-apps (cons '("\\.jnt\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files\\Windows Journal\\Journal.exe"))) org-file-apps))
+        ;; (setq org-file-apps (cons '("\\.pdf\\'" . (format "%s %%s" (w32-short-file-name "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe")
+                                                          ;; )) org-file-apps)))
+        ;; (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files (x86)\\Adobe\\Acrobat 10.0\\Acrobat\\Acrobat.exe %s") org-file-apps))
+        ;; (setq org-file-apps (cons '("\\.jnt\\'" . "C:\\Program Files\\Windows Journal\\Journal.exe %s") org-file-apps))) ;; else:
+    (if (eq emacs-profile 'windows-1)
+        (setq org-file-apps (cons '("\\.pdf\\'" . "C:\\Program Files\\Adobe\\Acrobat 8.0\\Acrobat\\Acrobat.exe %s") org-file-apps))))
+  (unless (eq system-type 'windows-nt)
+    (setq org-file-apps (cons '(" \\.pdf::\\([0-9]+\\)\\'" . "evince %s -p %1") org-file-apps))
+    (setq org-file-apps (cons '("\\.pdf\\'" . "evince %s") org-file-apps))
+    (setq org-file-apps (cons '("\\.xoj\\'" . "xournal %s") org-file-apps))
+    (setq org-file-apps (cons '("\\.nb\\'" . "/opt/Wolfram/Mathematica/8.0/Executables/Mathematica %s") org-file-apps)))
 #+end_src
 ** Babel and org-contrib
 Useful org-babel examples:
@@ -2164,11 +2165,11 @@ Subsequent calls expands the selection to larger semantic unit."
 #+end_src
   
 ** isearch
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp
 ;; Use isearch+ (cf http://www.emacswiki.org/emacs/IsearchPlus)
-(eval-after-load "isearch" '(require 'isearch+))
+; (eval-after-load "isearch" '(require 'isearch+))
    ; avoid automatic mark that persists when terminating search w/ arrow keys:
-(eval-after-load "isearch+" '(setq isearchp-set-region-flag nil)) 
+; (eval-after-load "isearch+" '(setq isearchp-set-region-flag nil)) 
 (define-key isearch-mode-map [(control ? )] 'set-region-around-search-target)
 ; control-SPC, overrides the default isearchp setting of isearchp-toggle-set-region
 (global-set-key [f11] 'isearch-forward)
@@ -2421,7 +2422,8 @@ Adding this function to `inferior-python-mode-hook' reinstates
 the current directory in Python's search path."
   (python-send-string "sys.path[0:0] = ['']"))
 
-(add-hook 'inferior-python-mode-hook 'python-reinstate-current-directory)
+;; (add-hook 'inferior-python-mode-hook 'python-reinstate-current-directory)
+;; makes emacs hang w/ latest 24.1.50.1 snapshot (20120807)
 
 (defun my-python-mode-hook ()
   (turn-on-eldoc-mode)
@@ -2680,6 +2682,11 @@ Julia!
 
 #+end_src
 
+** Scala
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/scala-mode")
+  (require 'scala-mode-auto)
+#+end_src   
 ** Java
 Getting consistent indentation in Eclipse and Emacs, as per
 http://stackoverflow.com/questions/805050/eclipse-indentation-on-emacs   

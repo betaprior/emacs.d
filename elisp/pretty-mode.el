@@ -92,6 +92,7 @@ displayed as λ in lisp modes."
 ;  :lighter " λ"
   (if pretty-mode
       (progn
+        (font-lock-mode)
         (font-lock-add-keywords nil (pretty-keywords) t)
         (font-lock-fontify-buffer))
     (font-lock-remove-keywords nil (pretty-keywords))

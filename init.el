@@ -57,7 +57,7 @@
  '(ess-r-args-show-as (quote tooltip))
  '(evil-cross-lines t)
  '(evil-flash-delay 10)
- '(font-lock-maximum-decoration (quote ((dired-mode) (t . t))))
+ '(font-lock-maximum-decoration (quote ((c-mode . 2) (c++-mode . 2) (dired-mode . 2) (java-mode . 2) (t . 2))))
  '(grep-command "grep -nHi ")
  '(grep-o-matic-ask-about-save nil)
  '(grep-o-matic-search-patterns (quote ("*.cpp" "*.c" "*.h" "*.awk" "*.sh" "*.py" "*.pl" "[Mm]akefile" "*.el" "*")))
