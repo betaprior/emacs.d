@@ -2568,6 +2568,11 @@ Julia!
   (setq auto-mode-alist (append '(("\\.jl$" . julia-mode)) auto-mode-alist))
   (add-hook 'julia-mode-hook (lambda () (setq indent-line-function 'julia-indent-line)))
 #+end_src
+Coffee!
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/coffee-mode.git")
+  (require 'coffee-mode)
+#+end_src
 ** Webdev
 #+begin_src emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/rinari.git")
