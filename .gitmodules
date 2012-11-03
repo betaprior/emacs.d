@@ -35,3 +35,6 @@
 [submodule "elisp/rinari.git"]
 	path = elisp/rinari.git
 	url = git://github.com/eschulte/rinari.git
+[submodule "elisp/coffee-mode.git"]
+	path = elisp/coffee-mode.git
+	url = https://github.com/defunkt/coffee-mode.git
